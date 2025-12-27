@@ -1,0 +1,179 @@
+这是非常实战的需求。将 **“容错 XML 解析”** 与 **“LLM 流式输出 (Streaming)”** 结合，是构建高性能 AI 应用（如 Copilot、实时聊天机器人）的核心技术。
+
+这套方案的目标是实现 **“边生成、边解析、边展示”**，给用户极致的响应速度，同时在后台静默完成结构化数据的提取。
+
+首先是静态的全量设计，之后是动态流式设计   
+**“基于流的容错提取器” (Stream-based Fault-Tolerant Extractor)**。
+
+想象你正在处理一条无限长的纸带（Token Stream），你的算法是一个在这个纸带上移动的**状态机 (State Machine)**。
+
+#### 1. 核心数据结构
+你需要两个核心结构：
+* **Buffer (缓冲区)**: 一个可变字符串，用于临时存储扫描到的字符。
+* **TagStack (标签栈)**: 一个 LIFO（后进先出）栈。每个元素包含 `{ TagName, StartIndex }`。
+
+#### 2. 状态机流程 (The State Machine)
+
+算法只需在一个循环中遍历输入文本（或流），寻找两个关键的**锚点 (Anchors)**：
+* **Opener (开始锚点)**: 正则模式 `<TagName>` 或 `<TagName attr="...">`
+* **Closer (结束锚点)**: 正则模式 `</TagName>`
+
+**处理逻辑：**
+
+1. **扫描 (Scan)**: 移动指针，寻找下一个 `<` 符号。
+2. **判断 (Identify)**:
+* 如果是 `<TagName ...>` (Opener):
+* 将 `{ TagName, CurrentIndex }` **压入栈 (Push)**。
+* 记录这个标签的内容开始位置（即 `>` 之后的下一个字符）。
+* 如果是 `</TagName>` (Closer):
+* **逆向搜索 (Backtrack)**: 在 TagStack 中从栈顶向下查找匹配的 `TagName`。
+* **命中 (Hit)**:
+* 找到了匹配的 Opener。
+* **提取 (Extract)**: 截取 `Opener.EndIndex` 到 `Closer.StartIndex` 之间的所有文本。这就是你的数据（不管里面有什么乱七八糟的符号）。
+* **清理 (Pop)**: 将栈顶直到该 Opener 的所有元素弹出（这一步自动修复了中间未闭合的子标签，即“幻觉纠错”）。
+* **未命中 (Miss)**: 忽略这个 Closer（视为噪声）。
+3. **截断恢复 (Truncation Recovery) - *关键步骤***:
+* 当流结束（EOF）时，如果 TagStack 不为空。
+* 这意味着 LLM 没说完话就被切断了。
+* **强制闭合**: 将栈中剩余所有标签的内容，从 `Opener.EndIndex` 一直提取到 `EOF`（文本末尾）。
+
+#### 3. 这种设计的优势
+* **语言无关**: 任何支持正则或字符串查找的语言都能实现。
+* **O(N) 复杂度**: 只需要扫描一遍文本。
+* **免疫转义问题**: 因为我们只找 `<Tag>` 和 `</Tag>`，中间的内容被视为纯粹的 Blob（二进制大对象），解析器根本不看里面有没有 `<` 或 `&`。
+
+
+以下是完整的**异步流式解析架构设计 (Architecture for Async Streaming Parser)**。
+
+---
+
+### 一、 核心概念模型
+
+我们需要设计一个 **“流式状态机管道 (Streaming State Machine Pipeline)”**。
+
+*   **输入**: 连续的字符碎片 (Chunks)，例如：`"<thought>Thinking..."`, `" is..."`, `" done</thought>"`。
+*   **输出**: 实时产生的事件 (Events)，例如：`OnTagStart`, `OnContentUpdate`, `OnTagEnd`。
+
+这个设计类似于 XML 的 **SAX 解析器**，但它是**非阻塞**、**容错**且**支持未闭合标签**的。
+
+---
+
+### 二、 架构组件设计
+
+系统分为三层：
+1.  **Buffer Layer (缓冲层)**: 解决碎片化问题。
+2.  **Scanner Layer (扫描层)**: 识别标签锚点。
+3.  **Emitter Layer (发射层)**: 向上层业务逻辑广播数据。
+
+#### 1. 缓冲层 (The Window Buffer)
+LLM 发来的 Chunk 可能极小（一个字符），也可能把 `<tag>` 切成两半（如 chunk1: `<ta`, chunk2: `g> `）。
+你需要一个**滑动窗口 (Sliding Window)** 或 **追加缓冲区**。
+
+*   **规则**: 每次收到 Chunk，追加到 Buffer。
+*   **安全截断**: 每次处理完 Buffer 后，只保留**末尾 N 个字符**（N = 最长合法标签的长度，比如 20）。这是为了防止 `<tag>` 被切断导致无法识别。
+    *   *优化*: 如果 Buffer 末尾没有 `<` 符号，可以清空 Buffer 以节省内存。
+
+#### 2. 扫描层 (The State Scanner)
+这是核心算法，维护一个 **Context (上下文)** 对象。
+
+**Context 包含**:
+*   `CurrentTag`: 当前正在读取内容的标签（栈顶元素）。
+*   `TagStack`: 完整的嵌套路径。
+*   `Cursor`: 当前 Buffer 处理到的位置。
+
+**处理流程 (每收到一个 Chunk 触发一次)**:
+
+1.  **拼接**: `FullBuffer = ResidualBuffer + NewChunk`
+2.  **寻找锚点**: 在 `FullBuffer` 中搜索 `<TagName>` 或 `</TagName>`。
+3.  **状态转换**:
+    *   **Case A: 发现开始标签 `<Tag>`**
+        *   触发事件 `onTagOpen(Tag)`。
+        *   将 `Tag` 压入栈。
+        *   更新 `Cursor` 到 `>` 之后。
+    *   **Case B: 发现结束标签 `</Tag>`**
+        *   触发事件 `onTagClose(Tag)`。
+        *   将 `Tag` 弹出栈。
+        *   更新 `Cursor` 到 `>` 之后。
+    *   **Case C: 没有标签，但是栈不为空 (正在生成内容)**
+        *   **关键点**: 这就是流式输出的内容！
+        *   提取 `Cursor` 到 `FullBuffer` 末尾（或者下一个 `<` 之前）的文本。
+        *   触发事件 `onContentDelta(Tag, TextFragment)`。
+        *   更新 `Cursor`。
+
+#### 3. 发射层 (The Event Emitter)
+业务层监听这些事件来实现功能：
+
+*   `onTagOpen("thought")`: 前端显示“正在思考...”的 loading 动画。
+*   `onContentDelta("thought", "analyzing...")`: 前端打字机效果实时把文字打在屏幕上。
+*   `onTagClose("thought")`: 思考结束，折叠思考框。
+*   `onContentDelta("json_payload", "{...")`: **静默处理**。不在 UI 显示，而是累积到一个 StringBuilder 中。
+*   `onTagClose("json_payload")`: JSON 接收完毕，触发后台逻辑（反序列化 -> 存库/调用API）。
+
+---
+
+### 三、 详细生命周期图解 (Lifecycle Sequence)
+
+假设 LLM 输出：`<msg>Hello</msg><data>{...` (未完)
+
+| 时间步 | 输入 Chunk | 内部动作 | 触发事件 | 状态 (Stack) |
+| :--- | :--- | :--- | :--- | :--- |
+| T1 | `<msg>He` | 识别 `<msg>` | `TagOpen(msg)` | `[msg]` |
+| | | 提取 `He` | `Content(msg, "He")` | `[msg]` |
+| T2 | `ll` | 提取 `ll` | `Content(msg, "ll")` | `[msg]` |
+| T3 | `o</msg><da` | 提取 `o` | `Content(msg, "o")` | `[msg]` |
+| | | 识别 `</msg>` | `TagClose(msg)` | `[]` |
+| | | 识别 `<da` (不完整) | (无动作，保留 `<da` 在 Buffer) | `[]` |
+| T4 | `ta>{` | 识别 `<data>` | `TagOpen(data)` | `[data]` |
+| | | 提取 `{` | `Content(data, "{")` | `[data]` |
+
+---
+
+### 四、 边缘情况的容错设计 (Edge Cases)
+
+1.  **标签跨 Chunk 断裂 (`<ta` + `g>`)**:
+    *   **策略**: 缓冲区的“保留末尾机制”解决此问题。只有当确定不是标签的一部分（没有 `<`）时才彻底丢弃已处理的数据。
+
+2.  **LLM 突然中断 (Network Error / Token Limit)**:
+    *   **策略**: 监听流的 `onComplete` 或 `onError` 信号。
+    *   当流结束时，检查 `TagStack`。
+    *   如果栈非空（例如还有 `[json_payload]`），强制触发 `TagClose("json_payload")` 事件。这不仅能闭合 UI，还能让后台尝试解析已接收到的不完整 JSON（很多 JSON 库支持解析部分 JSON）。
+
+3.  **幻觉标签 (Hallucinated Tags)**:
+    *   **策略**: 允许定义一个 `AllowList` (白名单)。如果解析器扫描到 `<weird_tag>` 不在白名单里，将其视为**普通文本内容**，而不是结构标签。这样 `< 符号` 就不需要转义了，会被当做内容直接透传。
+
+---
+
+### 五、 总结：给开发者的伪代码规范
+
+```text
+Class StreamParser:
+    Method onChunkReceived(chunk):
+        buffer.append(chunk)
+        
+        While (match = findNextTag(buffer)):
+            // 1. 处理标签前的内容
+            if stack is not empty:
+                content = buffer.substring(cursor, match.start)
+                emit("Content", stack.top, content)
+            
+            // 2. 处理标签本身
+            if match is OpenTag:
+                stack.push(match.tagName)
+                emit("Open", match.tagName)
+            else if match is CloseTag:
+                stack.popUntil(match.tagName) // 容错：自动闭合中间的标签
+                emit("Close", match.tagName)
+                
+            // 3. 移动指针
+            buffer.removeHead(match.end)
+            
+        // 4. 处理剩余的 Buffer (关键：流式体验)
+        // 如果剩余部分不包含 '<'，说明全是内容，直接发射
+        // 如果包含 '<'，可能是半个标签，保留到下次
+        safeContent, residual = splitSafeContent(buffer)
+        if stack is not empty and safeContent:
+            emit("Content", stack.top, safeContent)
+        buffer = residual
+```
+
+这套设计完全解耦了 **LLM 的生成** 和 **业务逻辑的处理**。

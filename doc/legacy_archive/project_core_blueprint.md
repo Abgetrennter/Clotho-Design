@@ -1,0 +1,115 @@
+# Clotho 项目核心基调与实施蓝图 (Project Core Tone & Implementation Blueprint)
+
+**版本**: 1.0
+**生效日期**: 2025-12-21
+**适用范围**: 全体开发、设计、产品及测试团队
+**基石文档**: `doc/architecture/system_architecture.md`, `doc/architecture/ui_layout_design.md`
+
+---
+
+## 1. 项目宏观愿景与定义 (Project Vision & Definition)
+
+### 1.1 核心价值主张
+Clotho 旨在重新定义 AI 角色扮演（RPG）的交互体验，构建一个**高性能、确定性与沉浸感并存**的次世代客户端。我们致力于解决现有方案（如 SillyTavern）中“逻辑与表现混杂”、“上下文管理混沌”以及“性能随对话长度指数级衰减”的根本性痛点。
+
+### 1.2 设计哲学：确定性编排与概率性生成的共舞
+我们的核心哲学是 **"Hybrid Agency"（混合代理）**，并遵循 **"The Caesar Principle" (凯撒原则)**：
+
+> **"Render unto Caesar the things that are Caesar's, and unto God the things that are God's."**
+> **(凯撒的归凯撒，上帝的归上帝)**
+
+*   **凯撒的归凯撒 (Code's Domain)**：逻辑判断、数值计算、状态管理、流程控制、工具调用。这些必须由确定性的代码 (Jacquard/Mnemosyne) 严密掌控，绝不外包给 LLM。
+*   **上帝的归上帝 (LLM's Domain)**：语义理解、情感演绎、剧情生成、文本润色。这是 LLM 的神性所在，应让其专注于此，不被琐碎的逻辑计算分散注意力。
+
+**拒绝 LLM 全权接管**：我们不相信 LLM 能在处理复杂逻辑的同时保持高质量的角色扮演。任何试图让 LLM "既当爹又当妈" 的设计都是对算力的浪费和对稳定性的破坏。
+
+### 1.3 解决的根本问题域
+1.  **性能瓶颈**：通过原生技术栈（Flutter/Dart）替代 Web 技术栈，解决长文本渲染卡顿与内存泄漏。
+2.  **时空一致性**：引入“多重宇宙树”模型，确保在频繁的回溯（Undo）、重绘（Reroll）与分支（Branching）操作中，世界状态与剧情发展严丝合缝，绝无错乱。
+3.  **逻辑解耦**：彻底切断 UI 层与逻辑层的直接耦合，确保界面重构不影响业务逻辑，逻辑升级不破坏界面表现。
+
+---
+
+## 2. 核心功能抽象体系 (Abstracted Functional Ecosystem)
+
+我们将系统能力抽象为三大核心生态模块，各模块各司其职，通过严格定义的协议交互。
+
+### 2.1 表现生态 (The Stage)
+*   **定位**: 纯粹的渲染与交互界面，**无业务逻辑**。
+*   **职责**: 负责将底层的数据流（Stream）转化为可视化的像素，并将用户的操作意图（Intent）转化为标准指令发送给编排层。
+*   **核心价值**: 极致的流畅度、响应式布局适配、沉浸式视觉体验。
+
+### 2.2 编排生态 (The Loom - Jacquard)
+*   **定位**: 系统的“大脑”与“总线”
+*   **职责**: 作为一个插件化的流水线执行器，它不直接存储数据，而是根据预定义的流程（Pipeline），调度各个功能单元（Shuttles）完成 Prompt 组装、LLM 调用、结果解析等任务。
+*   **核心价值**: 高度的可扩展性与流程的可编排性。
+
+### 2.3 记忆生态 (The Memory - Mnemosyne)
+*   **定位**: 系统的“海马体”与“世界书”，
+*   **职责**: 管理多维度的上下文链（历史链、状态链、知识链）。它不只是存储数据，更是一个**动态快照生成引擎**，能根据当前的时间指针（Time Pointer），瞬间投影出该时刻的完整世界状态（Punchcards）。
+*   **核心价值**: 数据的完整性、时空的可回溯性、上下文的精准构建。
+
+---
+
+## 3. 关键技术实现逻辑 (Core Technical Implementation)
+
+### 3.1 技术底座
+*   **语言**: Dart (Logic & UI)
+*   **框架**: Flutter (Cross-platform Rendering)
+*   **协议**: Filament (Simplified XML for LLM Communication)
+
+### 3.2 核心架构模式：混合 Agent 架构
+系统采用严格的分层架构，层间通过单向数据流或明确的接口契约通信。
+
+1.  **Jacquard Pipeline (流水线模式)**:
+    *   逻辑执行被拆解为一系列原子化的插件（Plugins）。
+    *   **Prompt Assembler**: 向 Mnemosyne 请求快照 -> 渲染模板。
+    *   **LLM Invoker**: 执行推理 -> 输出流。
+    *   **Filament Parser**: 实时解析 XML -> 分发 UI 事件与状态变更。
+
+2.  **Mnemosyne Snapshotting (快照模式)**:
+    *   **Keyframe + Delta**: 状态存储采用关键帧加增量的方式，兼顾存储效率与回溯精度。
+    *   **Projection**: 运行时不直接操作数据库，而是操作由数据库投影出的内存快照对象。
+
+3.  **Filament Protocol (结构化通信)**:
+    *   LLM 的输出被严格限制在 XML 结构中（`<thought>`, `<reply>`, `<state_update>`）。
+    *   解析器采用**白名单机制**与**容错设计**，确保即使 LLM 输出不完美，系统也能稳定运行。
+
+---
+
+## 4. UI/UX 设计美学与交互法则 (Design Philosophy & Interaction Logic)
+
+### 4.1 布局哲学：Stage & Control (舞台与控制台)
+*   **沉浸优先**: 核心对话区域（Stage）是用户的焦点，应最大化展示空间，减少视觉干扰。
+*   **触手可及**: 参数配置与辅助信息（Control/Inspector）应隐藏在侧边栏或抽屉中，仅在需要时呼出，或在宽屏设备上作为辅助面板常驻。
+
+### 4.2 响应式法则 (The Rule of Three)
+界面必须在三种形态间无缝流转，代码实现需基于 `AdaptiveScaffold`：
+1.  **Desktop (>1200dp)**: 三栏全开（导航-舞台-监视器），信息密度最大化。
+2.  **Tablet (600-1200dp)**: 双栏或侧边抽屉，兼顾便携与效率。
+3.  **Mobile (<600dp)**: 单栏流式，极致的移动端体验，通过层级导航访问辅助功能。
+
+### 4.3 交互核心：Hybrid SDUI (混合服务端驱动 UI)
+*   **状态槽 (Status Slot)**: 消息气泡底部预留动态区域。
+*   **动态渲染**: 该区域的内容不由本地硬编码，而是根据消息元数据（Metadata）动态决定渲染逻辑（Native RFW 或 Webview）。这允许我们在不发版的情况下，通过更新逻辑层来支持新的游戏机制（如骰子检定、卡片展示）。
+
+---
+
+## 5. 系统约束与演进原则 (Constraints & Evolution Principles)
+
+### 5.1 绝对约束 (The "Must-Nots")
+1.  **UI 层严禁包含业务逻辑**: UI 组件不得直接修改数据模型，必须通过 Intent/Event 发送给逻辑层。
+2.  **LLM 输出严禁直接执行**: LLM 生成的内容必须经过 Parser 清洗与校验，严禁直接作为代码执行（No `eval`）。
+3.  **状态严禁多头管理**: 所有的状态变更必须提交给 Mnemosyne 统一处理，严禁组件私自维护全局状态副本。
+4.  **严禁 Prompt 污染 (The Caesar Rule)**: 严禁在 Prompt 中包含复杂的逻辑运算指令（如“请计算 HP - 10 后的结果”）。此类运算必须在 Prompt 组装前由代码完成，直接将结果（“你受到了 10 点伤害，剩余 HP 80”）注入 Prompt。
+
+### 5.2 性能基调
+*   **首屏加载**: < 1s。
+*   **长列表滚动**: 即使在大量消息的历史记录下，滚动必须保持 60fps（利用 Flutter 的惰性构建）。
+*   **内存占用**: 严格控制图片与上下文对象的缓存策略，防止 OOM。
+
+### 5.3 演进路线
+*   **Phase 1 (Foundation)**: 完成 Jacquard 流水线与 Mnemosyne 基础快照机制，实现基本的对话与回溯。
+*   **Phase 2 (Immersion)**: 完善 UI 的响应式布局与 Hybrid SDUI 机制，提升视觉表现。
+*   **Phase 3 (Intelligence)**: 引入向量数据库与 RAG 模块，增强角色的长期记忆与知识检索能力。
+*   **Phase 4 (Ecosystem)**: 开放插件系统，允许社区贡献新的 Shuttles 与 UI 扩展。

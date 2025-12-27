@@ -1,0 +1,22 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.0.3 Chrome/140.0.7339.249 Electron/38.7.0 Safari/537.36" version="29.0.3">
+  <diagram name="第 1 页" id="NQJAYCitKbnmfQWvrNLV">
+    <mxGraphModel dx="1426" dy="834" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="reY_3P64-iaMMxnLjLWS-2" value="" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=LXGWWenKaiMono;" vertex="1" parent="1">
+          <mxGeometry x="200" y="110" width="320" height="620" as="geometry" />
+        </mxCell>
+        <mxCell id="reY_3P64-iaMMxnLjLWS-3" value="&lt;font style=&quot;font-size: 20px;&quot;&gt;对话框&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=LXGWWenKaiMono;" vertex="1" parent="1">
+          <mxGeometry x="200" y="670" width="320" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="reY_3P64-iaMMxnLjLWS-4" value="状态栏" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=LXGWWenKaiMono;" vertex="1" parent="1">
+          <mxGeometry x="200" y="550" width="320" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="reY_3P64-iaMMxnLjLWS-5" value="" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=LXGWWenKaiMono;" vertex="1" parent="1">
+          <mxGeometry x="200" y="210" width="310" height="330" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

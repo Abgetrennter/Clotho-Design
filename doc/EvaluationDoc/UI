@@ -1,0 +1,135 @@
+请使用 Flutter Material 3（useMaterial3: true） 构建一个深色主题的聊天界面，所有颜色严格基于 ColorScheme，避免硬编码颜色值。
+
+主题设计：
+
+使用 ThemeData + ColorScheme.fromSeed
+
+brightness: Brightness.dark
+
+seedColor 可选偏冷色（蓝灰或紫灰）
+
+所有容器颜色使用 surface、surfaceContainerLow、surfaceContainerHigh、primaryContainer 等语义色
+
+文本颜色使用 onSurface 与 onSurfaceVariant
+
+整体结构：
+使用 Scaffold 作为根布局，backgroundColor 为 colorScheme.background，开启 resizeToAvoidBottomInset。
+
+顶部菜单栏（固定）：
+
+放置在 SafeArea
+
+使用 Container + Row
+
+高度约 56px
+
+背景色为 colorScheme.surfaceContainer
+
+底部使用极低对比度的分割线（onSurfaceVariant 10% 透明度）
+
+左侧为标题文本，14–16sp，颜色 onSurface
+
+右侧为多个 IconButton，图标颜色 onSurfaceVariant
+
+中部消息区域（核心）：
+使用 Expanded + Stack
+
+底层：
+
+ListView.builder
+
+padding：左右 16px，上下 12px
+
+BouncingScrollPhysics
+
+消息气泡通用规则：
+
+最大宽度为屏幕的 75–80%
+
+圆角 16px（Material 3 推荐）
+
+不使用明显阴影，依靠色调区分层级
+
+AI 消息气泡：
+
+使用 Container
+
+背景色：colorScheme.surfaceContainerLow
+
+左对齐
+
+内部使用 Row
+
+左侧 CircleAvatar（40px）
+
+间距 12px
+
+右侧 Column
+
+顶部：AI 名称或状态文本，12sp，颜色 onSurfaceVariant
+
+下方：正文文本，16sp，颜色 onSurface，行高 1.5
+
+用户消息气泡：
+
+使用 Align(alignment: Alignment.centerRight)
+
+背景色：colorScheme.primaryContainer
+
+文本颜色：onPrimaryContainer
+
+结构与 AI 消息一致，但整体右对齐
+
+生成中状态（条件显示）：
+
+使用 Stack 顶层
+
+当 AI 正在生成时，显示一个 Container
+
+背景色：surfaceContainerHigh，透明度 0.9
+
+内容可为 Text("AI 正在生成…") 或 LinearProgressIndicator
+
+文本颜色 onSurfaceVariant
+
+底部输入区域（固定，不滚动）：
+
+使用 Container
+
+背景色：colorScheme.surfaceContainerHigh
+
+内边距：左右 12px，上 8px，下 12px
+
+顶部使用柔和阴影或 tonal divider 以区分消息区
+
+内部结构：
+
+使用 Column
+
+上方为一行状态按钮（Row），按钮使用 IconButton，颜色 onSurfaceVariant
+
+下方为输入行：
+
+Expanded TextField
+
+使用 filled: true
+
+填充色：colorScheme.surface
+
+圆角 24px
+
+提示文字颜色 onSurfaceVariant
+
+右侧 FloatingActionButton
+
+使用 primaryContainer
+
+图标颜色 onPrimaryContainer
+
+整体风格要求：
+
+严格遵循 Material 3 的 tonal hierarchy
+
+减少阴影，强调色调差异
+
+所有 UI 元素语义清晰，避免 Material 2 风格的 Card 滥用
