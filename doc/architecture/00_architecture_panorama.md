@@ -15,6 +15,9 @@
 4.  [第四章：表现层与交互体系 (Presentation)](#第四章表现层与交互体系-presentation-layer)
 5.  [第五章：跨平台基础设施 (Infrastructure)](#第五章跨平台基础设施-infrastructure-layer)
 6.  [第六章：遗留生态迁移与扩展 (Migration)](#第六章遗留生态迁移与扩展-migration--ecosystem)
+7.  [第七章：提示词处理工作流 (Prompt Workflow)](#第七章提示词处理工作流-prompt-processing-workflow)
+8.  [第八章：角色卡导入与迁移系统 (Import & Migration)](#第八章角色卡导入与迁移系统-character-card-import--migration)
+9.  [第九章：Filament 统一交互协议 (Unified Protocol)](#第九章filament-统一交互协议-unified-protocol)
 
 ---
 
@@ -214,3 +217,121 @@ ST 扩展严重依赖 JS `eval` 和全局变量污染，数据流向混乱。
 ### 6.3 文档溯源
 *   **迁移战略**: [`doc/architecture/06_migration_strategy.md`](doc/architecture/06_migration_strategy.md)
 *   **历史归档**: [`doc/architecture/legacy_archive/st_prompt_template_migration_design.md`](doc/architecture/legacy_archive/st_prompt_template_migration_design.md)
+
+---
+
+## 第七章：提示词处理工作流 (Prompt Processing Workflow)
+
+### 7.1 模块摘要
+本模块详细描述了 Clotho 的提示词处理流程，这是一个高度结构化、确定性的流水线。流程遵循 **"晚期绑定 (Late Binding)"** 和 **"无副作用 (Zero Side-Effect)"** 原则，确保 LLM 接收到的始终是基于最新状态的纯净文本。
+
+### 7.2 核心要素
+
+#### 7.2.1 五阶段处理流程
+1.  **Planner (意图规划)**: 分析用户意图，决定使用的 Prompt Template，路由到相应的 Pipeline 分支。
+2.  **Skein Builder (原始构建)**: 初始化 Skein 容器，向 Mnemosyne 请求快照，填充原始数据（含 Jinja2 模板）。
+3.  **Template Renderer (模板渲染)**: 使用 Jinja2 引擎，将动态逻辑转化为静态文本。
+4.  **Assembler (最终拼接)**: 将分散的 Block 链编织并转换为 LLM 请求体，执行 Weaving、Format 和 Truncate 操作。
+5.  **LLM Invoker (LLM 调用)**: 调用底层 API，发送请求并接收流式响应。
+
+#### 7.2.2 核心设计原则
+*   **Late Binding**: 变量替换发生在发送给 LLM 的最后一刻，确保 Prompt 反映最新状态。
+*   **Zero Side-Effect**: 渲染层是纯函数，绝对不因为渲染而改变状态。
+*   **Structured Container**: 使用 Skein 而非长字符串传递数据，允许独立修改、替换或调试特定部分。
+
+### 7.3 文档溯源
+*   **工作流设计**: [`doc/architecture/07_prompt_processing_workflow.md`](doc/architecture/07_prompt_processing_workflow.md)
+*   **关联文档**: `02_jacquard_orchestration.md`, `03_mnemosyne_data_engine.md`, `macro_system_spec.md`
+
+---
+
+## 第八章：角色卡导入与迁移系统 (Character Card Import & Migration)
+
+### 8.1 模块摘要
+本模块设计了完整的角色卡导入与迁移系统，采用 **"深度分析 -> 双重分诊 -> 专用通道"** 的半自动处理范式。系统摒弃"一键全自动"的幻想，通过核心分析引擎对复杂组件（世界书、正则脚本）进行特征识别，然后生成预分类标签，交由用户在分诊界面确认。
+
+### 8.2 核心要素
+
+#### 8.2.1 核心分析引擎
+*   **HTML Analyzer**: 检测 `<iframe>`, `<script>`, `onclick`, `style` 等。
+*   **EJS Analyzer**: 检测 `<%`, `getvar`, `getwi`, `{{random}}`。
+*   **Instruction Analyzer**: 检测 `<format>`, `always output`, `instruction` 等关键词。
+*   **State Analyzer**: 检测隐藏的数据结构（如 `<!--<|state|>-->`）。
+
+#### 8.2.2 双重分诊策略
+*   **世界书分诊**: 将条目分为基础设定 📘、指令型 ⚡、代码型 🧩 三类。
+*   **正则脚本分诊**: 将脚本分为文本替换型 📝、数据清洗型 🧹、UI 注入型 🎨 三类。
+
+#### 8.2.3 交互式迁移流程
+1.  **概览与分诊**: 展示分诊面板，系统给出预分类建议，用户可批量确认或修改。
+2.  **复杂内容处理**: 对代码型条目展示 LLM 生成的 Jinja2 代码建议，对 UI 型脚本询问用户渲染策略。
+3.  **最终确认**: 展示最终的数据结构预览，包括 Mnemosyne 变量表、Lorebook 结构和特殊的 UI 挂载点。
+
+#### 8.2.4 Prompt 格式规范化
+为了最大化 LLM 的注意力效率并减少解析错误，系统对 Lorebook 条目内容进行格式规范化，统一采用 **"XML 包裹 YAML"** 格式。
+
+### 8.3 文档溯源
+*   **导入与迁移**: [`doc/architecture/08_character_import_and_migration.md`](doc/architecture/08_character_import_and_migration.md)
+*   **源文档**: `plans/character-card-import-migration-design.md`, `doc/EvaluationDoc/又看遗迹.json`, `doc/EvaluationDoc/观星者（自设）.json`
+
+---
+
+## 第九章：Filament 统一交互协议 (Unified Protocol)
+
+### 9.1 模块摘要
+**Filament 协议**是 Clotho 系统的通用交互语言，旨在消除"自然语言"与"机器指令"之间的模糊地带。它贯穿于系统的所有交互环节，从提示词构建、逻辑控制到界面渲染，实现了统一的语义表达和确定性通信。协议遵循 **"XML + YAML IN, XML + JSON OUT"** 的非对称设计哲学。
+
+### 9.2 核心要素
+
+#### 9.2.1 核心设计哲学：非对称交互
+*   **输入端 (Context Ingestion): XML + YAML**
+    *   **结构 (XML)**: 使用 XML 标签构建 Prompt 的骨架，确保 LLM 理解内容的层级与边界。
+    *   **数据 (YAML)**: 在标签内部使用 YAML 描述属性与状态。YAML 相比 JSON 更符合人类阅读习惯，且 Token 消耗更低。
+    
+*   **输出端 (Instruction Generation): XML + JSON**
+    *   **意图 (XML)**: 使用 XML 标签明确标识 LLM 的意图类型（如思考、说话、操作）。
+    *   **参数 (JSON)**: 在标签内部使用 JSON 描述具体的参数。JSON 的严格语法更易于机器解析。
+
+#### 9.2.2 协议在系统中的应用范畴
+Filament 不仅是 LLM 的输出协议，更是系统的通用语言，统一管理：
+1.  **提示词格式 (Prompt Engineering)**: 所有的 Character Card、World Info 均通过 Filament 结构化注入。
+2.  **标签类型 (Tag System)**: 定义一套标准化的 XML 标签集，用于控制流程。
+3.  **嵌入式前端 (Embedded UI)**: 允许 LLM 通过协议直接请求渲染原生的嵌入式网页组件。
+4.  **状态管理 (State Management)**: 统一的状态更新指令格式。
+
+#### 9.2.3 输出协议：标签体系
+LLM 的所有输出必须包裹在特定的 Filament 标签中：
+
+*   **认知与表达标签**:
+    *   `<thought>`: 思维链（CoT），用于推理、规划与自我反思。此内容默认对用户隐藏，或折叠显示。
+    *   `<content>`: 最终回复，直接展示给用户的对话内容。
+    
+*   **逻辑与状态标签**:
+    *   `<state_update>`: 状态变更指令。内部包裹 **JSON 数组**，执行精确的数据修改。
+        *   格式: `[OpCode, Path, Value]`
+        *   示例: `["SET", "character.mood", "anxious"]`, `["ADD", "inventory.gold", -50]`
+    *   `<tool_call>`: 工具调用，请求执行特定的工具或函数。
+    
+*   **表现与交互标签**:
+    *   `<ui_component>`: 嵌入式前端，允许 LLM 请求渲染特定的原生 UI 组件。
+    *   `<media>`: 媒体资源，请求插入图片、音频、视频等。
+
+#### 9.2.4 协议解析流程
+Filament 协议的解析是实时流式进行的，确保低延迟的用户体验：
+
+1.  **流式切分**: Parser 实时监控 `<` 符号，识别标签边界。
+2.  **路由分发**:
+    *   `<thought>` -> ThoughtHandler: 存储到思维日志
+    *   `<content>` -> ContentHandler: 直接推送到 UI 文本组件
+    *   `<state_update>` -> StateParser + Mnemosyne: 解析 JSON，执行状态变更
+    *   `<ui_component>` -> UIJSONParser + UIEventBus: 解析 JSON，触发 UI 渲染
+    *   `<media>` -> MediaLoader: 加载媒体资源，插入到消息流中
+
+#### 9.2.5 协议版本演进
+*   **v1.0 (初始版本)**: 使用重复的 XML 标签表示状态更新，Token 效率低，解析复杂。
+*   **v2.0 (当前版本)**: 使用 JSON 数组包裹三元组，Token 效率提升约 40%，解析逻辑简化，支持批量操作。
+*   **v3.0 (未来规划)**: 考虑引入二进制协议、流式增量更新、类型约束等高级特性。
+
+### 9.3 文档溯源
+*   **Filament 协议**: [`doc/architecture/09_filament_protocol.md`](doc/architecture/09_filament_protocol.md)
+*   **关联文档**: `02_jacquard_orchestration.md`, `03_mnemosyne_data_engine.md`, `04_presentation_layer.md`

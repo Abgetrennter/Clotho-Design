@@ -115,58 +115,28 @@ Skein 内部维护三条逻辑链：
 
 ---
 
-## 4. Filament 协议 v2 (Filament Protocol)
+## 4. Filament 协议 (Filament Protocol)
 
-为了确保 LLM 输出的可解析性与鲁棒性，我们定义了 **Filament** 协议。这是一个 XML 的严格子集，并在 v2 版本中引入了 JSON 优化。
+**Filament 协议**是 Clotho 系统的通用交互语言，贯穿于系统的所有交互环节。由于协议的复杂性和广泛的应用范畴，Filament 协议已独立为专门的章节进行详细阐述。
 
-### 4.1 核心语法规则
-1.  **无自闭合标签**: 必须显式闭合 (`<tag>...</tag>`)。
-2.  **严格白名单**: 解析器仅识别预定义标签，其他 `<` 符号视为文本。
-3.  **容错性**: 支持自动闭合 (Auto-closing)。
+### 4.1 协议定位
+*   **输入端**: 使用 **XML + YAML** 格式构建结构化 Prompt，确保 LLM 理解内容的层级与边界。
+*   **输出端**: 使用 **XML + JSON** 格式定义意图和参数，实现确定性的机器解析。
 
-### 4.2 v2 协议升级：JSON 状态更新
-为了简化 LLM 的生成负担并提高解析效率，状态变更从繁琐的 XML 标签组改为 **JSON 列表包裹三元组**。
+### 4.2 在 Jacquard 中的应用
+Jacquard 编排层作为 Filament 协议的主要使用者和分发者：
 
-**旧版 (v1 XML):**
-```xml
-<state_update>
-    <set key="hp" value="90"></set>
-    <add key="gold" value="10"></add>
-</state_update>
-```
+1.  **Prompt 组装**: Skein Builder 使用 Filament 格式组装 System Prompt、Character Card、World State 等内容。
+2.  **输出解析**: Filament Parser 插件实时解析 LLM 的流式输出，识别并分发不同的标签。
+3.  **状态更新**: 将 `<state_update>` 标签中的 JSON 指令传递给 Mnemosyne 执行。
+4.  **UI 事件**: 将 `<ui_component>` 标签中的组件请求发送给表现层渲染。
 
-**新版 (v2 JSON):**
-*   **格式**: `[OpCode, Path, Value]`
-*   **优势**: Token 更少，解析更快，类型更安全。
+### 4.3 详细文档
+Filament 协议的完整规范、标签体系、解析流程、版本演进等内容请参阅 **[第九章：Filament 统一交互协议](doc/architecture/09_filament_protocol.md)**。
 
-```xml
-<state_update>
-[
-  ["SET", "character.mood", "happy"],
-  ["ADD", "character.gold", 50],
-  ["PUSH", "inventory", {"name": "Sword", "atk": 10}]
-]
-</state_update>
-```
-
-### 4.3 标准标签集
-*   **`<thought>`**: 思维链分析区域 (不展示给用户或折叠展示)。
-*   **`<analysis>`**: (可选) 显式的变量分析块，用于提升逻辑准确性。
-*   **`<state_update>`**: 包含上述 JSON 数组的状态变更区。
-*   **`<reply>`**: 最终展示给用户的对话内容。
-
-### 4.4 交互示例
-```xml
-<analysis>
-  - character.health: N (未受伤)
-  - character.gold: Y (获得奖励)
-</analysis>
-<state_update>
-[
-  ["ADD", "character.gold", 100]
-]
-</state_update>
-<reply>
-这是给你的奖励，勇士。
-</reply>
-```
+**关键章节索引**:
+- **输入协议**: 第九章第2节 - 提示词构建
+- **输出协议**: 第九章第3节 - 指令与响应
+- **解析流程**: 第九章第4节 - 协议解析流程
+- **最佳实践**: 第九章第6节 - 最佳实践与约束
+- **性能优化**: 第九章第9节 - 性能优化
