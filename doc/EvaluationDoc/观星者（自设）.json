@@ -1,9 +1,9 @@
 {
     "name": "观星者（自设）",
-    "description": "d.",
+    "description": "example",
     "personality": "",
     "scenario": "",
-    "first_mes": "#\n",
+    "first_mes": "example\r\n复杂的json",
     "mes_example": "",
     "creatorcomment": "",
     "avatar": "none",
@@ -14,10 +14,10 @@
     "spec_version": "3.0",
     "data": {
         "name": "观星者（自设）",
-        "description": "d.",
+        "description": "example",
         "personality": "",
         "scenario": "",
-        "first_mes": "#\n",
+        "first_mes": "example\r\n<!--<|state|>复杂的json</|state|>-->\r\n",
         "mes_example": "",
         "creator_notes": "",
         "system_prompt": "",
@@ -26,7 +26,8 @@
         "creator": "",
         "character_version": "",
         "alternate_greetings": [
-         ],
+            "同first_mes",
+        ],
         "extensions": {
             "talkativeness": "0.5",
             "fav": false,
@@ -37,6 +38,40 @@
                 "role": "system"
             },
             "regex_scripts": [
+                {
+                    "id": "c05c9415-0c0f-4e38-9983-4f65fdfb60b6",
+                    "scriptName": "Remove <state> json in sent text, but keep the JSON itself",
+                    "findRegex": "/<!--<\\|state\\|>[\\s\\S]*?</\\|state\\|>-->/g",
+                    "replaceString": "",
+                    "trimStrings": [],
+                    "placement": [
+                        2
+                    ],
+                    "disabled": false,
+                    "markdownOnly": true,
+                    "promptOnly": true,
+                    "runOnEdit": true,
+                    "substituteRegex": 0,
+                    "minDepth": null,
+                    "maxDepth": null
+                },
+                {
+                    "id": "1271fff2-40be-4f8e-b8e7-ceed75004c2f",
+                    "scriptName": "Remove <state> json in sent text, but keep the JSON itself",
+                    "findRegex": "/\\$\\$\\$\\$\\$\\$data_block\\$\\$\\$\\$\\$\\$[\\s\\S]*?\\$\\$\\$\\$\\$\\$data_block_end\\$\\$\\$\\$\\$\\$/g",
+                    "replaceString": "",
+                    "trimStrings": [],
+                    "placement": [
+                        2
+                    ],
+                    "disabled": false,
+                    "markdownOnly": true,
+                    "promptOnly": true,
+                    "runOnEdit": true,
+                    "substituteRegex": 0,
+                    "minDepth": null,
+                    "maxDepth": null
+                },
                 {
                     "id": "5d525aa0-e805-4fca-9a2e-a26d768d6bba",
                     "scriptName": "Remove updates regex All",
@@ -53,6 +88,41 @@
                     "substituteRegex": 0,
                     "minDepth": 2,
                     "maxDepth": null
+                },
+                {
+                    "id": "5d73ec6a-f4de-4ee0-9fdd-1af6206229ae",
+                    "scriptName": "Hide",
+                    "findRegex": "/.*/s",
+                    "replaceString": "",
+                    "trimStrings": [],
+                    "placement": [
+                        1,
+                        2
+                    ],
+                    "disabled": false,
+                    "markdownOnly": false,
+                    "promptOnly": true,
+                    "runOnEdit": true,
+                    "substituteRegex": 0,
+                    "minDepth": 15,
+                    "maxDepth": null
+                },
+                {
+                    "id": "3b7d603d-b11c-4b69-9375-8440d203014a",
+                    "scriptName": "UI",
+                    "findRegex": "$",
+                    "replaceString": "<ui_sys>\n```\n<!DOCTYPE html>example</html>\n```\n</ui_sys>",
+                    "trimStrings": [],
+                    "placement": [
+                        2
+                    ],
+                    "disabled": false,
+                    "markdownOnly": true,
+                    "promptOnly": false,
+                    "runOnEdit": true,
+                    "substituteRegex": 0,
+                    "minDepth": 0,
+                    "maxDepth": 0
                 }
             ],
             "TavernHelper_scripts": [
@@ -80,6 +150,35 @@
                         "data": {},
                         "enabled": true
                     }
+                },
+                {
+                    "type": "script",
+                    "value": {
+                        "id": "84a18294-77a8-405c-adeb-334e7b4a5316",
+                        "name": "Test SAM",
+                        "content": "js example",
+                        "info": "SAM是个有限状态机，它有很微小的可能性会因其他原因卡住state。",
+                        "buttons": [
+                            {
+                                "name": "重置内部状态（慎用）",
+                                "visible": true
+                            },
+                            {
+                                "name": "再次执行（慎用）",
+                                "visible": true
+                            },
+                            {
+                                "name": "执行日志",
+                                "visible": true
+                            },
+                            {
+                                "name": "确认运行",
+                                "visible": true
+                            }
+                        ],
+                        "data": {},
+                        "enabled": false
+                    }
                 }
             ],
             "tavern_helper": [
@@ -106,6 +205,36 @@
                                     },
                                     {
                                         "name": "执行日志",
+                                        "visible": true
+                                    }
+                                ]
+                            },
+                            "data": {}
+                        },
+                        {
+                            "type": "script",
+                            "enabled": true,
+                            "name": "test SAM4",
+                            "id": "ffa652dd-e17f-4628-9111-cb278d4e427b",
+                            "content": "js example",
+                            "info": "SAM是个有限状态机，它有很微小的可能性会因其他原因卡住state。\nSAM4 更新了新的状态。",
+                            "button": {
+                                "enabled": true,
+                                "buttons": [
+                                    {
+                                        "name": "重置内部状态（慎用）",
+                                        "visible": true
+                                    },
+                                    {
+                                        "name": "再次执行（慎用）",
+                                        "visible": true
+                                    },
+                                    {
+                                        "name": "执行日志",
+                                        "visible": true
+                                    },
+                                    {
+                                        "name": "手动检查点",
                                         "visible": true
                                     }
                                 ]
@@ -142,6 +271,147 @@
                         "probability": 100,
                         "useProbability": true,
                         "depth": 10,
+                        "selectiveLogic": 0,
+                        "outlet_name": "",
+                        "group": "",
+                        "group_override": false,
+                        "group_weight": 100,
+                        "prevent_recursion": true,
+                        "delay_until_recursion": false,
+                        "scan_depth": null,
+                        "match_whole_words": null,
+                        "use_group_scoring": false,
+                        "case_sensitive": null,
+                        "automation_id": "",
+                        "role": 0,
+                        "vectorized": false,
+                        "sticky": 0,
+                        "cooldown": 0,
+                        "delay": 0,
+                        "match_persona_description": false,
+                        "match_character_description": false,
+                        "match_character_personality": false,
+                        "match_character_depth_prompt": false,
+                        "match_scenario": false,
+                        "match_creator_notes": false,
+                        "triggers": [],
+                        "ignore_budget": false
+                    }
+                },
+                {
+                    "id": 1,
+                    "keys": [
+                        "泰拉帝国",
+                        "帝国"
+                    ],
+                    "secondary_keys": [],
+                    "comment": "人类帝国",
+                    "content": "<terran_empire_desc>mes_example</terran_empire_desc>",
+                    "constant": false,
+                    "selective": true,
+                    "insertion_order": 98,
+                    "enabled": true,
+                    "position": "after_char",
+                    "use_regex": true,
+                    "extensions": {
+                        "position": 4,
+                        "exclude_recursion": true,
+                        "display_index": 3,
+                        "probability": 100,
+                        "useProbability": true,
+                        "depth": 4,
+                        "selectiveLogic": 0,
+                        "outlet_name": "",
+                        "group": "",
+                        "group_override": false,
+                        "group_weight": 100,
+                        "prevent_recursion": true,
+                        "delay_until_recursion": false,
+                        "scan_depth": null,
+                        "match_whole_words": null,
+                        "use_group_scoring": false,
+                        "case_sensitive": null,
+                        "automation_id": "",
+                        "role": 0,
+                        "vectorized": false,
+                        "sticky": 0,
+                        "cooldown": 0,
+                        "delay": 0,
+                        "match_persona_description": false,
+                        "match_character_description": false,
+                        "match_character_personality": false,
+                        "match_character_depth_prompt": false,
+                        "match_scenario": false,
+                        "match_creator_notes": false,
+                        "triggers": [],
+                        "ignore_budget": false
+                    }
+                },
+                {
+                    "id": 7,
+                    "keys": [],
+                    "secondary_keys": [],
+                    "comment": "【SAM】变量处理规则",
+                    "content": "<variable_rules>复杂的规则说明/variable_rules>",
+                    "constant": true,
+                    "selective": true,
+                    "insertion_order": 998,
+                    "enabled": true,
+                    "position": "after_char",
+                    "use_regex": true,
+                    "extensions": {
+                        "position": 4,
+                        "exclude_recursion": false,
+                        "display_index": 13,
+                        "probability": 100,
+                        "useProbability": true,
+                        "depth": 0,
+                        "selectiveLogic": 0,
+                        "outlet_name": "",
+                        "group": "",
+                        "group_override": false,
+                        "group_weight": 100,
+                        "prevent_recursion": false,
+                        "delay_until_recursion": false,
+                        "scan_depth": null,
+                        "match_whole_words": null,
+                        "use_group_scoring": false,
+                        "case_sensitive": null,
+                        "automation_id": "",
+                        "role": 0,
+                        "vectorized": false,
+                        "sticky": 0,
+                        "cooldown": 0,
+                        "delay": 0,
+                        "match_persona_description": false,
+                        "match_character_description": false,
+                        "match_character_personality": false,
+                        "match_character_depth_prompt": false,
+                        "match_scenario": false,
+                        "match_creator_notes": false,
+                        "triggers": [],
+                        "ignore_budget": false
+                    }
+                },
+                {
+                    "id": 75,
+                    "keys": [],
+                    "secondary_keys": [],
+                    "comment": "【星图】基础设定",
+                    "content": "Below is the core defines and settings for this story.\n\n<world_design>example</world_design>\n\n<consumption_benchmarks></consumption_benchmarks>",
+                    "constant": true,
+                    "selective": true,
+                    "insertion_order": 100,
+                    "enabled": true,
+                    "position": "before_char",
+                    "use_regex": true,
+                    "extensions": {
+                        "position": 0,
+                        "exclude_recursion": false,
+                        "display_index": 75,
+                        "probability": 100,
+                        "useProbability": true,
+                        "depth": 4,
                         "selectiveLogic": 0,
                         "outlet_name": "",
                         "group": "",
