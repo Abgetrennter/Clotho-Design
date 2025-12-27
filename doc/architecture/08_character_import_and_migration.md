@@ -159,7 +159,41 @@ class UIInjectionConfig {
 
 ---
 
-## 9. 附录 A: 案例结构解析 (Case Study: 观星者)
+## 11. 协议 Schema 提取与标识 (Protocol Schema Recognition & Extraction)
+
+### 11.1 设计背景
+在 ST 生态中，复杂的输出规则（如 `<SFW>` JSON 格式、好感度更新逻辑）常被硬编码在 First Message 或 Description 中。这种方式占用 Token 且难以维护。Clotho 引入 **"Schema Library"** 机制，在导入时自动识别这些规则模式，将其提取为系统预设的 Schema 引用，从而实现 Prompt 的"瘦身"与逻辑的"标准化"。
+
+### 11.2 提取逻辑
+
+分析引擎会扫描文本中的规则定义块，尝试匹配已知的 Schema 模式：
+
+| 模式名称 | 匹配特征 | 提取动作 | 替换结果 |
+|---|---|---|---|
+| **SFW Output** | 含 `<SFW>`, `JSON`, `Avatar_Map` 等关键词。 | 1. 提取 Map 数据 (Avatar/Portrait) 存入 Metadata。<br>2. 识别为 `protocol: sfw_json_output`。 | `<use_protocol>sfw_json_output</use_protocol>` |
+| **Variable Update** | 含 `<UpdateVariable>`, `<Analysis>`, `_.add()`。 | 1. 提取变量定义 (如 `好感度`) 存入 Initial State。<br>2. 识别为 `protocol: variable_update_v2`。 | `<use_protocol>variable_update_v2</use_protocol>` |
+| **Custom Colors** | 含 `<自定义颜色>`, `<span style="...">`。 | 1. 提取颜色规则。<br>2. 识别为 `protocol: semantic_color`。 | `<use_protocol>semantic_color</use_protocol>` |
+
+### 11.3 交互式确认流程
+
+在迁移向导的 **"Phase 2: 复杂内容处理"** 中，新增 **Schema 确认** 步骤：
+
+1.  **展示发现**: "检测到该角色卡包含复杂的'SFW 输出格式'定义 (约 500 Tokens)。"
+2.  **提供选项**:
+    *   ✅ **提取并引用 (推荐)**: 移除原文中的定义，替换为 `<use_protocol>` 标签。Jacquard 将在运行时自动注入标准化的、经过优化的规则。
+    *   ❌ **保留原样**: 保持原始文本不变（适用于非标准或极其特殊的规则）。
+3.  **参数配置**: 对于提取的 Schema，允许用户微调提取出的参数（如修正提取出的 Avatar Map）。
+
+### 11.4 运行时注入机制
+
+当 Jacquard 在 Character Card 中遇到 `<use_protocol>ID</use_protocol>` 标签时：
+1.  **查询**: 从 Clotho 内置的 Schema Library 中查找对应 ID 的 Schema 定义。
+2.  **注入**: 将 Schema 定义中的 System Instruction 注入到 Prompt 的 System 区域。
+3.  **参数化**: 如果 Schema 支持参数（如 SFW 的 Avatar Map），将卡片中存储的 Metadata 填充到模板中。
+
+---
+
+## 12. 附录 A: 案例结构解析 (Case Study: 观星者)
 
 以下展示系统如何处理 `doc/EvaluationDoc/观星者（自设）.json` 中的复杂结构。
 

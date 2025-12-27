@@ -1,0 +1,38 @@
+<think>
+aa
+</think>
+<content>
+a
+a
+<!-- consider: (角色对白模拟插入) -->
+<!--
+1. 「a」
+2. 「aa」
+-->
+　　「aa」
+a
+a
+</content>
+
+<status_bar>
+a
+</status_bar>
+
+<UpdateVariable>
+    <Analysis>
+        - a
+    </Analysis>
+    _.add('纯田真奈.好感度', 2); // 嫉妒乐奈受到的“特别待遇”，对源的执念更深。
+</UpdateVariable>
+
+<SFW>
+xx
+</SFW>
+
+<details><summary>摘要</summary>
+x
+</details>
+
+<xx>
+请选择源的下一步行动：
+</xx>
