@@ -298,6 +298,7 @@ Filament 不仅是 LLM 的输出协议，更是系统的通用语言，统一管
 2.  **标签类型 (Tag System)**: 定义一套标准化的 XML 标签集，用于控制流程。
 3.  **嵌入式前端 (Embedded UI)**: 允许 LLM 通过协议直接请求渲染原生的嵌入式网页组件。
 4.  **状态管理 (State Management)**: 统一的状态更新指令格式。
+5.  **宏系统支持 (Macro System)**: 通过 Jinja2 模板引擎实现动态提示词构建，支持变量插值、条件渲染和逻辑控制，提供安全的沙箱环境。
 
 #### 9.2.3 输出协议：标签体系
 LLM 的所有输出必须包裹在特定的 Filament 标签中：
@@ -334,4 +335,6 @@ Filament 协议的解析是实时流式进行的，确保低延迟的用户体�
 
 ### 9.3 文档溯源
 *   **Filament 协议**: [`doc/architecture/09_filament_protocol.md`](doc/architecture/09_filament_protocol.md)
+*   **宏系统规范**: [`doc/EvaluationDoc/macro_system_spec.md`](doc/EvaluationDoc/macro_system_spec.md)
+*   **ST 宏参考**: [`doc/EvaluationDoc/micro.md`](doc/EvaluationDoc/micro.md)
 *   **关联文档**: `02_jacquard_orchestration.md`, `03_mnemosyne_data_engine.md`, `04_presentation_layer.md`
