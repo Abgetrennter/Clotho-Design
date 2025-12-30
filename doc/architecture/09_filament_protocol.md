@@ -16,26 +16,26 @@
 
 Filament 遵循以下两大设计哲学：
 
-1.  **非对称交互 (Asymmetric Interaction)**:
-    *   **输入端 (Context Ingestion): XML + YAML**
-        *   **结构 (XML)**: 使用 XML 标签构建 Prompt 的骨架 (Skein Blocks)，确保 LLM 理解内容的层级与边界。
-        *   **数据 (YAML)**: 在标签内部使用 YAML 描述属性与状态。YAML 相比 JSON 更符合人类阅读习惯，且 Token 消耗更低，适合作为大量的上下文输入。
-    *   **输出端 (Instruction Generation): XML + JSON**
-        *   **意图 (XML)**: 使用 XML 标签明确标识 LLM 的意图类型 (如思考、说话、操作)。
-        *   **参数 (JSON)**: 在标签内部使用 JSON 描述具体的参数。JSON 的严格语法更易于机器解析，确保工具调用与状态变更的确定性。
+1. **非对称交互 (Asymmetric Interaction)**:
+    * **输入端 (Context Ingestion): XML + YAML**
+        * **结构 (XML)**: 使用 XML 标签构建 Prompt 的骨架 (Skein Blocks)，确保 LLM 理解内容的层级与边界。
+        * **数据 (YAML)**: 在标签内部使用 YAML 描述属性与状态。YAML 相比 JSON 更符合人类阅读习惯，且 Token 消耗更低，适合作为大量的上下文输入。
+    * **输出端 (Instruction Generation): XML + JSON**
+        * **意图 (XML)**: 使用 XML 标签明确标识 LLM 的意图类型 (如思考、说话、操作)。
+        * **参数 (JSON)**: 在标签内部使用 JSON 描述具体的参数。JSON 的严格语法更易于机器解析，确保工具调用与状态变更的确定性。
 
-2.  **混合扩展策略 (Mixed Extension Strategy) - v2.1 新增**:
-    *   **核心严格性 (Core Strictness)**: 对于影响系统逻辑的关键指令（如变量更新、工具调用），采用严格的 Schema 验证和标准格式。
-    *   **边缘灵活性 (Edge Flexibility)**: 对于展示层和辅助信息（如自定义状态栏、摘要），允许更灵活的自定义标签结构，以适应多变的业务需求。
+2. **混合扩展策略 (Mixed Extension Strategy) - v2.1 新增**:
+    * **核心严格性 (Core Strictness)**: 对于影响系统逻辑的关键指令（如变量更新、工具调用），采用严格的 Schema 验证和标准格式。
+    * **边缘灵活性 (Edge Flexibility)**: 对于展示层和辅助信息（如自定义状态栏、摘要），允许更灵活的自定义标签结构，以适应多变的业务需求。
 
 ### 1.2 协议在系统中的应用范畴
 
 Filament 不仅是 LLM 的输出协议，更是系统的通用语言，统一管理：
 
-1.  **提示词格式 (Prompt Engineering)**: 所有的 Character Card、World Info 均通过 Filament 结构化注入。
-2.  **标签类型 (Tag System)**: 定义一套标准化的 XML 标签集，用于控制流程。
-3.  **嵌入式前端 (Embedded UI)**: 允许 LLM 通过协议直接请求渲染原生的嵌入式网页组件（Mini-Apps），实现交互维度的升维。
-4.  **状态管理 (State Management)**: 统一的状态更新指令格式。
+1. **提示词格式 (Prompt Engineering)**: 所有的 Character Card、World Info 均通过 Filament 结构化注入。
+2. **标签类型 (Tag System)**: 定义一套标准化的 XML 标签集，用于控制流程。
+3. **嵌入式前端 (Embedded UI)**: 允许 LLM 通过协议直接请求渲染原生的嵌入式网页组件（Mini-Apps），实现交互维度的升维。
+4. **状态管理 (State Management)**: 统一的状态更新指令格式。
 
 ---
 
@@ -89,9 +89,9 @@ weather: Stormy
 ```
 
 **格式转换规则**：
-- **JSON 转换**: 保留 XML 标签，内部 JSON 转为 2 空格缩进的 YAML
-- **YAML 保留**: 保留 XML 标签，统一内部缩进为 2 空格
-- **Markdown 转换**: 尽力将列表、标题等结构转换为 YAML 格式
+* **JSON 转换**: 保留 XML 标签，内部 JSON 转为 2 空格缩进的 YAML
+* **YAML 保留**: 保留 XML 标签，统一内部缩进为 2 空格
+* **Markdown 转换**: 尽力将列表、标题等结构转换为 YAML 格式
 
 ### 2.2 标签语义体系 (Tag Semantics)
 
@@ -132,8 +132,8 @@ Clotho 的宏系统严格遵循 **凯撒原则 (The Caesar Principle)**，采用
 | 输出纯净度 | 可能残留标签 | 完全渲染为纯文本 |
 
 **Filament 结构与 Jinja2 的分工**：
-- **Filament XML (`<thought>`, `<content>`, `<variable_update>`)**: 作为 LLM 输出的结构骨架，用于解析意图和边界
-- **Jinja2 逻辑 (`{% if %}`, `{{ var }}`)**: 完全接管输入端的逻辑控制，在发送给 LLM 前被渲染为纯文本
+* **Filament XML (`<thought>`, `<content>`, `<variable_update>`)**: 作为 LLM 输出的结构骨架，用于解析意图和边界
+* **Jinja2 逻辑 (`{% if %}`, `{{ var }}`)**: 完全接管输入端的逻辑控制，在发送给 LLM 前被渲染为纯文本
 
 #### 2.3.2 宏分类与规范
 
@@ -172,6 +172,7 @@ Mnemosyne 的状态树以只读字典形式注入 Jinja2 上下文。
 **解决 Prompt 动态内容注入案例**：
 
 **ST 写法**:
+
 ```
 {{setvar::灰魂4::\n- 灰魂会在...}}
 ...
@@ -179,6 +180,7 @@ Mnemosyne 的状态树以只读字典形式注入 Jinja2 上下文。
 ```
 
 **Clotho (Jinja2) 写法**:
+
 ```jinja
 {# 1. 定义复杂内容块 (Block Assignment) #}
 {% set grey_soul_fragment %}
@@ -192,6 +194,7 @@ Mnemosyne 的状态树以只读字典形式注入 Jinja2 上下文。
 ```
 
 **优势**:
+
 1. **Block Set**: `{% set var %}...{% endset %}` 语法原生支持多行文本和复杂结构
 2. **Scope Safety**: 变量仅存在于模板渲染上下文中，**绝对不会** 写入 Mnemosyne 数据库
 
@@ -343,6 +346,7 @@ Mnemosyne 的状态树以只读字典形式注入 Jinja2 上下文。
 **组件重命名**: `PromptASTExecutor` → **`TemplateRenderer`**
 
 **Pipeline 流程**:
+
 1. **Input**: `Skein` (包含 `systemPrompt`, `lore` 等原始文本，可能包含 Jinja2 标签)
 2. **Context Build**: 将 `Skein.metadata`, `Mnemosyne.state` 包装为 `Map<String, dynamic>` 上下文
 3. **Render**: 调用 `jinja.render(template, context)`
@@ -397,9 +401,9 @@ LLM 的所有输出必须包裹在特定的 Filament 标签中，确保机器可
 ```
 
 **特性**:
-- 此内容默认对用户隐藏，或折叠显示
-- 可通过用户设置切换为完全隐藏或完全显示
-- 不计入最终输出 Token
+* 此内容默认对用户隐藏，或折叠显示
+* 可通过用户设置切换为完全隐藏或完全显示
+* 不计入最终输出 Token
 
 #### 3.1.2 `<content>` - 最终回复
 
@@ -417,10 +421,11 @@ LLM 的所有输出必须包裹在特定的 Filament 标签中，确保机器可
 ```
 
 **特性 (v2.1 更新)**:
-- 直接展示在聊天界面
-- 支持 Markdown 格式
-- **支持 HTML 注释**: 允许嵌入 `<!-- ... -->` 格式的注释，用于内部模拟、标记或辅助逻辑，Parser 会将其路由到特定处理器（如隐藏或记录），而不直接展示给用户。
-- **支持受限的行内 HTML**: 为满足富文本表现需求（如自定义颜色、字体样式），允许使用特定的行内 HTML 标签。系统会执行严格的白名单过滤。
+
+* 直接展示在聊天界面
+* 支持 Markdown 格式
+* **支持 HTML 注释**: 允许嵌入 `<!-- ... -->` 格式的注释，用于内部模拟、标记或辅助逻辑，Parser 会将其路由到特定处理器（如隐藏或记录），而不直接展示给用户。
+* **支持受限的行内 HTML**: 为满足富文本表现需求（如自定义颜色、字体样式），允许使用特定的行内 HTML 标签。系统会执行严格的白名单过滤。
 
 #### 3.1.3 受限 HTML 白名单 (HTML Sanitization Whitelist)
 
@@ -434,8 +439,8 @@ LLM 的所有输出必须包裹在特定的 Filament 标签中，确保机器可
 | `<ruby>` | 无 | 注音 |
 
 **安全机制**:
-- 前端渲染器（Flutter `HtmlWidget` 或 WebView）必须集成 Sanitize 模块（如 `DOMPurify`）。
-- 任何不在白名单中的标签（如 `<script>`, `<iframe>`, `onclick`）将被剥离或转义。
+* 前端渲染器（Flutter `HtmlWidget` 或 WebView）必须集成 Sanitize 模块（如 `DOMPurify`）。
+* 任何不在白名单中的标签（如 `<script>`, `<iframe>`, `onclick`）将被剥离或转义。
 
 ### 3.2 逻辑与状态标签 (Logic & State)
 
@@ -458,8 +463,9 @@ LLM 的所有输出必须包裹在特定的 Filament 标签中，确保机器可
 ```
 
 **结构**:
-1.  `<analysis>` (可选): 文本形式的分析，解释为何进行这些状态变更。
-2.  `JSON Array` (必填): 执行状态变更的操作码列表。支持 **Bare Word OpCode** (省略不必要的引号)。
+
+1. `<analysis>` (可选): 文本形式的分析，解释为何进行这些状态变更。
+2. `JSON Array` (必填): 执行状态变更的操作码列表。支持 **Bare Word OpCode** (省略不必要的引号)。
 
 **操作码 (OpCode) 定义**:
 
@@ -475,23 +481,29 @@ LLM 的所有输出必须包裹在特定的 Filament 标签中，确保机器可
 | `DELETE` | 删除字段 | `[DELETE, path]` | 删除指定路径的字段 |
 
 #### 3.2.2 语义化操作标签 (Semantic Operation Tags) - v2.3
+
 引入 ERA 风格的语义化标签作为 OpCode 的高级封装，提供更直观的意图表达。
 
-*   **`<variable_insert>`**: 非破坏性插入，支持模板应用。
+* **`<variable_insert>`**: 非破坏性插入，支持模板应用。
+
     ```xml
     <variable_insert>
       <path>player.inventory.potion</path>
       <value>{ name: "Potion", count: 1 }</value>
     </variable_insert>
     ```
-*   **`<variable_edit>`**: 破坏性更新，支持权限校验与表达式。
+
+* **`<variable_edit>`**: 破坏性更新，支持权限校验与表达式。
+
     ```xml
     <variable_edit>
       <path>player.hp</path>
       <value>-= 20</value> <!-- 支持数学表达式 -->
     </variable_edit>
     ```
-*   **`<variable_delete>`**: 删除节点，支持删除保护。
+
+* **`<variable_delete>`**: 删除节点，支持删除保护。
+
     ```xml
     <variable_delete>
       <path>player.inventory.empty_bottle</path>
@@ -527,8 +539,8 @@ LLM 的所有输出必须包裹在特定的 Filament 标签中，确保机器可
 ```
 
 **特性**:
-- **自由结构**: 内部标签名不限，由 UI 层动态解析并渲染。
-- **用途**: 适用于 Character Script 自定义的显示需求，无需预先定义 Schema。
+* **自由结构**: 内部标签名不限，由 UI 层动态解析并渲染。
+* **用途**: 适用于 Character Script 自定义的显示需求，无需预先定义 Schema。
 
 #### 3.3.2 `<details>` - 折叠摘要 (v2.1 新增)
 
@@ -632,18 +644,21 @@ graph TD
 ## 5. 协议版本演进 (Protocol Evolution)
 
 ### 5.1 v1.0 - 初始版本
-*   使用重复的 XML 标签表示状态更新。
-*   Token 效率低。
+
+* 使用重复的 XML 标签表示状态更新。
+* Token 效率低。
 
 ### 5.2 v2.0 - 结构化版本
-*   引入 `<state_update>` 和 JSON 数组三元组。
-*   Token 效率提升，解析简化。
+
+* 引入 `<state_update>` 和 JSON 数组三元组。
+* Token 效率提升，解析简化。
 
 ### 5.3 v2.1 - 混合扩展版本 (当前)
-*   **标签重命名与增强**: `<UpdateVariable>` (遗留) -> `<variable_update>`，增加了分析字段。
-*   **交互标准化**: `<xx>` (遗留) -> `<choice>`。
-*   **UI 灵活性**: 引入 `<status_bar>` 和 `<details>`，允许更灵活的非结构化展示。
-*   **混合策略**: 核心逻辑保持严格 JSON Schema，展示层允许 XML 自由结构。
+
+* **标签重命名与增强**: `<UpdateVariable>` (遗留) -> `<variable_update>`，增加了分析字段。
+* **交互标准化**: `<xx>` (遗留) -> `<choice>`。
+* **UI 灵活性**: 引入 `<status_bar>` 和 `<details>`，允许更灵活的非结构化展示。
+* **混合策略**: 核心逻辑保持严格 JSON Schema，展示层允许 XML 自由结构。
 
 ---
 
@@ -651,28 +666,29 @@ graph TD
 
 ### 6.1 LLM 输出约束
 
-1.  **标签闭合**: 所有标签必须严格闭合，禁止自闭合标签（`<media>` 除外，如果 Parser 支持）。
-2.  **JSON 格式**: `<variable_update>` 和 `<ui_component>` 内部的 JSON 必须严格符合标准（双引号、无尾随逗号）。
-3.  **注释规范**: 在 `<content>` 中使用 `<!-- -->` 进行内部标记，不要将用户不可见的内容裸露在正文中。
+1. **标签闭合**: 所有标签必须严格闭合，禁止自闭合标签（`<media>` 除外，如果 Parser 支持）。
+2. **JSON 格式**: `<variable_update>` 和 `<ui_component>` 内部的 JSON 必须严格符合标准（双引号、无尾随逗号）。
+3. **注释规范**: 在 `<content>` 中使用 `<!-- -->` 进行内部标记，不要将用户不可见的内容裸露在正文中。
 
 ### 6.2 迁移指南
 
 对于从 SillyTavern 或旧系统迁移的内容：
 
-*   **变量更新**: 将 `<UpdateVariable>` 映射为 `<variable_update>`。
-*   **选择菜单**: 将 `<xx>` 或纯文本选项映射为 `<choice>`。
-*   **状态栏**: 将 HTML 状态栏映射为 `<status_bar>` 或 `<ui_component>`。
+* **变量更新**: 将 `<UpdateVariable>` 映射为 `<variable_update>`。
+* **选择菜单**: 将 `<xx>` 或纯文本选项映射为 `<choice>`。
+* **状态栏**: 将 HTML 状态栏映射为 `<status_bar>` 或 `<ui_component>`。
 
 ### 6.3 UI 组件设计规范
 
-1.  **view 命名**: 使用 `namespace.component` 格式。
-2.  **降级策略**: 关键交互组件应提供文本降级方案，以防 UI 渲染失败。
+1. **view 命名**: 使用 `namespace.component` 格式。
+2. **降级策略**: 关键交互组件应提供文本降级方案，以防 UI 渲染失败。
 
 ---
 
 ## 11. 输出结构鲁棒性 (Output Structure Robustness)
 
 ### 11.1 设计挑战
+
 在复杂的 RPG 场景中，Prompt 可能会启用多种协议功能（如思维链、状态更新、状态栏），且其顺序可能因 System Prompt 的微调或随机因素而波动。传统的严格解析器在面对 LLM 的"幻觉"（如遗漏标签、标签未闭合）时往往会失败。Clotho 引入 **"期望结构注册表"** 与 **"流式模糊修正器"** 来解决这一问题。
 
 ### 11.2 期望结构注册表 (Expected Structure Registry)
@@ -688,8 +704,8 @@ class ExpectedStructure {
 }
 ```
 
-*   **自动生成**: Jacquard 根据 `<use_protocol>` 自动填充。
-*   **手动调整**: 高级用户可以在 System Instruction 中微调。
+* **自动生成**: Jacquard 根据 `<use_protocol>` 自动填充。
+* **手动调整**: 高级用户可以在 System Instruction 中微调。
 
 ### 11.3 流式模糊修正器 (Streaming Fuzzy Corrector)
 
@@ -697,17 +713,17 @@ class ExpectedStructure {
 
 #### 11.3.1 核心修正策略
 
-1.  **首部缺失自动补全**:
-    *   *场景*: 期望 `<think>` 开头，但 LLM 直接输出了文本。
-    *   *动作*: 如果首个非空字符不是 `<`，且期望表中包含 `<think>`，则自动插入 `<think>` 标签头，并标记状态为 `InThought`。
+1. **首部缺失自动补全**:
+    * *场景*: 期望 `<think>` 开头，但 LLM 直接输出了文本。
+    * *动作*: 如果首个非空字符不是 `<`，且期望表中包含 `<think>`，则自动插入 `<think>` 标签头，并标记状态为 `InThought`。
 
-2.  **尾部闭合预测**:
-    *   *场景*: 检测到 `<tag>` 开始，但在遇到下一个 `<tag2>` 时仍未闭合。
-    *   *动作*: 如果 `<tag2>` 是期望表中的顶层标签，则推断 `<tag>` 已结束，自动插入 `</tag>`。
+2. **尾部闭合预测**:
+    * *场景*: 检测到 `<tag>` 开始，但在遇到下一个 `<tag2>` 时仍未闭合。
+    * *动作*: 如果 `<tag2>` 是期望表中的顶层标签，则推断 `<tag>` 已结束，自动插入 `</tag>`。
 
-3.  **相邻冗余修正**:
-    *   *场景*: `</content><content>` (LLM 意外分段)。
-    *   *动作*: 自动合并为单一流，忽略中间的闭合与开启标签。
+3. **相邻冗余修正**:
+    * *场景*: `</content><content>` (LLM 意外分段)。
+    * *动作*: 自动合并为单一流，忽略中间的闭合与开启标签。
 
 #### 11.3.2 状态机流程图
 
@@ -731,5 +747,6 @@ graph TD
 ### 11.4 容错降级
 
 如果修正器无法确定结构（如 JSON 语法严重错误），系统将执行降级策略：
-1.  **Raw Text Fallback**: 将所有无法解析的内容视为 `<content>` 的一部分展示给用户。
-2.  **Error Toast**: 在 UI 侧轻量级提示"部分状态更新失败"，但不阻断对话流程。
+
+1. **Raw Text Fallback**: 将所有无法解析的内容视为 `<content>` 的一部分展示给用户。
+2. **Error Toast**: 在 UI 侧轻量级提示"部分状态更新失败"，但不阻断对话流程。

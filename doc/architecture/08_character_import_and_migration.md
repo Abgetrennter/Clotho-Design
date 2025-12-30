@@ -13,6 +13,7 @@
 本系统旨在解决从 SillyTavern (ST) 生态向 Clotho 架构迁移时的复杂性问题。鉴于 ST 极其灵活（甚至混乱）的生态，我们摒弃"一键全自动"的幻想，转而采用 **"深度分析 -> 双重分诊 -> 专用通道"** 的半自动处理范式。
 
 ### 1.1 处理范式：分诊 (Triage)
+
 系统不尝试直接转换所有内容，而是首先通过 **核心分析引擎** 对复杂组件（世界书、正则脚本）进行**特征识别**，然后生成预分类标签，交由用户在**分诊界面**确认，最后根据分类进入不同的处理流水线。
 
 ---
@@ -57,17 +58,19 @@ graph TD
 ## 3. 核心分析引擎 (Core Analysis Engine)
 
 ### 3.1 职责
+
 负责扫描文本内容，识别潜在的代码、HTML 结构、特殊指令模式，为分诊提供依据。
 
 ### 3.2 插件化分析器
-*   **HTML Analyzer**: 检测 `<iframe>`, `<script>`, `onclick`, `style` 等。
-    *   *Case A 命中*: `开局选项` 脚本包含 `<iframe>` 和复杂 `<script>` 逻辑。
-*   **EJS Analyzer**: 检测 `<%`, `getvar`, `getwi`, `{{random}}`。
-    *   *Case A 命中*: 世界书条目 `[Controller]高松灯_Persona` 包含 `<% if (getvar... %>`。
-*   **Instruction Analyzer**: 检测 `<format>`, `always output`, `instruction` 等关键词。
-    *   *Case A 命中*: 世界书 Entry 28 包含 `<options_format>` 标签。
-*   **State Analyzer**: 检测 `<!--<|state|>-->` 或类似隐藏数据结构。
-    *   *Case B 命中*: `first_mes` 中包含隐藏的状态 JSON。
+
+* **HTML Analyzer**: 检测 `<iframe>`, `<script>`, `onclick`, `style` 等。
+  * *Case A 命中*: `开局选项` 脚本包含 `<iframe>` 和复杂 `<script>` 逻辑。
+* **EJS Analyzer**: 检测 `<%`, `getvar`, `getwi`, `{{random}}`。
+  * *Case A 命中*: 世界书条目 `[Controller]高松灯_Persona` 包含 `<% if (getvar... %>`。
+* **Instruction Analyzer**: 检测 `<format>`, `always output`, `instruction` 等关键词。
+  * *Case A 命中*: 世界书 Entry 28 包含 `<options_format>` 标签。
+* **State Analyzer**: 检测 `<!--<|state|>-->` 或类似隐藏数据结构。
+  * *Case B 命中*: `first_mes` 中包含隐藏的状态 JSON。
 
 ---
 
@@ -82,8 +85,9 @@ graph TD
 | **代码型** 🧩 | 含动态逻辑或变量操作。 | 含 EJS, 宏。 | 条目 `[Controller]高松灯_Persona` | **进入 Phase 2** (EJS转Jinja2) |
 
 ### 4.1 特殊逻辑处理
-*   **`getwi` 映射**: `[Controller]高松灯_Persona` 使用了 `getwi` 动态加载其他条目。
-    *   *策略*: 转换为 Jinja2 的 `{% include %}` (如果 Clotho 支持) 或通过 Mnemosyne 的 **Linked Entries** 机制实现条件激活。
+
+* **`getwi` 映射**: `[Controller]高松灯_Persona` 使用了 `getwi` 动态加载其他条目。
+  * *策略*: 转换为 Jinja2 的 `{% include %}` (如果 Clotho 支持) 或通过 Mnemosyne 的 **Linked Entries** 机制实现条件激活。
 
 ---
 
@@ -98,9 +102,11 @@ graph TD
 | **UI 注入型** 🎨 | 在界面渲染自定义 UI。 | 含 `<div>`, `iframe`, `script`。 | 脚本 `开局选项` (音乐播放器) | **进入 Phase 2** (UI 决策) |
 
 ### 5.1 UI 注入处理决策
+
 针对 **UI 注入型** 脚本，提供两种路径：
-1.  **WebView 兜底 (推荐)**: 针对 Case A 中的 `开局选项` (音乐播放器)，由于其包含复杂的 DOM 操作 (`document.getElementById`, `addEventListener`)，无法自动转换为原生组件。必须将其封装在沙箱化的 WebView 中运行。
-2.  **原生重构**: 针对简单的 HTML/CSS (如状态栏)，LLM 可尝试将其转换为 Flutter 的 `Row/Column` 布局代码。
+
+1. **WebView 兜底 (推荐)**: 针对 Case A 中的 `开局选项` (音乐播放器)，由于其包含复杂的 DOM 操作 (`document.getElementById`, `addEventListener`)，无法自动转换为原生组件。必须将其封装在沙箱化的 WebView 中运行。
+2. **原生重构**: 针对简单的 HTML/CSS (如状态栏)，LLM 可尝试将其转换为 Flutter 的 `Row/Column` 布局代码。
 
 ---
 
@@ -108,23 +114,26 @@ graph TD
 
 针对 Case B (`观星者`) 中隐藏在 `first_mes` 的状态数据：
 
-1.  **识别**: 正则匹配 `<!--<|state|>(.*?)</\|state\|>-->`。
-2.  **提取**: 解析 JSON 内容。
-3.  **迁移**: 将变量合并入 `Mnemosyne` 的初始状态表 (`initial_state`)。
-4.  **清理**: 在导入后的首条消息中移除该注释块，防止污染上下文。
+1. **识别**: 正则匹配 `<!--<|state|>(.*?)</\|state\|>-->`。
+2. **提取**: 解析 JSON 内容。
+3. **迁移**: 将变量合并入 `Mnemosyne` 的初始状态表 (`initial_state`)。
+4. **清理**: 在导入后的首条消息中移除该注释块，防止污染上下文。
 
 ---
 
 ## 7. 交互流程设计 (UI Workflow)
 
 ### Step 1: 概览与分诊
+
 展示“世界书分诊”和“正则脚本分诊”两个面板。系统根据分析引擎给出预分类建议（例如：将 Case A 的 Entry 28 标记为⚡指令型，将音乐播放器脚本标记为🎨UI型）。用户可批量确认或修改。
 
 ### Step 2: 复杂内容处理
-*   **代码转换**: 对标记为🧩代码型的条目，展示 LLM 生成的 Jinja2 代码建议（例如将 `getvar` 转为 `state.get`）。
-*   **UI 决策**: 对标记为🎨UI型的脚本，询问用户是“保留为 WebView”还是“尝试转原生”。
+
+* **代码转换**: 对标记为🧩代码型的条目，展示 LLM 生成的 Jinja2 代码建议（例如将 `getvar` 转为 `state.get`）。
+* **UI 决策**: 对标记为🎨UI型的脚本，询问用户是“保留为 WebView”还是“尝试转原生”。
 
 ### Step 3: 最终确认
+
 展示最终的数据结构预览，包括 Mnemosyne 变量表、Lorebook 结构和特殊的 UI 挂载点。
 
 ---
@@ -132,6 +141,7 @@ graph TD
 ## 8. 数据结构定义
 
 ### 8.1 核心分析结果
+
 ```dart
 class AnalysisResult {
   final List<LorebookTriageItem> lorebookItems;
@@ -147,6 +157,7 @@ enum TriageCategory {
 ```
 
 ### 8.2 UI 注入定义
+
 ```dart
 class UIInjectionConfig {
   final String id;
@@ -162,6 +173,7 @@ class UIInjectionConfig {
 ## 11. 协议 Schema 提取与标识 (Protocol Schema Recognition & Extraction)
 
 ### 11.1 设计背景
+
 在 ST 生态中，复杂的输出规则（如 `<SFW>` JSON 格式、好感度更新逻辑）常被硬编码在 First Message 或 Description 中。这种方式占用 Token 且难以维护。Clotho 引入 **"Schema Library"** 机制，在导入时自动识别这些规则模式，将其提取为系统预设的 Schema 引用，从而实现 Prompt 的"瘦身"与逻辑的"标准化"。
 
 ### 11.2 提取逻辑
@@ -178,18 +190,19 @@ class UIInjectionConfig {
 
 在迁移向导的 **"Phase 2: 复杂内容处理"** 中，新增 **Schema 确认** 步骤：
 
-1.  **展示发现**: "检测到该角色卡包含复杂的'SFW 输出格式'定义 (约 500 Tokens)。"
-2.  **提供选项**:
-    *   ✅ **提取并引用 (推荐)**: 移除原文中的定义，替换为 `<use_protocol>` 标签。Jacquard 将在运行时自动注入标准化的、经过优化的规则。
-    *   ❌ **保留原样**: 保持原始文本不变（适用于非标准或极其特殊的规则）。
-3.  **参数配置**: 对于提取的 Schema，允许用户微调提取出的参数（如修正提取出的 Avatar Map）。
+1. **展示发现**: "检测到该角色卡包含复杂的'SFW 输出格式'定义 (约 500 Tokens)。"
+2. **提供选项**:
+    * ✅ **提取并引用 (推荐)**: 移除原文中的定义，替换为 `<use_protocol>` 标签。Jacquard 将在运行时自动注入标准化的、经过优化的规则。
+    * ❌ **保留原样**: 保持原始文本不变（适用于非标准或极其特殊的规则）。
+3. **参数配置**: 对于提取的 Schema，允许用户微调提取出的参数（如修正提取出的 Avatar Map）。
 
 ### 11.4 运行时注入机制
 
 当 Jacquard 在 Character Card 中遇到 `<use_protocol>ID</use_protocol>` 标签时：
-1.  **查询**: 从 Clotho 内置的 Schema Library 中查找对应 ID 的 Schema 定义。
-2.  **注入**: 将 Schema 定义中的 System Instruction 注入到 Prompt 的 System 区域。
-3.  **参数化**: 如果 Schema 支持参数（如 SFW 的 Avatar Map），将卡片中存储的 Metadata 填充到模板中。
+
+1. **查询**: 从 Clotho 内置的 Schema Library 中查找对应 ID 的 Schema 定义。
+2. **注入**: 将 Schema 定义中的 System Instruction 注入到 Prompt 的 System 区域。
+3. **参数化**: 如果 Schema 支持参数（如 SFW 的 Avatar Map），将卡片中存储的 Metadata 填充到模板中。
 
 ---
 
@@ -207,21 +220,21 @@ class UIInjectionConfig {
 
 ### A.2 扩展插件分诊 (TavernHelper)
 
-*   **检测对象**: `extensions.tavern_helper` & `TavernHelper_scripts`
-*   **内容**: 包含 `sam_state_manager.js` 引用和复杂 JS 逻辑。
-*   **分诊**: 标记为 **"外部 JS 插件"**。
-*   **策略**: Clotho 不支持直接运行外部 JS。
-    *   *Option A*: 引导用户使用 Mnemosyne 的 Rules System 重构状态机逻辑。
-    *   *Option B*: 保留源代码作为参考，但禁用运行。
+* **检测对象**: `extensions.tavern_helper` & `TavernHelper_scripts`
+* **内容**: 包含 `sam_state_manager.js` 引用和复杂 JS 逻辑。
+* **分诊**: 标记为 **"外部 JS 插件"**。
+* **策略**: Clotho 不支持直接运行外部 JS。
+  * *Option A*: 引导用户使用 Mnemosyne 的 Rules System 重构状态机逻辑。
+  * *Option B*: 保留源代码作为参考，但禁用运行。
 
 ### A.3 内嵌状态提取
 
-*   **位置**: `first_mes`
-*   **内容**: `<!--<|state|>复杂的json</|state|>-->`
-*   **动作**:
-    1.  解析器提取 JSON。
-    2.  将其展平并合并到 `Mnemosyne` 的 `initial_state`。
-    3.  在转换后的 `first_mes` 中自动移除该 XML 标签（模拟原脚本行为）。
+* **位置**: `first_mes`
+* **内容**: `<!--<|state|>复杂的json</|state|>-->`
+* **动作**:
+    1. 解析器提取 JSON。
+    2. 将其展平并合并到 `Mnemosyne` 的 `initial_state`。
+    3. 在转换后的 `first_mes` 中自动移除该 XML 标签（模拟原脚本行为）。
 
 ### A.4 案例解析：Flash (小少女乐队时代)
 
@@ -243,8 +256,8 @@ class UIInjectionConfig {
 
 为了最大化 LLM 的注意力效率并减少解析错误，Clotho 对所有输入给 LLM 的结构化数据采用 **"XML 包裹 YAML"** 的统一格式。
 
-*   **输入端**: XML + YAML
-*   **输出端**: XML + JSON (Filament 协议 V3)
+* **输入端**: XML + YAML
+* **输出端**: XML + JSON (Filament 协议 V3)
 
 ### 10.2 世界书条目格式转换
 
