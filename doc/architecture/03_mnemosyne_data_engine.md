@@ -164,3 +164,119 @@ Mnemosyne 支持在状态树中定义 `$meta.template`，并在数据访问时�
 ### 5.2 确定性回溯
 
 由于采用了 Keyframe + Delta 机制，当用户回滚到之前的消息时，Mnemosyne 能瞬间重建当时的状态，确保剧情与数值的完美一致。
+
+## 6. L3 Patching 机制与 Deep Merge (v1.1 新增)
+
+### 6.1 模块摘要
+
+本模块定义了 **L3 (Session State)** 层对 **L2 (Character Assets)** 层的动态补丁机制。这是实现“角色成长”与“平行宇宙”的核心技术基础，遵循 **"写时复制 (Copy-on-Write)"** 原则。
+
+### 6.2 Patching 工作原理
+
+Mnemosyne 在聚合上下文时，执行 **Deep Merge (深度合并)** 操作：
+
+1.  **Base**: 加载 L2 的原始数据对象（如 Character Card 的 `name`, `description`）。
+2.  **Apply**: 将 L3 中的 `patches` 字典应用到对象上。
+3.  **Result**: 生成用于本次推理的临时对象 (Projected Entity)。
+
+`patches` 字典采用 **"路径-值"** 结构，例如：
+
+```json
+{
+  "character.description": "A brave warrior who has seen many battles.",
+  "character.lorebooks.town.enabled": false
+}
+```
+
+### 6.3 应用场景
+
+*   **属性成长**: 角色从 level 1 升级到 level 99。L3 的 State Tree 更新，不影响 L2 的原始设定。
+*   **设定重写**: 剧情导致角色从“修女”黑化为“魔女”。L3 存储一个针对 `description` 字段的 Patch，覆盖 L2 的原始描述。
+*   **世界变迁**: 角色炸毁了“新手村”。L3 将 L2 中的“新手村”Lorebook 条目标记为 `enabled: false`，并新增一个 L3 独有的“废墟”条目。
+*   **平行宇宙**: 基于同一 L2 创建多个 L3 实例（分支存档），每个实例拥有独立的 Patch 和 History，互不干扰。
+
+### 6.4 Deep Merge 算法
+
+Mnemosyne 的 Deep Merge 遵循以下优先级顺序：
+
+1.  **L2 Base**: 加载 L2 的原始数据。
+2.  **L3 Patches**: 遍历 L3 中的 `patches` 对象。
+3.  **Merge**: 将 Patch 值覆盖到 Base 对象的对应路径上。
+4.  **Conflict Resolution**: 如果同一路径存在多个 Patch（理论上不应发生，但作为防御性编程），后应用的 Patch 覆盖先前的。
+
+### 6.5 与分层运行时架构的集成
+
+本机制是 **[第十章：分层运行时环境架构](doc/architecture/10_layered_runtime_architecture.md)** 中定义的 **L3 Session State** 层的具体实现。它确保了：
+
+*   **动静分离**: L2 的原始 Character Card 数据永远保持只读，所有修改都发生在 L3 层。
+*   **无损重置**: 用户可以随时“新开对话”，系统会创建一个新的 L3 实例，重新引用纯净的 L2 数据。
+*   **分支支持**: 用户可以“分叉”当前对话，创建新的 L3 分支，实现平行宇宙探索。
+
+### 6.6 文档溯源
+
+* **分层运行时架构**: [`doc/architecture/10_layered_runtime_architecture.md`](doc/architecture/10_layered_runtime_architecture.md)
+* **关联文档**: `02_jacquard_orchestration.md`, `08_character_import_and_migration.md`
+
+---
+
+## 附录 A: 完整 Schema 示例 (v1.1)
+
+(原 4.4 节内容移动至此)
+
+```json
+{
+  "character": {
+    "$meta": {
+      "extensible": false,
+      "required": ["name", "description"]
+    },
+    "name": "Alice",
+    "description": "A shy healer from the forest."
+  },
+  "session_state": {
+    "$meta": {
+      "extensible": true
+    },
+    "patches": {
+      "character.description": "A brave warrior protecting her village."
+    },
+    "history": []
+  }
+}
+}
+```
+
+---
+
+## 附录 B: Deep Merge 伪代码 (v1.1)
+
+```dart
+// 伪代码：展示 Deep Merge 逻辑
+Map<String, dynamic> applyPatches(Map<String, dynamic> base, Map<String, dynamic> patches) {
+  // 1. 从 Base 创建副本
+  finalResult = Map<String, dynamic>.from(base);
+  
+  // 2. 遍历 Patches 并应用
+  patches.forEach((path, value) {
+    // 深度合并：如果值是 Map，递归合并
+    if (value is Map) {
+      finalResult[path] = applyPatches(finalResult[path] as Map<String, dynamic>, value);
+    } else {
+      finalResult[path] = value;
+    }
+  });
+  
+  return finalResult;
+}
+```
+
+### 5.1 状态更新流程
+
+1. Jacquard 解析出 `State Delta`（变更增量）。
+2. Mnemosyne 接收 Delta，校验 Schema。
+3. 生成新的状态节点，存入数据库。
+4. 计算用于 UI 展示的 **Display Data** (纯值) 和 **Change Log** (如 "Health: 100 -> 80")。
+
+### 5.2 确定性回溯
+
+由于采用了 Keyframe + Delta 机制，当用户回滚到之前的消息时，Mnemosyne 能瞬间重建当时的状态，确保剧情与数值的完美一致。
