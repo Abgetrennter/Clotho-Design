@@ -125,8 +125,18 @@ Mnemosyne 是系统的“海马体”，负责管理多维度的上下文链。�
 *   **$meta 约束**: 引入 `$meta` 字段定义状态树的扩展性 (Extensible) 与必填项 (Required)。
 *   **Snapshotting**: `getPunchcards(pointer)` 接口负责聚合上述所有数据，生成不可变快照供 Jacquard 使用。
 
+#### 3.2.4 增强型元数据系统 ($meta System Enhancements) - v1.1 新增
+融合了 ERA 框架的先进设计，增强了数据引擎的灵活性与安全性：
+*   **多级模板继承 (Multi-level Inheritance)**: 支持在 `$meta.template` 中定义默认结构。子节点自动继承父节点的模板定义，实现属性的深度合并与覆盖，显著降低数据冗余。
+*   **细粒度删除保护 (Deletion Protection)**: 引入 `$meta.necessary` 权限控制。
+    *   `self`: 保护节点自身不被删除。
+    *   `children`: 保护直属子节点。
+    *   `all`: 保护整个子树。
+*   **语义化描述 (VWD Integration)**: 在 `$meta` 中集成值描述 (Value With Description)，增强 LLM 对数值含义的理解。
+
 ### 3.3 文档溯源
 *   **数据引擎**: [`doc/architecture/03_mnemosyne_data_engine.md`](doc/architecture/03_mnemosyne_data_engine.md)
+*   **模板继承规范**: [`plans/mnemosyne-template-inheritance-spec.md`](plans/mnemosyne-template-inheritance-spec.md)
 *   **历史归档**: [`doc/architecture/legacy_archive/mvu_integration_design.md`](doc/architecture/legacy_archive/mvu_integration_design.md)
 
 ---
@@ -182,6 +192,12 @@ UI 层**严禁**直接修改业务数据。所有的交互 (如点击状态栏�
 #### 5.2.3 容错与生命周期
 *   **异常转化**: Native 异常 -> 错误码 -> Dart Failure 对象，严禁 Crash 导致 UI 崩溃。
 *   **生命周期统一**: 将 Android `ActivityLifecycle` 和 Windows `WindowProc` 统一抽象为 `AppLifecycleState` 流。
+
+#### 5.2.4 模块间通信总线 (ClothoNexus) - v1.1 新增
+引入了强类型的事件总线，用于解耦 UI 层与逻辑层：
+*   **State Stream**: 广播 Mnemosyne 的数据变更。
+*   **Workflow Stream**: 广播 Jacquard 的流水线状态。
+*   **Interaction Stream**: 接收 UI 的用户交互意图。
 
 ### 5.3 文档溯源
 *   **基础设施设计**: [`doc/architecture/05_infrastructure_layer.md`](doc/architecture/05_infrastructure_layer.md)
@@ -276,21 +292,26 @@ ST 扩展严重依赖 JS `eval` 和全局变量污染，数据流向混乱。
 
 ---
 
-## 第九章：Filament 统一交互协议 (Unified Protocol)
+## 第九章：Filament 统一交互协议 (Filament Protocol)
 
 ### 9.1 模块摘要
-**Filament 协议**是 Clotho 系统的通用交互语言，旨在消除"自然语言"与"机器指令"之间的模糊地带。它贯穿于系统的所有交互环节，从提示词构建、逻辑控制到界面渲染，实现了统一的语义表达和确定性通信。协议遵循 **"XML + YAML IN, XML + JSON OUT"** 的非对称设计哲学。
+**Filament 协议**是 Clotho 系统的通用交互语言，旨在消除"自然语言"与"机器指令"之间的模糊地带。它贯穿于系统的所有交互环节，从提示词构建、逻辑控制到界面渲染，实现了统一的语义表达和确定性通信。协议遵循 **"非对称交互"** 和 **"混合扩展策略"** 两大设计哲学，并与 Jinja2 宏系统紧密集成，实现动态、安全的提示词构建。
 
 ### 9.2 核心要素
 
-#### 9.2.1 核心设计哲学：非对称交互
+#### 9.2.1 核心设计哲学
+
+**1. 非对称交互 (Asymmetric Interaction)**:
 *   **输入端 (Context Ingestion): XML + YAML**
     *   **结构 (XML)**: 使用 XML 标签构建 Prompt 的骨架，确保 LLM 理解内容的层级与边界。
     *   **数据 (YAML)**: 在标签内部使用 YAML 描述属性与状态。YAML 相比 JSON 更符合人类阅读习惯，且 Token 消耗更低。
-    
 *   **输出端 (Instruction Generation): XML + JSON**
     *   **意图 (XML)**: 使用 XML 标签明确标识 LLM 的意图类型（如思考、说话、操作）。
     *   **参数 (JSON)**: 在标签内部使用 JSON 描述具体的参数。JSON 的严格语法更易于机器解析。
+
+**2. 混合扩展策略 (Mixed Extension Strategy) - v2.1 新增**:
+*   **核心严格性**: 对于影响系统逻辑的关键指令（如变量更新、工具调用），采用严格的 Schema 验证和标准格式。
+*   **边缘灵活性**: 对于展示层和辅助信息（如自定义状态栏、摘要），允许更灵活的自定义标签结构，以适应多变的业务需求。
 
 #### 9.2.2 协议在系统中的应用范畴
 Filament 不仅是 LLM 的输出协议，更是系统的通用语言，统一管理：
@@ -300,38 +321,78 @@ Filament 不仅是 LLM 的输出协议，更是系统的通用语言，统一管
 4.  **状态管理 (State Management)**: 统一的状态更新指令格式。
 5.  **宏系统支持 (Macro System)**: 通过 Jinja2 模板引擎实现动态提示词构建，支持变量插值、条件渲染和逻辑控制，提供安全的沙箱环境。
 
-#### 9.2.3 输出协议：标签体系
+#### 9.2.3 输入协议：提示词构建 (v2.3)
+
+Filament 结构化提示词包含以下核心组件：
+
+**基础数据块格式**:
+*   `<system_instruction>`: 系统级指令和规则
+*   `<character_card>`: 角色定义
+*   `<world_state>`: 当前世界状态
+*   `<lorebook_entry>`: 世界书条目（统一转换为 "XML 包裹 YAML" 格式）
+*   `<conversation_history>`: 对话历史
+
+**元数据标签**:
+*   `<block>`: 标记文本块边界
+*   `<format>`: 格式化指令
+*   `<priority>`: 优先级标记
+*   `<use_protocol>`: 引用协议 Schema (v2.1)
+
+**Jinja2 宏系统集成**:
+遵循 **"凯撒原则"**，采用 Jinja2 (Dart Port) 作为标准模板引擎：
+*   **Filament XML**: 作为 LLM 输出的结构骨架
+*   **Jinja2 逻辑**: 完全接管输入端的逻辑控制，在发送给 LLM 前被渲染为纯文本
+*   **宏映射**: 提供完整的 SillyTavern 宏到 Jinja2 的迁移映射表
+*   **安全沙箱**: 只读状态、禁用系统调用、函数白名单
+
+#### 9.2.4 输出协议：标签体系 (v2.3)
+
 LLM 的所有输出必须包裹在特定的 Filament 标签中：
 
-*   **认知与表达标签**:
-    *   `<thought>`: 思维链（CoT），用于推理、规划与自我反思。此内容默认对用户隐藏，或折叠显示。
-    *   `<content>`: 最终回复，直接展示给用户的对话内容。
-    
-*   **逻辑与状态标签**:
-    *   `<state_update>`: 状态变更指令。内部包裹 **JSON 数组**，执行精确的数据修改。
-        *   格式: `[OpCode, Path, Value]`
-        *   示例: `["SET", "character.mood", "anxious"]`, `["ADD", "inventory.gold", -50]`
-    *   `<tool_call>`: 工具调用，请求执行特定的工具或函数。
-    
-*   **表现与交互标签**:
-    *   `<ui_component>`: 嵌入式前端，允许 LLM 请求渲染特定的原生 UI 组件。
-    *   `<media>`: 媒体资源，请求插入图片、音频、视频等。
+**认知与表达标签**:
+*   `<thought>`: 思维链（CoT），用于推理、规划与自我反思。此内容默认对用户隐藏，或折叠显示。
+*   `<content>`: 最终回复，直接展示给用户的对话内容。支持 HTML 注释和受限的行内 HTML 标签（如 `<span style="color: red">`）。
 
-#### 9.2.4 协议解析流程
-Filament 协议的解析是实时流式进行的，确保低延迟的用户体验：
+**逻辑与状态标签**:
+*   `<variable_update>`: 变量更新指令（v2.1 推荐）。内部包裹 **JSON 数组**，可选 `<analysis>` 子标签记录变更原因。
+    *   格式: `[OpCode, Path, Value]`
+    *   OpCode: `SET`, `ADD`, `SUB`, `MUL`, `DIV`, `PUSH`, `POP`, `DELETE`
+    *   示例: `["SET", "character.mood", "anxious"]`, `["ADD", "inventory.gold", -50]`
+*   `<tool_call>`: 工具调用，请求执行特定的工具或函数。
 
-1.  **流式切分**: Parser 实时监控 `<` 符号，识别标签边界。
-2.  **路由分发**:
-    *   `<thought>` -> ThoughtHandler: 存储到思维日志
-    *   `<content>` -> ContentHandler: 直接推送到 UI 文本组件
-    *   `<state_update>` -> StateParser + Mnemosyne: 解析 JSON，执行状态变更
-    *   `<ui_component>` -> UIJSONParser + UIEventBus: 解析 JSON，触发 UI 渲染
-    *   `<media>` -> MediaLoader: 加载媒体资源，插入到消息流中
+**表现与交互标签 (v2.1 新增)**:
+*   `<status_bar>`: 自定义状态栏。支持自由结构，适用于 Character Script 自定义的显示需求。
+*   `<details>`: 折叠摘要。兼容 HTML `<details>` 标签。
+*   `<choice>`: 选择菜单。向用户提供明确的行动选项。
+*   `<ui_component>`: 嵌入式前端。允许 LLM 请求渲染复杂的、原生的嵌入式 UI 组件。
+*   `<media>`: 媒体资源。请求插入图片、音频、视频等。
 
-#### 9.2.5 协议版本演进
-*   **v1.0 (初始版本)**: 使用重复的 XML 标签表示状态更新，Token 效率低，解析复杂。
-*   **v2.0 (当前版本)**: 使用 JSON 数组包裹三元组，Token 效率提升约 40%，解析逻辑简化，支持批量操作。
-*   **v3.0 (未来规划)**: 考虑引入二进制协议、流式增量更新、类型约束等高级特性。
+#### 9.2.5 协议解析流程 (v2.3)
+
+Filament 协议的解析是实时流式进行的，包含以下关键机制：
+
+**流式解析架构**:
+1.  **标签监控**: 实时监控 LLM 流式输出，识别标签边界。
+2.  **路由分发**: 根据标签类型路由到对应处理器：
+    *   `<thought>` -> ThoughtHandler
+    *   `<content>` -> ContentHandler (支持 HTML 注释过滤)
+    *   `<variable_update>` -> VariableParser (记录分析 + 更新状态)
+    *   `<status_bar>` -> StatusBarRenderer
+    *   `<details>` -> DetailsRenderer
+    *   `<choice>` -> ChoiceRenderer
+    *   `<ui_component>` -> UIJSONParser + UIEventBus
+    *   `<tool_call>` -> ToolExecutor
+
+**输出结构鲁棒性 (v2.3 新增)**:
+*   **期望结构注册表**: 动态生成期望结构表，定义可能出现的标签及其推荐顺序。
+*   **流式模糊修正器**: 容错状态机，支持首部缺失自动补全、尾部闭合预测、相邻冗余修正。
+*   **容错降级**: 解析失败时执行 Raw Text Fallback，不阻断对话流程。
+
+#### 9.2.6 协议版本演进
+*   **v1.0**: 使用重复的 XML 标签表示状态更新。Token 效率低。
+*   **v2.0**: 引入 `<state_update>` 和 JSON 数组三元组。Token 效率提升，解析简化。
+*   **v2.1**: 标签重命名与增强（`<UpdateVariable>` -> `<variable_update>`），交互标准化（`<xx>` -> `<choice>`），UI 灵活性（`<status_bar>`, `<details>`），混合扩展策略。
+*   **v2.3**: 增强 Jinja2 宏系统支持，引入输出结构鲁棒性机制，完善 HTML 安全过滤。
 
 ### 9.3 文档溯源
 *   **Filament 协议**: [`doc/architecture/09_filament_protocol.md`](doc/architecture/09_filament_protocol.md)

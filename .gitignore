@@ -1,1 +1,12 @@
 参考文件/ERA/
+参考文件/数据库/11js-split/
+参考文件/数据库/12js-split/
+参考文件/数据库/21js-split/
+参考文件/数据库/22js-split/
+参考文件/数据库/31js-split/
+参考文件/数据库/32js-split/
+参考文件/数据库/41js-split/
+参考文件/数据库/42js-split/
+参考文件/数据库/js-split-merged/
+*.js
+*.json

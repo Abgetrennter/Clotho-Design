@@ -79,3 +79,56 @@ graph TD
 ### 4.2 崩溃防护
 *   **类型安全**: Native 端严格检查参数类型。
 *   **主线程保护**: 耗时操作强制在后台线程执行，防止 ANR。
+
+---
+
+## 5. 模块间通信总线 (ClothoNexus) - v1.1 新增
+
+为了解耦 UI 层与逻辑层，并支持复杂的异步工作流（如流式生成、状态回溯），系统引入了名为 **ClothoNexus** 的强类型事件总线。
+
+### 5.1 设计原则
+*   **强类型 (Type Safety)**: 摒弃字符串事件名，使用 Dart 类作为事件载体，确保 Payload 结构安全。
+*   **单向数据流 (Unidirectional Flow)**: 数据从 Mnemosyne 流向 UI，意图 (Intent) 从 UI 流向 Jacquard。
+*   **依赖注入 (Dependency Injection)**: 总线实例通过 DI 容器传递，而非全局单例。
+
+### 5.2 架构拓扑
+ClothoNexus 作为中央枢纽，管理着几条核心的 Stream 管道：
+
+```mermaid
+graph TD
+    subgraph Nexus [ClothoNexus]
+        StateStream[State Stream<br>(数据变更)]
+        WorkflowStream[Workflow Stream<br>(工作流状态)]
+        InteractionStream[Interaction Stream<br>(用户交互)]
+    end
+
+    subgraph Mnemosyne
+        Store[状态存储]
+    end
+
+    subgraph Jacquard
+        Pipeline[执行流水线]
+    end
+
+    subgraph Presentation
+        ChatUI[聊天界面]
+        StatusBar[状态栏]
+    end
+
+    Store -->|emit(StateUpdated)| StateStream
+    Pipeline -->|emit(WorkflowStatus)| WorkflowStream
+    
+    StateStream -->|listen| StatusBar & ChatUI
+    WorkflowStream -->|listen| ChatUI
+    
+    ChatUI -->|dispatch(UserIntent)| InteractionStream
+    InteractionStream -->|listen| Pipeline
+```
+
+### 5.3 核心事件定义
+*   **StateUpdatedEvent**: 数据变更事件。包含 `delta` (变更字段) 和 `mk` (消息锚点)。
+*   **WorkflowStatusEvent**: 工作流状态事件。包含 `stage` (如 generating, parsing) 和 `progress`。
+*   **UserIntentEvent**: 用户交互意图。包含 `action` (如 send_message, click_option) 和 `payload`。
+
+### 5.4 实现策略
+基于 Dart 原生 `StreamController.broadcast()` 实现多播机制，支持背压处理 (Backpressure) 以防止 UI 卡顿。

@@ -441,7 +441,7 @@ LLM 的所有输出必须包裹在特定的 Filament 标签中，确保机器可
 
 #### 3.2.1 `<variable_update>` - 变量更新 (v2.1 推荐)
 
-`<variable_update>` 是 `<state_update>` 的升级版，增加了 `<analysis>` 子标签用于记录变更原因，增强了可解释性。它兼容 v2.0 的 JSON OpCode 格式。
+`<variable_update>` 是 `<state_update>` 的升级版，增加了 `<analysis>` 子标签用于记录变更原因，增强了可解释性。它兼容 v2.0 的 JSON OpCode 格式，并支持 v2.4 的简化格式。
 
 ```xml
 <variable_update>
@@ -450,30 +450,55 @@ LLM 的所有输出必须包裹在特定的 Filament 标签中，确保机器可
     - 嫉妒乐奈受到的"特别待遇"，对源的执念更深
   </analysis>
   [
-    ["SET", "纯田真奈.好感度", 2],
-    ["ADD", "mood.value", 1]
+    [SET, 纯田真奈.好感度, 2],       <!-- v2.4 简化格式 (Bare Word) -->
+    [ADD, mood.value, 1],
+    [SET, desc, "She is angry"]     <!-- 含空格字符串仍需引号 -->
   ]
 </variable_update>
 ```
 
 **结构**:
 1.  `<analysis>` (可选): 文本形式的分析，解释为何进行这些状态变更。
-2.  `JSON Array` (必填): 执行状态变更的操作码列表。
+2.  `JSON Array` (必填): 执行状态变更的操作码列表。支持 **Bare Word OpCode** (省略不必要的引号)。
 
 **操作码 (OpCode) 定义**:
 
 | OpCode | 含义 | 参数示例 | 说明 |
 |---|---|---|---|
-| `SET` | 设置值 | `["SET", "path", value]` | 覆盖指定路径的值 |
-| `ADD` | 加法 | `["ADD", "path", number]` | 数值相加 |
-| `SUB` | 减法 | `["SUB", "path", number]` | 数值相减 |
-| `MUL` | 乘法 | `["MUL", "path", number]` | 数值相乘 |
-| `DIV` | 除法 | `["DIV", "path", number]` | 数值相除 |
-| `PUSH` | 追加到数组 | `["PUSH", "array_path", value]` | 向数组末尾添加元素 |
-| `POP` | 弹出数组 | `["POP", "array_path"]` | 移除数组末尾元素 |
-| `DELETE` | 删除字段 | `["DELETE", "path"]` | 删除指定路径的字段 |
+| `SET` | 设置值 | `[SET, path, value]` | 覆盖指定路径的值 |
+| `ADD` | 加法 | `[ADD, path, number]` | 数值相加 |
+| `SUB` | 减法 | `[SUB, path, number]` | 数值相减 |
+| `MUL` | 乘法 | `[MUL, path, number]` | 数值相乘 |
+| `DIV` | 除法 | `[DIV, path, number]` | 数值相除 |
+| `PUSH` | 追加到数组 | `[PUSH, array_path, value]` | 向数组末尾添加元素 |
+| `POP` | 弹出数组 | `[POP, array_path]` | 移除数组末尾元素 |
+| `DELETE` | 删除字段 | `[DELETE, path]` | 删除指定路径的字段 |
 
-#### 3.2.2 `<tool_call>` - 工具调用
+#### 3.2.2 语义化操作标签 (Semantic Operation Tags) - v2.3
+引入 ERA 风格的语义化标签作为 OpCode 的高级封装，提供更直观的意图表达。
+
+*   **`<variable_insert>`**: 非破坏性插入，支持模板应用。
+    ```xml
+    <variable_insert>
+      <path>player.inventory.potion</path>
+      <value>{ name: "Potion", count: 1 }</value>
+    </variable_insert>
+    ```
+*   **`<variable_edit>`**: 破坏性更新，支持权限校验与表达式。
+    ```xml
+    <variable_edit>
+      <path>player.hp</path>
+      <value>-= 20</value> <!-- 支持数学表达式 -->
+    </variable_edit>
+    ```
+*   **`<variable_delete>`**: 删除节点，支持删除保护。
+    ```xml
+    <variable_delete>
+      <path>player.inventory.empty_bottle</path>
+    </variable_delete>
+    ```
+
+#### 3.2.3 `<tool_call>` - 工具调用
 
 请求执行特定的工具或函数。
 

@@ -70,14 +70,52 @@ class StateNode {
 
 ## 4. 状态 Schema 与元数据 ($meta)
 
-为了规范状态树的结构，Mnemosyne 支持 `$meta` 字段定义约束。
+为了规范状态树的结构并增强数据引擎的灵活性，Mnemosyne 支持 `$meta` 字段定义约束、模板与权限。
 
-### 4.1 约束定义
+### 4.1 核心元数据定义
+*   **template**: 定义当前层级及其子层级的默认结构（支持多级继承）。
+*   **updatable**: 是否允许修改该节点的值（默认 true）。
+*   **necessary**: 删除保护级别 (`self` | `children` | `all`)。
+*   **description**: 语义化描述（VWD 集成）。
 *   **extensible**: 是否允许 LLM 在根节点下添加新属性。
 *   **required**: 必须存在的字段列表。
-*   **template**: 新增项目的默认模板。
 
-**示例 JSON:**
+### 4.2 多级模板继承 (Multi-level Template Inheritance) - v1.1
+Mnemosyne 支持在状态树中定义 `$meta.template`，并在数据访问时动态计算继承链。
+
+**继承逻辑**:
+1.  **向上查找**: 从目标节点向上遍历至根节点，收集所有 `$meta.template`。
+2.  **深度合并**: 按 "父级 -> 子级 -> 自身数据" 的顺序进行深度合并 (Deep Merge)。
+3.  **覆盖机制**: 子级模板覆盖父级，实际数据覆盖所有模板。
+
+**示例**:
+```json
+{
+  "characters": {
+    "$meta": {
+      "template": { "hp": 100, "level": 1 } // 基类模板
+    },
+    "npcs": {
+      "$meta": {
+        "template": { "faction": "neutral" } // 子类模板，继承 hp=100
+      },
+      "guard": { "class": "Warrior" } // 实际数据，隐含 hp=100, faction=neutral
+    }
+  }
+}
+```
+
+### 4.3 细粒度权限控制 (Fine-grained Permission) - v1.1
+引入 `$meta.necessary` 和 `$meta.updatable` 实现数据保护。
+
+| 权限字段 | 值 | 行为 |
+| :--- | :--- | :--- |
+| **necessary** | `"self"` | 保护节点自身不被删除 |
+| | `"children"` | 保护直属子节点不被删除 |
+| | `"all"` | 保护整个子树不被删除 |
+| **updatable** | `false` | 锁定节点值，禁止修改（除非操作显式覆盖） |
+
+### 4.4 完整 Schema 示例
 ```json
 {
   "character": {
@@ -89,7 +127,11 @@ class StateNode {
     "inventory": {
       "$meta": {
         "extensible": true,
-        "template": ["Unknown Item", "物品描述"]
+        "template": {
+           "name": "Unknown Item", 
+           "desc": "物品描述",
+           "$meta": { "necessary": "self" }
+        }
       }
     }
   }
