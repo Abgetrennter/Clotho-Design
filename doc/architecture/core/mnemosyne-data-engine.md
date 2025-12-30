@@ -206,7 +206,7 @@ Mnemosyne 的 Deep Merge 遵循以下优先级顺序：
 
 ### 6.5 与分层运行时架构的集成
 
-本机制是 **[第十章：分层运行时环境架构](doc/architecture/10_layered_runtime_architecture.md)** 中定义的 **L3 Session State** 层的具体实现。它确保了：
+本机制是 **[第十章：分层运行时环境架构](layered-runtime-architecture.md)** 中定义的 **L3 Session State** 层的具体实现。它确保了：
 
 *   **动静分离**: L2 的原始 Character Card 数据永远保持只读，所有修改都发生在 L3 层。
 *   **无损重置**: 用户可以随时“新开对话”，系统会创建一个新的 L3 实例，重新引用纯净的 L2 数据。
@@ -214,8 +214,8 @@ Mnemosyne 的 Deep Merge 遵循以下优先级顺序：
 
 ### 6.6 文档溯源
 
-* **分层运行时架构**: [`doc/architecture/10_layered_runtime_architecture.md`](doc/architecture/10_layered_runtime_architecture.md)
-* **关联文档**: `02_jacquard_orchestration.md`, `08_character_import_and_migration.md`
+* **分层运行时架构**: [`layered-runtime-architecture.md`](layered-runtime-architecture.md)
+* **关联文档**: `jacquard-orchestration.md`, `../workflows/character-import-migration.md`
 
 ---
 

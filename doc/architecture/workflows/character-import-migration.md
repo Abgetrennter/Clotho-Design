@@ -1,9 +1,9 @@
-# 第八章：角色卡导入与迁移系统 (Character Card Import & Migration)
+# 角色卡导入与迁移系统 (Character Card Import & Migration)
 
-**版本**: 2.0.0
-**日期**: 2025-12-27
-**状态**: Final Draft
-**作者**: 资深系统架构师 (Architect Mode)
+**版本**: 2.0.0  
+**日期**: 2025-12-27  
+**状态**: Final Draft  
+**作者**: 资深系统架构师 (Architect Mode)  
 **源文档**: `plans/character-card-import-migration-design.md`, `doc/EvaluationDoc/又看遗迹.json`, `doc/EvaluationDoc/观星者（自设）.json`
 
 ---
@@ -170,13 +170,13 @@ class UIInjectionConfig {
 
 ---
 
-## 11. 协议 Schema 提取与标识 (Protocol Schema Recognition & Extraction)
+## 9. 协议 Schema 提取与标识 (Protocol Schema Recognition & Extraction)
 
-### 11.1 设计背景
+### 9.1 设计背景
 
 在 ST 生态中，复杂的输出规则（如 `<SFW>` JSON 格式、好感度更新逻辑）常被硬编码在 First Message 或 Description 中。这种方式占用 Token 且难以维护。Clotho 引入 **"Schema Library"** 机制，在导入时自动识别这些规则模式，将其提取为系统预设的 Schema 引用，从而实现 Prompt 的"瘦身"与逻辑的"标准化"。
 
-### 11.2 提取逻辑
+### 9.2 提取逻辑
 
 分析引擎会扫描文本中的规则定义块，尝试匹配已知的 Schema 模式：
 
@@ -186,7 +186,7 @@ class UIInjectionConfig {
 | **Variable Update** | 含 `<UpdateVariable>`, `<Analysis>`, `_.add()`。 | 1. 提取变量定义 (如 `好感度`) 存入 Initial State。<br>2. 识别为 `protocol: variable_update_v2`。 | `<use_protocol>variable_update_v2</use_protocol>` |
 | **Custom Colors** | 含 `<自定义颜色>`, `<span style="...">`。 | 1. 提取颜色规则。<br>2. 识别为 `protocol: semantic_color`。 | `<use_protocol>semantic_color</use_protocol>` |
 
-### 11.3 交互式确认流程
+### 9.3 交互式确认流程
 
 在迁移向导的 **"Phase 2: 复杂内容处理"** 中，新增 **Schema 确认** 步骤：
 
@@ -196,7 +196,7 @@ class UIInjectionConfig {
     * ❌ **保留原样**: 保持原始文本不变（适用于非标准或极其特殊的规则）。
 3. **参数配置**: 对于提取的 Schema，允许用户微调提取出的参数（如修正提取出的 Avatar Map）。
 
-### 11.4 运行时注入机制
+### 9.4 运行时注入机制
 
 当 Jacquard 在 Character Card 中遇到 `<use_protocol>ID</use_protocol>` 标签时：
 
@@ -206,7 +206,7 @@ class UIInjectionConfig {
 
 ---
 
-## 12. 附录 A: 案例结构解析 (Case Study: 观星者)
+## 10. 附录 A: 案例结构解析 (Case Study: 观星者)
 
 以下展示系统如何处理 `doc/EvaluationDoc/观星者（自设）.json` 中的复杂结构。
 
@@ -250,20 +250,20 @@ class UIInjectionConfig {
 
 ---
 
-## 10. Prompt 格式规范化 (Prompt Normalization)
+## 11. Prompt 格式规范化 (Prompt Normalization)
 
-### 10.1 设计目标
+### 11.1 设计目标
 
 为了最大化 LLM 的注意力效率并减少解析错误，Clotho 对所有输入给 LLM 的结构化数据采用 **"XML 包裹 YAML"** 的统一格式。
 
 * **输入端**: XML + YAML
 * **输出端**: XML + JSON (Filament 协议 V3)
 
-### 10.2 世界书条目格式转换
+### 11.2 世界书条目格式转换
 
 在导入过程中，系统会对 Lorebook 条目中的 `content` 进行格式规范化。
 
-#### 10.2.1 转换规则 (最终版)
+#### 11.2.1 转换规则 (最终版)
 
 | 原始格式 | 检测特征 | 转换目标 | 备注 |
 |---|---|---|---|
@@ -278,7 +278,7 @@ class UIInjectionConfig {
 | `<Soyo>{"name": "Soyo", "age": 16}</Soyo>` | `<Soyo>\n  name: Soyo\n  age: 16\n</Soyo>` |
 | `<Aomori>\n  - Point A\n  - Point B\n</Aomori>` (Markdown) | `<Aomori>\n  - Point A\n  - Point B\n</Aomori>` (YAML 数组) |
 
-#### 10.2.2 转换流程
+#### 11.2.2 转换流程
 
 ```mermaid
 graph TD
@@ -298,3 +298,17 @@ graph TD
     
     KeepText --> Final
 ```
+
+---
+
+## 12. 相关文档
+
+- **[迁移策略](../core/migration-strategy.md)**: 了解 ST 生态迁移的整体策略
+- **[Filament 协议](../protocols/filament-protocol-overview.md)**: 了解输入/输出格式规范
+- **[Jinja2 宏系统](../protocols/jinja2-macro-system.md)**: 了解 EJS 到 Jinja2 的转换规则
+- **[运行时环境](../runtime/layered-runtime-architecture.md)**: 了解导入后角色卡在运行时环境中的分层管理
+
+---
+
+**最后更新**: 2025-12-27  
+**维护者**: Clotho 导入迁移团队
