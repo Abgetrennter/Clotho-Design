@@ -71,8 +71,8 @@ graph TD
 
 ### 1.3 文档溯源
 
-* **顶层蓝图**: [`doc/architecture/01_vision_and_philosophy.md`](doc/architecture/01_vision_and_philosophy.md)
-* **历史归档**: [`doc/architecture/legacy_archive/project_core_blueprint.md`](doc/architecture/legacy_archive/project_core_blueprint.md)
+* **顶层蓝图**: **[宏观愿景与设计哲学](vision-and-philosophy.md)** (本系列概览文档)
+* **历史归档**: [`../../doc/legacy_archive/project_core_blueprint.md`](../../doc/legacy_archive/project_core_blueprint.md)
 
 ---
 
@@ -114,8 +114,8 @@ Skein 是流水线中的核心数据对象，作为 **异构容器**，它取代
 
 ### 2.3 文档溯源
 
-* **编排架构**: [`doc/architecture/02_jacquard_orchestration.md`](doc/architecture/02_jacquard_orchestration.md)
-* **历史归档**: [`doc/architecture/legacy_archive/system_architecture.md`](doc/architecture/legacy_archive/system_architecture.md)
+* **编排架构**: **[Jacquard 编排层](../core/jacquard-orchestration.md)** (完整规范请参阅核心层目录)
+* **历史归档**: [`../../doc/legacy_archive/system_architecture.md`](../../doc/legacy_archive/system_architecture.md)
 
 ---
 
@@ -159,9 +159,9 @@ Mnemosyne 是系统的“海马体”，负责管理多维度的上下文链。�
 
 ### 3.3 文档溯源
 
-* **数据引擎**: [`doc/architecture/03_mnemosyne_data_engine.md`](doc/architecture/03_mnemosyne_data_engine.md)
-* **模板继承规范**: [`plans/mnemosyne-template-inheritance-spec.md`](plans/mnemosyne-template-inheritance-spec.md)
-* **历史归档**: [`doc/architecture/legacy_archive/mvu_integration_design.md`](doc/architecture/legacy_archive/mvu_integration_design.md)
+* **数据引擎**: **[Mnemosyne 数据引擎](../core/mnemosyne-data-engine.md)** (完整规范请参阅核心层目录)
+* **模板继承规范**: [`../../plans/mnemosyne-template-inheritance-spec.md`](../../plans/mnemosyne-template-inheritance-spec.md)
+* **历史归档**: [`../../doc/legacy_archive/mvu_integration_design.md`](../../doc/legacy_archive/mvu_integration_design.md)
 
 ---
 
@@ -196,8 +196,8 @@ UI 层**严禁**直接修改业务数据。所有的交互 (如点击状态栏�
 
 ### 4.3 文档溯源
 
-* **表现层设计**: [`doc/architecture/04_presentation_layer.md`](doc/architecture/04_presentation_layer.md)
-* **历史归档**: [`doc/architecture/legacy_archive/ui_layout_design.md`](doc/architecture/legacy_archive/ui_layout_design.md), [`doc/architecture/legacy_archive/ui_subsystem_design.md`](doc/architecture/legacy_archive/ui_subsystem_design.md)
+* **表现层设计**: **[表现层与交互体系](../core/presentation-layer.md)** (完整规范请参阅表现层目录)
+* **历史归档**: [`../../doc/legacy_archive/ui_layout_design.md`](../../doc/legacy_archive/ui_layout_design.md), [`../../doc/legacy_archive/ui_subsystem_design.md`](../../doc/legacy_archive/ui_subsystem_design.md)
 
 ---
 
@@ -237,8 +237,8 @@ UI 层**严禁**直接修改业务数据。所有的交互 (如点击状态栏�
 
 ### 5.3 文档溯源
 
-* **基础设施设计**: [`doc/architecture/05_infrastructure_layer.md`](doc/architecture/05_infrastructure_layer.md)
-* **历史归档**: [`doc/architecture/legacy_archive/cross_platform_abstraction_layer.md`](doc/architecture/legacy_archive/cross_platform_abstraction_layer.md)
+* **基础设施设计**: **[跨平台基础设施层](../core/infrastructure-layer.md)** (完整规范请参阅基础设施目录)
+* **历史归档**: [`../../doc/legacy_archive/cross_platform_abstraction_layer.md`](../../doc/legacy_archive/cross_platform_abstraction_layer.md)
 
 ---
 
@@ -274,8 +274,8 @@ ST 扩展严重依赖 JS `eval` 和全局变量污染，数据流向混乱。
 
 ### 6.3 文档溯源
 
-* **迁移战略**: [`doc/architecture/06_migration_strategy.md`](doc/architecture/06_migration_strategy.md)
-* **历史归档**: [`doc/architecture/legacy_archive/st_prompt_template_migration_design.md`](doc/architecture/legacy_archive/st_prompt_template_migration_design.md)
+* **迁移战略**: **[遗留生态迁移与扩展](../workflows/migration-strategy.md)** (完整规范请参阅工作流目录)
+* **历史归档**: [`../../doc/legacy_archive/st_prompt_template_migration_design.md`](../../doc/legacy_archive/st_prompt_template_migration_design.md)
 
 ---
 
@@ -303,8 +303,8 @@ ST 扩展严重依赖 JS `eval` 和全局变量污染，数据流向混乱。
 
 ### 7.3 文档溯源
 
-* **工作流设计**: [`doc/architecture/07_prompt_processing_workflow.md`](doc/architecture/07_prompt_processing_workflow.md)
-* **关联文档**: `02_jacquard_orchestration.md`, `03_mnemosyne_data_engine.md`, `macro_system_spec.md`
+* **工作流设计**: **[提示词处理工作流](../workflows/prompt-processing.md)** (完整规范请参阅工作流目录)
+* **关联文档**: **[Jacquard 编排层](../core/jacquard-orchestration.md)**, **[Mnemosyne 数据引擎](../core/mnemosyne-data-engine.md)**, [`macro_system_spec.md`](doc/EvaluationDoc/macro_system_spec.md)
 
 ---
 
@@ -340,7 +340,7 @@ ST 扩展严重依赖 JS `eval` 和全局变量污染，数据流向混乱。
 
 ### 8.3 文档溯源
 
-* **导入与迁移**: [`doc/architecture/08_character_import_and_migration.md`](doc/architecture/08_character_import_and_migration.md)
+* **导入与迁移**: **[角色卡导入与迁移系统](../workflows/character-import-migration.md)** (完整规范请参阅工作流目录)
 * **源文档**: `plans/character-card-import-migration-design.md`, `doc/EvaluationDoc/又看遗迹.json`, `doc/EvaluationDoc/观星者（自设）.json`
 
 ---
@@ -463,10 +463,10 @@ Filament 协议的解析是实时流式进行的，包含以下关键机制：
 
 ### 9.3 文档溯源
 
-* **Filament 协议**: [`doc/architecture/09_filament_protocol.md`](doc/architecture/09_filament_protocol.md)
+* **Filament 协议**: **[Filament 协议概述](../protocols/filament-protocol-overview.md)** (完整规范请参阅协议目录)
 * **宏系统规范**: [`doc/EvaluationDoc/macro_system_spec.md`](doc/EvaluationDoc/macro_system_spec.md)
 * **ST 宏参考**: [`doc/EvaluationDoc/micro.md`](doc/EvaluationDoc/micro.md)
-* **关联文档**: `02_jacquard_orchestration.md`, `03_mnemosyne_data_engine.md`, `04_presentation_layer.md`
+* **关联文档**: **[Jacquard 编排层](../core/jacquard-orchestration.md)**, **[Mnemosyne 数据引擎](../core/mnemosyne-data-engine.md)**, **[表现层与交互体系](../presentation/presentation-layer.md)**
 
 ---
 
@@ -520,5 +520,5 @@ Patching 是 L3 层的核心特性，它允许运行时状态对 L2 的静态定
 
 ### 10.3 文档溯源
 
-* **分层运行时架构**: [`doc/architecture/10_layered_runtime_architecture.md`](doc/architecture/10_layered_runtime_architecture.md)
-* **关联文档**: [`02_jacquard_orchestration.md`, `03_mnemosyne_data_engine.md`, `08_character_import_and_migration.md`]
+* **分层运行时架构**: **[分层运行时环境架构](../runtime/layered-runtime-architecture.md)** (完整规范请参阅运行时目录)
+* **关联文档**: **[Jacquard 编排层](../core/jacquard-orchestration.md)**, **[Mnemosyne 数据引擎](../core/mnemosyne-data-engine.md)**, **[角色卡导入与迁移系统](../workflows/character-import-migration.md)**
