@@ -29,13 +29,14 @@ graph TD
         Bus[Jacquard 总线]:::orch
         
         subgraph NativePlugins [原生插件流水线]
-            Planner[Planner Plugin]:::orch
+            PreFlash[Pre-Flash (Planner) Plugin]:::orch
             Builder[Skein Builder]:::orch
             Renderer[Template Renderer (Jinja2)]:::orch
             Assembler[Prompt Assembler]:::orch
             Invoker[LLM Invoker]:::orch
             Parser[Filament Parser]:::orch
             Updater[State Updater]:::orch
+            PostFlash[Post-Flash (Consolidation) Worker]:::orch
         end
     end
 ```
@@ -48,30 +49,39 @@ Jacquard 维护一个插件列表，每个插件实现特定的接口。这种�
 
 ### 2.1 核心插件定义
 
-1. **Skein Builder Plugin**:
+1. **Pre-Flash (Planner) Plugin**:
+    * **职责**: 意图分流与规划。识别用户意图是“日常数值交互”还是“关键剧情事件”。
+    * **动作**: 如果是数值交互，直接计算结果并短路后续流程；如果是事件，则规划使用哪个 Skein 模板。
+    * **产出**: `PlanContext` (包含模板 ID 和初始指令)。
+
+2. **Skein Builder Plugin**:
     * 职责: 向数据层 (Mnemosyne) 请求快照 (`Punchcards`)。
     * 产出: 初始化的 `Skein` 对象。
 
-2. **Template Renderer Plugin (Jinja2)**:
+3. **Template Renderer Plugin (Jinja2)**:
     * **原 PromptASTExecutor**: 已升级为标准的模板渲染引擎。
     * **职责**: 编译并执行 Skein 中的 Jinja2 模板（支持 `{% if %}`, `{% set %}` 等逻辑）。
     * **输入**: 包含 Jinja2 语法的 Skein。
     * **上下文**: 注入 `Mnemosyne` 状态树（只读）和 `Skein` 元数据。
     * **产出**: 逻辑处理完毕、变量已替换的纯文本 Skein。
 
-3. **LLM Invoker Plugin**:
+4. **LLM Invoker Plugin**:
     * 职责: 调用 LLM API，获取流式响应。
     * 输入: 最终渲染的 Prompt 字符串。
 
-4. **Filament Parser Plugin**:
+5. **Filament Parser Plugin**:
     * 职责: 实时解析 LLM 的 Filament 输出。
     * 动作: 提取 `<reply>` 推送给 UI，提取 `<state_update>` 准备后续处理。
 
-5. **State Updater Plugin**:
+6. **State Updater Plugin**:
     * 职责: 收集所有状态变更指令。
     * 动作: 调用 Mnemosyne 更新状态，并持久化历史。
 
-6. **Schema Injector Plugin**:
+7. **Post-Flash (Consolidation) Worker**:
+    * **职责**: 记忆整合与归档（异步执行）。
+    * **动作**: 在会话结束或缓冲区满时，提取关键事件存入 Event Chain，生成角色反思，并归档原始日志。
+
+8. **Schema Injector Plugin**:
     * **职责**: 管理协议 Schema 的动态注入。
     * **动作**: 扫描角色卡配置和动态协议标签 (`<use_protocol>`)，加载对应的 YAML Schema，并将其 `instruction` 和 `examples` 合并到 Skein 中。
 

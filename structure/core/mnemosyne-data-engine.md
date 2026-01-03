@@ -241,9 +241,9 @@ Mnemosyne 不仅是静态数据的存储器，更是记忆全生命周期的管�
 详细的业务场景实现规范（以 Galgame 为例），请参考：
 * 👉 **[Galgame 特化记忆系统设计规范](../../plans/galgame-memory-system-spec.md)**
 
-### 8.1 输入分流 (Input Triage)
+### 8.1 Pre-Flash: 输入分流 (Input Triage)
 
-并非所有的用户交互都具有同等的叙事权重。Mnemosyne 建议在主推理循环之前引入 **Ingestion Pipeline**，对输入意图进行分级处理。
+Pre-Flash 是 Mnemosyne 在主推理循环之前引入的 **Ingestion Pipeline**，用于对输入意图进行分级处理。它识别并非所有用户交互都具有同等叙事权重的事实。
 
 1.  **数值化交互 (Numerical Route)**:
     *   针对高频、重复、低信息量的行为（如“摸头”、“签到”）。
@@ -255,9 +255,9 @@ Mnemosyne 不仅是静态数据的存储器，更是记忆全生命周期的管�
 
 > **Galgame 实现**: 参见规范中的 **Pre-Flash** 机制，它通过轻量级模型对用户意图进行分类 (Routine vs Event)，并动态挂载相应的 Schema。
 
-### 8.2 记忆整合与归档 (Consolidation & Archival)
+### 8.2 Post-Flash: 记忆整合与归档 (Consolidation & Archival)
 
-随着对话进行，活跃上下文 (Active Context) 最终会超出窗口限制。Mnemosyne 通过异步的 **Consolidation Worker** 将短期记忆转化为长期记忆。
+Post-Flash 是 Mnemosyne 的异步 **Consolidation Worker**，当活跃上下文 (Active Context) 超出窗口限制或会话结束时触发，将短期记忆转化为长期记忆。
 
 **核心流程**:
 

@@ -21,8 +21,8 @@ Clotho 的提示词处理流程是一个高度结构化、确定性的流水线�
 
 ```mermaid
 graph TD
-    UserInput((用户输入)) --> Planner[1. Planner: 意图规划]
-    Planner --> SkeinBuilder[2. Skein Builder: 原始构建]
+    UserInput((用户输入)) --> PreFlash[1. Pre-Flash (Planner): 意图分流]
+    PreFlash --> SkeinBuilder[2. Skein Builder: 原始构建]
     
     subgraph DataFetch [数据获取]
         Mnemosyne[(Mnemosyne State)] -.->|快照 (Snapshot)| SkeinBuilder
@@ -41,19 +41,24 @@ graph TD
     FinalSkein --> Assembler[4. Assembler: 最终拼接]
     Assembler --> String[Prompt String]
     String --> Invoker[5. LLM Invoker]
+    Invoker --> Parser[6. Filament Parser]
+    Parser --> Updater[7. State Updater]
+    Updater --> PostFlash[8. Post-Flash: 记忆整合 (异步)]
 ```
 
 ---
 
 ## 2. 详细处理阶段 (Detailed Stages)
 
-### 2.1 第一阶段：意图规划 (Planner)
+### 2.1 第一阶段：Pre-Flash (Planner)
 
 - **输入**: 用户发送的消息文本、当前会话 ID。
 - **职责**:
-  - 分析用户意图（正常对话、指令执行、重试等）。
-  - 决定使用哪个 **Prompt Template**（例如：默认对话模板、冒险模式模板）。
-  - 路由到相应的 Pipeline 分支。
+  - **意图分流 (Triage)**: 区分“数值化交互”（如摸头）与“事件化交互”（如剧情对话）。
+  - **意图规划**:
+      - 分析用户意图（正常对话、指令执行、重试等）。
+      - 决定使用哪个 **Prompt Template**（例如：默认对话模板、冒险模式模板）。
+      - 路由到相应的 Pipeline 分支。
 - **产出**: `PlanContext` (包含模板 ID 和初始指令)。
 
 ### 2.2 第二阶段：Skein 构建 (Skein Builder)
@@ -100,6 +105,16 @@ graph TD
 
 - **输入**: `String`。
 - **职责**: 调用底层 API (OpenAI, Anthropic, Local) 发送请求并接收流式响应。
+
+### 2.6 第八阶段：Post-Flash (Consolidation) - 异步
+
+> 注：Parser 和 State Updater 阶段在标准流程中，而 Post-Flash 是异步触发的。
+
+- **触发**: 当 Active Context 达到阈值或会话结束。
+- **职责**:
+  - **日志压缩**: 将近期对话生成摘要。
+  - **事件提取**: 提取关键剧情点存入 Event Chain。
+  - **归档**: 将原始日志移入冷存储。
 
 ---
 
