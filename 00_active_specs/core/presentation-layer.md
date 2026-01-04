@@ -10,7 +10,11 @@
 
 ## 1. 表现层概览 (Presentation Overview)
 
-表现层负责将底层数据流转化为可视化的像素。我们采用 **"Hybrid SDUI (混合服务端驱动 UI)"** 架构，旨在解决高性能原生体验与海量第三方内容兼容性之间的矛盾。
+表现层负责将底层数据流转化为可视化的像素。我们基于 **Flutter** 构建了高性能的跨平台渲染体系，采用 **"Hybrid SDUI (混合服务端驱动 UI)"** 架构，旨在实现：
+
+1.  **多端一致性**: 确保 Windows 桌面端与 Android 移动端拥有统一的视觉语言与交互逻辑。
+2.  **高性能原生体验**: 利用 Flutter 的 Skia/Impeller 引擎实现 60fps+ 的流畅渲染。
+3.  **兼容性**: 通过 Webview 容器兼顾海量第三方 Web 生态内容。
 
 ### 1.1 核心设计理念
 
@@ -82,9 +86,11 @@ graph TD
 *   **Schema 驱动渲染**:
     *   当用户在 Inspector 中选择查看某个状态节点时（如 `character.inventory`）。
     *   系统会检查该节点及其父节点中的 `$meta.ui_schema` 属性。
-    *   **如果找到 Schema**: 使用 `Hybrid SDUI` 的 Web 轨道，加载一个通用的、由 Schema 定义的渲染器（如表格、平铺卡片）。
+    *   **如果找到 Schema**: 
+        * UI 层检查 `$meta.ui_schema` 定义（例如表格列宽、排序规则、图标）。
+        * 使用 `Hybrid SDUI` 的 Web 轨道，加载一个通用的、由 Schema 定义的 "Table Renderer" 或 "Card Renderer" 组件。
     *   **如果未找到**: 回退到默认的、格式化的 JSON Tree 视图。
-*   **价值**: 此设计吸收了 ACU Visualizer 的灵活性，允许创作者通过数据本身来定义其展示方式，而无需修改客户端代码。
+*   **价值**: 复刻 ACU Visualizer 的灵活性，让用户/创作者可以自定义数据的展示方式，而无需修改客户端代码。
 
 ### 4.3 InputDraftController (输入草稿控制器)
 UI 子系统与用户输入之间的**唯一写通道**。

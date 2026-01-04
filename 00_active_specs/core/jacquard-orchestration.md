@@ -38,6 +38,10 @@ graph TD
             Updater[State Updater]:::orch
             PostFlash[Post-Flash (Consolidation) Worker]:::orch
         end
+
+        subgraph Maintenance [维护流水线]
+            BatchPipeline[Batch Processor Shuttle]:::orch
+        end
     end
 ```
 
@@ -52,9 +56,11 @@ Jacquard 维护一个插件列表，每个插件实现特定的接口。这种�
 1. **Pre-Flash (Planner) Plugin**:
     * **职责**: 意图分流与长短期目标规划。
     * **短期规划**: 识别用户意图是“日常数值交互”还是“关键剧情事件”。
-    * **长期规划 (新增)**: 读取并更新 L3 Session State 中的 `planner_context`，确保跨轮次的叙事连贯性。
-* **动作**: 如果是数值交互，直接计算结果并短路后续流程；如果是事件，则规划使用哪个 Skein 模板，并更新 `planner_context`。
-* **产出**: `PlanContext` (包含模板 ID、初始指令、更新后的 `planner_context`)。
+    * **长期规划 (新增)**: 
+        * **Read**: 启动时读取 L3 Session State 中的 `planner_context` (包含 `current_goal`, `pending_subtasks`)。
+        * **Write**: 规划下一轮行动，并在生成后更新 `planner_context`，确保 AI 即使被打断也不会忘记主线任务。
+    * **动作**: 如果是数值交互，直接计算结果并短路后续流程；如果是事件，则规划使用哪个 Skein 模板，并更新 `planner_context`。
+    * **产出**: `PlanContext` (包含模板 ID、初始指令、更新后的 `planner_context`)。
 
 2. **Skein Builder Plugin**:
     * 职责: 向数据层 (Mnemosyne) 请求快照 (`Punchcards`)。
@@ -80,13 +86,15 @@ Jacquard 维护一个插件列表，每个插件实现特定的接口。这种�
     * 动作: 调用 Mnemosyne 更新状态，并持久化历史。
 
 7. **Post-Flash (Consolidation) Worker**:
-    * **职责**: 记忆整合与归档（异步执行）。负责处理 **增量、近实时** 的记忆整理。
+    * **职责**: 记忆整合与归档（异步执行）。负责处理 **增量 (Incremental)、近实时** 的记忆整理。
     * **动作**: 在会话结束或缓冲区满时，提取关键事件存入 Event Chain，生成角色反思，并归档原始日志。
 
-8. **Batch Processor Shuttle (新增)**:
-    * **职责**: 负责处理 **批量、非实时** 的重型维护任务。
-    * **场景**: 导入外部长篇聊天记录、对历史记忆进行大规模重构或重新总结。
-    * **动作**: 在独立的后台 `MaintenancePipeline` 中运行，分块读取历史，模拟 AI “阅读”并批量提交更新。
+8. **维护流水线 (MaintenancePipeline & BatchShuttle)**:
+    * **职责**: 负责处理 **批量 (Bulk)、非实时** 的重型维护任务。这是 Post-Flash 的必要补充。
+    * **场景**: 
+        * **历史导入 (History Import)**: 处理外部导入的成百上千条聊天记录，分块快速重建状态和事件链。
+        * **长线记忆重构 (Memory Refactoring)**: 当用户修改世界设定或觉得 AI 变笨时，对过去的历史记忆进行一次全量的“重新总结”。
+    * **动作**: 在独立的后台 `MaintenancePipeline` 中运行，分块读取历史，模拟 AI “阅读”并批量提交更新，低频高吞吐。
 
 9. **Schema Injector Plugin**:
     * **职责**: 管理协议 Schema 的动态注入。

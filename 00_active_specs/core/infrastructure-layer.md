@@ -10,14 +10,14 @@
 
 ## 1. 架构综述 (Infrastructure Overview)
 
-为了实现 `Neuropean` 项目在 Android 和 Windows 端的长期稳定性与可维护性，基础设施层设计严格遵循 **依赖倒置原则 (Dependency Inversion Principle, DIP)**。
+为了实现 Clotho 项目在 **Android** 和 **Windows** 等多平台上的**长期稳定性、高性能与代码复用**，基础设施层以 **Flutter** 为统一底座，设计严格遵循 **依赖倒置原则 (Dependency Inversion Principle, DIP)**。
 
 ### 1.1 核心设计理念
 
-传统的架构往往是上层 UI 直接调用底层原生 API，导致强耦合。我们采用 **Clean Architecture** 结合 **Repository Pattern**，将依赖关系反转：
+传统的架构往往是上层 UI 直接调用底层原生 API，导致强耦合且难以跨平台。我们采用 **Clean Architecture** 结合 **Repository Pattern**，利用 Flutter 的跨平台能力将依赖关系反转：
 
-* **UI 层 (Presentation Layer)**：只依赖于纯 Dart 编写的抽象接口 (Domain)。
-* **原生实现层 (Data Layer)**：负责具体的平台调用，实现上述接口。
+* **UI 层 (Presentation Layer)**：基于 Flutter 构建，只依赖于纯 Dart 编写的抽象接口 (Domain)。
+* **原生实现层 (Data Layer)**：负责具体的平台调用（如 Android 的 Intent 或 Windows 的 Win32 API），实现上述接口。
 
 ### 1.2 架构分层图解
 

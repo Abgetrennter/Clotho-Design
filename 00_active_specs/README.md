@@ -74,6 +74,7 @@ graph TD
 - **文件列表**:
   - [`jacquard-orchestration.md`](core/jacquard-orchestration.md) - Jacquard 编排层
   - [`mnemosyne-data-engine.md`](core/mnemosyne-data-engine.md) - Mnemosyne 数据引擎
+    - [`mnemosyne/sqlite-architecture.md`](core/mnemosyne/sqlite-architecture.md) - Mnemosyne SQLite 架构
   - [`presentation-layer.md`](core/presentation-layer.md) - 表现层
   - [`infrastructure-layer.md`](core/infrastructure-layer.md) - 基础设施层
 
@@ -112,12 +113,13 @@ graph TD
 ### 6. 参考 (Reference)
 
 - **定位**: 技术参考与工具文档
-- **内容**: 术语表、API 参考、配置指南
+- **内容**: 术语表、API 参考、配置指南、架构分析
 - **目标读者**: 所有技术用户
 - **文件列表**:
-  - [`glossary.md`](reference/glossary.md) - 术语表
-  - [`api-reference.md`](reference/api-reference.md) - API 参考
-  - [`configuration.md`](reference/configuration.md) - 配置指南
+  - [`macro-system-spec.md`](reference/macro-system-spec.md) - 宏系统规范 (Clotho/Jinja2)
+  - [`st-macro-reference.md`](reference/st-macro-reference.md) - SillyTavern 宏参考
+  - [`acu-architecture-analysis.md`](reference/acu-architecture-analysis.md) - ACU 架构分析
+  - [`README.md`](reference/README.md) - 参考文档导读
 
 ## 🚀 快速开始
 

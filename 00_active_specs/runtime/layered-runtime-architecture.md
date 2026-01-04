@@ -163,27 +163,31 @@ sequenceDiagram
 
 最终传递给编排层 (Jacquard) 的是一个聚合后的上下文对象，我们称之为 **Mnemosyne Context**。
 
-```typescript
-interface MnemosyneContext {
+详细的数据结构定义请参阅 👉 **[Mnemosyne 抽象数据结构设计](../mnemosyne/abstract-data-structures.md#41-mnemosyne-context-聚合根)**。
+
+```text
+// 抽象结构示意 (Abstract Structure)
+MnemosyneContext {
   // Layer 0: 策略与骨架
   infrastructure: {
-    preset: PromptTemplate;
-    apiConfig: ApiConfiguration;
-  };
+    preset: PromptTemplate
+    apiConfig: ApiConfiguration
+  }
   
   // Layer 1 & 2 (Projected): 静态引用的投影 (已应用 Patch)
   world: {
-    character: ProjectedCharacterData; // L2 + L3 Patch
-    globalLore: List<LorebookEntry>;   // L1 + L3 Status
-    user: PersonaData;                 // L1
-  };
+    activeCharacter: ProjectedCharacter // L2 + L3 Patch
+    globalLore: List<LorebookEntry>     // L1 + L3 Status
+    user: PersonaData                   // L1
+  }
 
   // Layer 3: 纯动态状态
   session: {
-    history: List<Message>;
-    stateTree: VWDStateTree;
-    activeLoreIds: List<string>;
-  };
+    history: List<Message>
+    state: StateTree            // 完整的状态树视图
+    planner: PlannerContext     // 规划上下文 (v1.2)
+    patches: PatchMap           // 持久化变更集
+  }
 }
 ```
 

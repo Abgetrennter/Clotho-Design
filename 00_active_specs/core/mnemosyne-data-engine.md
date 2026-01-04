@@ -12,6 +12,9 @@
 
 **Mnemosyne** 是数据层的核心，它不再仅仅是静态数据的仓库，而是升级为 **动态上下文生成引擎 (Dynamic Context Generation Engine)**。它负责管理系统的“长期记忆”与“瞬时状态”，并为编排层提供精准的上下文快照。
 
+详细的底层存储与数据架构设计，请参阅：
+* 👉 **[Mnemosyne SQLite 存储架构设计](../mnemosyne/sqlite-architecture.md)**
+
 ### 1.1 核心职责
 
 1. **数据托管**: 管理 Lorebook, Presets, World Rules。
@@ -43,6 +46,19 @@
     * **结构定义**:
         * **Level 1 (Micro-Log)**: 每轮对话的客观总结，通过 `source_refs` 链接到原始消息。
         * **Level 2 (Macro-Event)**: 剧情章节大纲，通过 `child_logs` 聚合多个 Micro-Log。
+    * **显式叙事链接 (Explicit Narrative Linking)**:
+        * 在 Event Schema 中引入 `source_refs` 字段，解决 RAG 检索"有大概无细节"的问题。
+        * 示例:
+          ```json
+          // Event Chain Entry
+          {
+            "event_id": "evt_defeat_wolf",
+            "summary": "击败了暗影狼，获得了核心。",
+            "timestamp": 170000000,
+            // 显式引用原始对话日志的 ID，允许系统在检索到该事件时，精确"下钻"到当时的原始对话
+            "source_refs": ["msg_turn_105", "msg_turn_106"]
+          }
+          ```
 5. **RAG Chain (检索增强链)**:
     * 内容: 向量化的记忆片段。
     * 逻辑: 基于 History 的语义检索结果，动态注入背景知识。
@@ -64,16 +80,15 @@
 
 ### 3.1 结构定义
 
-状态节点不再是简单的 Key-Value，而是支持 `[Value, Description]` 的复合结构。
+状态节点不再是简单的 Key-Value，而是支持 `[Value, Description]` 的复合结构。详细定义请参阅 👉 **[Mnemosyne 抽象数据结构设计](../mnemosyne/abstract-data-structures.md#31-vwd-模型-value-with-description)**。
 
-```dart
-// Dart 伪代码
-class StateNode {
-  dynamic value;          // 实际值 (80)
-  String? description;    // 语义描述 ("HP, 0 is dead")
-  
-  dynamic toJson() => description == null ? value : [value, description];
-}
+```text
+// 抽象结构示意 (Abstract Structure)
+VWDNode<T> = T | [T, String]
+
+// JSON 示例
+"health": [80, "HP, 0 is dead"]
+"mana": 50 // 简写形式，无描述
 ```
 
 ### 3.2 渲染策略
@@ -97,6 +112,7 @@ class StateNode {
 * **description**: 语义化描述（VWD 集成）。
 * **extensible**: 是否允许 LLM 在根节点下添加新属性。
 * **required**: 必须存在的字段列表。
+* **ui_schema**: (v1.2 新增) 定义数据的视觉呈现方式（表格列宽、排序、图标等），供 Presentation 层 Inspector 组件使用。
 
 ### 4.2 Standard RPG Schema (v1.2 新增)
 
@@ -163,7 +179,23 @@ Mnemosyne 支持在状态树中定义 `$meta.template`，并在数据访问时�
 | | `"all"` | 保护整个子树不被删除 |
 | **updatable** | `false` | 锁定节点值，禁止修改（除非操作显式覆盖） |
 
-### 4.4 完整 Schema 示例
+### 4.5 递归规划上下文 (Recursive Planner Context) - v1.2
+
+为了增强长线叙事的稳定性，Mnemosyne 在 L3 Session State 中引入了专用的 `planner_context` 节点，用于持久化 Pre-Flash 插件生成的短期目标与即时念头。
+
+```json
+// L3 Session State 中的 planner_context
+"planner_context": {
+  "current_goal": "探索低语森林深处",
+  "pending_subtasks": ["寻找水源", "设立营地"],
+  "last_thought": "玩家似乎对那个发光的蘑菇感兴趣，下一轮引导他去查看。"
+}
+```
+
+*   **读写循环**: Jacquard 在启动时读取此上下文注入 Prompt，LLM 生成响应后更新此上下文。
+*   **价值**: 即使玩家中断当前话题，`current_goal` 依然保留，确保 AI 不会遗忘主线任务。
+
+### 4.6 完整 Schema 示例
 
 ```json
 {
