@@ -1,4 +1,4 @@
-参考文件/ERA/
+
 参考文件/数据库/11js-split/
 参考文件/数据库/12js-split/
 参考文件/数据库/21js-split/
@@ -10,3 +10,8 @@
 
 *.js
 *.json
+*.zip
+*.svg
+*.py
+*.vue
+*.ts
