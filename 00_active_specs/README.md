@@ -74,7 +74,8 @@ graph TD
 - **文件列表**:
   - [`jacquard-orchestration.md`](core/jacquard-orchestration.md) - Jacquard 编排层
   - [`mnemosyne-data-engine.md`](core/mnemosyne-data-engine.md) - Mnemosyne 数据引擎
-    - [`mnemosyne/sqlite-architecture.md`](core/mnemosyne/sqlite-architecture.md) - Mnemosyne SQLite 架构
+    - [`mnemosyne/sqlite-architecture.md`](mnemosyne/sqlite-architecture.md) - SQLite 物理存储架构
+    - [`mnemosyne/hybrid-resource-management.md`](mnemosyne/hybrid-resource-management.md) - 混合资源管理与 Asset 协议
   - [`presentation-layer.md`](core/presentation-layer.md) - 表现层
   - [`infrastructure-layer.md`](core/infrastructure-layer.md) - 基础设施层
 

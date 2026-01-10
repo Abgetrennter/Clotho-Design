@@ -114,12 +114,23 @@ v1.2 新增，用于长线目标管理。PlannerContext 随 Turn 变化，是 Tu
 
 `LorebookEntry` 是 RAG 的静态知识库源，存储关于世界观、历史、魔法系统等非叙事性知识。
 
+v1.2 引入了 **4-Quadrant Static Taxonomy** 分类法，以支持差异化的注入策略。
+
 - **id**: String (UUID)
 - **keys**: List<String> (触发关键词，用于关键词匹配)
 - **content**: String (实际内容)
-- **category**: String (分类，e.g., "Location", "History", "Magic")
+- **category**: Enum { axiom, agent, encyclopedia, directive } (标准化分类)
+    - **axiom**: 法则与公理 (注入 System Chain)
+    - **agent**: 角色与代理 (注入 Floating Chain 高优先级/浅层)
+    - **encyclopedia**: 博物与百科 (注入 Floating Chain 标准/深层)
+    - **directive**: 风格与元指令 (注入 Instruction Block/User 附近)
 - **activeStatus**: Enum { active, inactive } (是否启用)
 - **vectorId**: String (关联向量库 ID, 指向 `vec_lorebook` 表)
+- **metadata**: Dictionary<String, Any> (扩展元数据)
+    - **injection_policy**: Dictionary<String, Any> (可选，覆盖默认策略)
+        - **scope**: Enum { global, session }
+        - **position**: Enum { system, floating_head, floating_tail, user_instruction }
+        - **priority**: Integer (0-100)
 
 ---
 

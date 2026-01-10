@@ -147,3 +147,39 @@ graph TD
 ### 5.4 实现策略
 
 基于 Dart 原生 `StreamController.broadcast()` 实现多播机制，支持背压处理 (Backpressure) 以防止 UI 卡顿。
+
+---
+
+## 6. 资源管理服务 (Asset Management Service) - v1.2 新增
+
+为了支持 `asset://` 统一协议及其在 **Library (L2)**、**Session (L3)** 和 **Vault (Global Cache)** 之间的复杂解析，基础设施层提供统一的 `AssetManagementService`。
+
+### 6.1 核心职责
+
+1.  **协议解析 (Resolution)**: 将抽象的 `asset://` URI 转换为具体的 `File` 流或网络流。
+2.  **缓存管理 (The Vault)**: 自动处理远程资源的下载、哈希计算和去重存储。
+3.  **生命周期感知**: 处理 L2 Pattern 卸载后的资源回退 (Fallback) 逻辑。
+
+### 6.2 接口定义 (Dart Interface)
+
+```dart
+abstract class AssetManagementService {
+  /// 解析 URI 并返回二进制流
+  /// [uri]: asset://pattern/uuid/bg.png
+  /// [fallback]: 如果找不到，是否返回默认占位符
+  Stream<List<int>> resolve(String uri, {bool fallback = true});
+
+  /// 获取资源的本地文件路径 (用于 FFI 调用等需直接文件访问的场景)
+  /// 如果资源在网络或压缩包中，可能需要先解压到临时目录
+  Future<File?> getLocalFile(String uri);
+
+  /// 手动触发 Vault 垃圾回收
+  /// [activeHashes]: 当前所有 Session 和 Library 正在引用的 Hash 集合
+  Future<int> performGarbageCollection(Set<String> activeHashes);
+}
+```
+
+### 6.3 跨层协作
+
+*   **UI 层**: 通过 `AssetImageProvider` (自定义 ImageProvider) 调用此服务，UI 组件只消费 `asset://` 字符串。
+*   **Mnemosyne**: 在导出 Session 时，调用此服务获取所有依赖资源的物理路径以构建 Bundle。

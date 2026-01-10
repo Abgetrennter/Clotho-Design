@@ -63,8 +63,13 @@ Jacquard 维护一个插件列表，每个插件实现特定的接口。这种�
     * **产出**: `PlanContext` (包含模板 ID、初始指令、更新后的 `planner_context`)。
 
 2. **Skein Builder Plugin**:
-    * 职责: 向数据层 (Mnemosyne) 请求快照 (`Punchcards`)。
-    * 产出: 初始化的 `Skein` 对象。
+* 职责: 向数据层 (Mnemosyne) 请求快照 (`Punchcards`)。
+* **Routing Logic**: v1.2 引入了基于 `LorebookCategory` 的分流装填逻辑。
+    * **Axiom**: 注入到 `System Chain` (Extension Block)。
+    * **Agent**: 注入到 `Floating Chain` (High Priority, Depth 3-5)。
+    * **Encyclopedia**: 注入到 `Floating Chain` (Standard Priority, Depth 5-10)。
+    * **Directive**: 注入到 `Instruction Block` (紧邻 User Input)。
+* 产出: 初始化的 `Skein` 对象。
 
 3. **Template Renderer Plugin (Jinja2)**:
     * **原 PromptASTExecutor**: 已升级为标准的模板渲染引擎。
