@@ -19,7 +19,7 @@
 
 1. **数据托管**: 管理 Lorebook, Presets, World Rules。
 2. **混合事件存储**: 区分 **数值 (VWD)** 与 **事件 (Events)**，实现日常互动与关键剧情的分离处理。
-3. **快照生成**: 根据 Time Pointer 聚合数据，生成不可变的 `Punchcards`。
+3. **快照生成**: 根据 Time Pointer 聚合数据，生成不可变的 `Punchcards` (隐喻：织谱+丝络的切片)。
 4. **状态管理**: 维护 RPG 变量，处理 VWD (Value with Description) 数据模型，并执行 **ACL 访问控制**。
 
 ---
@@ -36,6 +36,7 @@
 2. **State Chain (状态链)**:
     * 内容: 结构化的 RPG 数值与状态 (VWD State Tree)。
     * 策略: **稀疏快照 (Sparse Snapshots) + 操作日志 (OpLog)**。
+    * 隐喻: **丝络 (Threads)**。它是编织过程中不断加入的、改变织卷走向的“线”。
     * 作用: 确保“时间旅行”时，世界状态能精确回滚，并优化长对话性能。
 3. **Event Chain (事件链)**:
     * 内容: **关键逻辑节点** (Quest, Achievement, Relationship Milestones)。
@@ -223,7 +224,7 @@ Mnemosyne 支持在状态树中定义 `$meta.template`，并在数据访问时�
 
 ## 5. 性能优化策略 (Performance Strategy)
 
-为了应对长对话（1000+ 轮次）和复杂角色卡（几千条 World Info）带来的性能挑战，Mnemosyne 采用了激进的优化策略。
+为了应对长对话（1000+ 轮次）和复杂织谱 (Pattern)（几千条 World Info）带来的性能挑战，Mnemosyne 采用了激进的优化策略。
 
 ### 5.1 稀疏快照与 OpLog (Sparse Snapshots & OpLog)
 
@@ -239,7 +240,7 @@ Mnemosyne 支持在状态树中定义 `$meta.template`，并在数据访问时�
 
 ### 5.2 惰性求值视图 (Lazy Evaluation View)
 
-为了避免在每次 Trace 时全量组装庞大的 Lorebook 和复杂的角色状态，Mnemosyne 进化为 **按需加载**。
+为了避免在每次 Trace 时全量组装庞大的 Lorebook 和复杂的织谱 (Pattern) 状态，Mnemosyne 进化为 **按需加载**。
 
 * **现状**: Trace -> Project -> Assemble -> Punchcards (全量计算)。
 * **优化**: `Punchcards` 返回的是一个 **Proxy (代理对象)**。
@@ -262,7 +263,7 @@ Mnemosyne 支持在状态树中定义 `$meta.template`，并在数据访问时�
 
 ### 6.1 机制摘要
 
-Mnemosyne 负责执行 **L3 (Session State)** 层对 **L2 (Character Assets)** 层的动态补丁应用。
+Mnemosyne 负责执行 **L3 (The Threads)** 层对 **L2 (The Pattern)** 层的动态补丁应用，这个过程隐喻为“将新的丝线编织进原始图样中”。
 
 具体的 **Patching 工作原理**、**Deep Merge 算法** 以及 **分层架构定义**，已迁移至单一事实来源 (SSOT) 文档，请务必查阅：
 
@@ -270,7 +271,7 @@ Mnemosyne 负责执行 **L3 (Session State)** 层对 **L2 (Character Assets)** �
 
 Mnemosyne 在此过程中扮演执行者的角色，但不是每次推理时临时计算，而是采用 **上下文生命周期 (Context Lifecycle)** 管理：
 
-1. **Context Load (加载)**: 当用户激活角色或切换存档时，Mnemosyne 读取 L2 静态资源，并立即应用 L3 中的持久化 Patches，在内存中构建出 **Projected Entity**。
+1. **Context Load (加载)**: 当用户激活 **织谱 (Pattern)** 或切换 **织卷 (Tapestry)** 时，Mnemosyne 读取 L2 静态资源，并立即应用 L3 中的持久化 Patches，在内存中构建出 **Projected Entity**。
 2. **Runtime Sync (运行时同步)**: 所有的属性变更请求（如脚本修改）直接作用于内存中的 Projected Entity，确保即时生效。
 3. **Persist (持久化)**: 变更同时被捕获并回写到 L3 的 `patches` 结构中，确保状态在会话结束或切换后得以保存。
 

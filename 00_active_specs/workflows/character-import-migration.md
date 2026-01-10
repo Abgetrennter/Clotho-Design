@@ -1,20 +1,22 @@
-# 角色卡导入与迁移系统 (Character Card Import & Migration)
+# 织谱导入与迁移系统 (Pattern Import & Migration)
 
-**版本**: 2.0.0  
-**日期**: 2025-12-27  
-**状态**: Final Draft  
-**作者**: 资深系统架构师 (Architect Mode)  
-**源文档**: `plans/character-card-import-migration-design.md`, `doc/EvaluationDoc/又看遗迹.json`, `doc/EvaluationDoc/观星者（自设）.json`
+**版本**: 2.1.0 (Metaphor Update)
+**日期**: 2026-01-10
+**状态**: Active
+**作者**: 资深系统架构师 (Architect Mode)
+**源文档**: `plans/character-card-import-migration-design.md`
 
 ---
 
 ## 1. 核心设计理念
 
-本系统旨在解决从 SillyTavern (ST) 生态向 Clotho 架构迁移时的复杂性问题。鉴于 ST 极其灵活（甚至混乱）的生态，我们摒弃"一键全自动"的幻想，转而采用 **"深度分析 -> 双重分诊 -> 专用通道"** 的半自动处理范式。
+本系统旨在解决从 SillyTavern (ST) 生态向 Clotho 架构迁移时的复杂性问题。在 Clotho 的隐喻体系中，传统的 **"Character Card (角色卡)"** 被重新定义为 **"The Pattern (织谱)"** —— 即定义了命运如何编织的静态蓝图。
+
+鉴于 ST 生态极其灵活（甚至混乱），我们摒弃"一键全自动"的幻想，转而采用 **"深度分析 -> 双重分诊 -> 专用通道"** 的半自动处理范式，将旧时代的卡片转化为新时代的织谱。
 
 ### 1.1 处理范式：分诊 (Triage)
 
-系统不尝试直接转换所有内容，而是首先通过 **核心分析引擎** 对复杂组件（世界书、正则脚本）进行**特征识别**，然后生成预分类标签，交由用户在**分诊界面**确认，最后根据分类进入不同的处理流水线。
+系统不尝试直接转换所有内容，而是首先通过 **核心分析引擎** 对复杂组件（世界书、正则脚本）进行**特征识别**，然后生成预分类标签，交由用户在**分诊界面**确认，最后根据分类进入不同的处理流水线，最终生成标准的 **Pattern (L2 蓝图)**。
 
 ---
 
@@ -22,7 +24,7 @@
 
 ```mermaid
 graph TD
-    Input[CCv3 角色卡] --> Phase1[Phase 1: 分析与分诊]
+    Input[ST Character Card] --> Phase1[Phase 1: 分析与分诊]
     
     subgraph Phase1 [Phase 1: 分析与分诊]
         Parser[基础解析器] --> Fields[基础字段]
@@ -49,7 +51,7 @@ graph TD
     end
     
     subgraph Phase3 [Phase 3: 整合]
-        Fields & LB_Static & LB_Instruct & EJS_Converter & Native_Widget & WebView_Sandbox --> Mnemosyne[Clotho 数据存储]
+        Fields & LB_Static & LB_Instruct & EJS_Converter & Native_Widget & WebView_Sandbox --> Mnemosyne[Pattern (L2) 数据存储]
     end
 ```
 
@@ -190,7 +192,7 @@ class UIInjectionConfig {
 
 在迁移向导的 **"Phase 2: 复杂内容处理"** 中，新增 **Schema 确认** 步骤：
 
-1. **展示发现**: "检测到该角色卡包含复杂的'SFW 输出格式'定义 (约 500 Tokens)。"
+1. **展示发现**: "检测到该织谱 (Pattern) 包含复杂的'SFW 输出格式'定义 (约 500 Tokens)。"
 2. **提供选项**:
     * ✅ **提取并引用 (推荐)**: 移除原文中的定义，替换为 `<use_protocol>` 标签。Jacquard 将在运行时自动注入标准化的、经过优化的规则。
     * ❌ **保留原样**: 保持原始文本不变（适用于非标准或极其特殊的规则）。
@@ -198,7 +200,7 @@ class UIInjectionConfig {
 
 ### 9.4 运行时注入机制
 
-当 Jacquard 在 Character Card 中遇到 `<use_protocol>ID</use_protocol>` 标签时：
+当 Jacquard 在 **Pattern (织谱)** 中遇到 `<use_protocol>ID</use_protocol>` 标签时：
 
 1. **查询**: 从 Clotho 内置的 Schema Library 中查找对应 ID 的 Schema 定义。
 2. **注入**: 将 Schema 定义中的 System Instruction 注入到 Prompt 的 System 区域。
@@ -259,7 +261,7 @@ class UIInjectionConfig {
 * **输入端**: XML + YAML
 * **输出端**: XML + JSON (Filament 协议 V3)
 
-### 11.2 世界书条目格式转换
+### 11.2 织谱条目 (Lorebook) 格式转换
 
 在导入过程中，系统会对 Lorebook 条目中的 `content` 进行格式规范化。
 

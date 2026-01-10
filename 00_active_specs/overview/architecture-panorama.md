@@ -308,11 +308,11 @@ ST 扩展严重依赖 JS `eval` 和全局变量污染，数据流向混乱。
 
 ---
 
-## 第八章：角色卡导入与迁移系统 (Character Card Import & Migration)
+## 第八章：织谱导入与迁移系统 (Pattern Import & Migration)
 
 ### 8.1 模块摘要
 
-本模块设计了完整的角色卡导入与迁移系统，采用 **"深度分析 -> 双重分诊 -> 专用通道"** 的半自动处理范式。系统摒弃"一键全自动"的幻想，通过核心分析引擎对复杂组件（世界书、正则脚本）进行特征识别，然后生成预分类标签，交由用户在分诊界面确认。
+本模块设计了完整的 **织谱 (Pattern)** 导入与迁移系统（原角色卡导入），采用 **"深度分析 -> 双重分诊 -> 专用通道"** 的半自动处理范式。系统将 SillyTavern 的 Character Card 视为待转换的原始图样，通过核心分析引擎对复杂组件（世界书、正则脚本）进行特征识别，最终生成 Clotho 标准的 L2 Pattern。
 
 ### 8.2 核心要素
 
@@ -340,7 +340,7 @@ ST 扩展严重依赖 JS `eval` 和全局变量污染，数据流向混乱。
 
 ### 8.3 文档溯源
 
-* **导入与迁移**: **[角色卡导入与迁移系统](../workflows/character-import-migration.md)** (完整规范请参阅工作流目录)
+* **导入与迁移**: **[织谱导入与迁移系统](../workflows/character-import-migration.md)** (完整规范请参阅工作流目录)
 * **源文档**: `plans/character-card-import-migration-design.md`, `doc/EvaluationDoc/又看遗迹.json`, `doc/EvaluationDoc/观星者（自设）.json`
 
 ---
@@ -466,7 +466,7 @@ Filament 协议的解析是实时流式进行的，包含以下关键机制：
 * **Filament 协议**: **[Filament 协议概述](../protocols/filament-protocol-overview.md)** (完整规范请参阅协议目录)
 * **宏系统规范**: [`doc/EvaluationDoc/macro_system_spec.md`](doc/EvaluationDoc/macro_system_spec.md)
 * **ST 宏参考**: [`doc/EvaluationDoc/micro.md`](doc/EvaluationDoc/micro.md)
-* **关联文档**: **[Jacquard 编排层](../core/jacquard-orchestration.md)**, **[Mnemosyne 数据引擎](../core/mnemosyne-data-engine.md)**, **[表现层与交互体系](../presentation/presentation-layer.md)**
+* **关联文档**: **[Jacquard 编排层](../core/jacquard-orchestration.md)**, **[Mnemosyne 数据引擎](../core/mnemosyne-data-engine.md)**, **[表现层与交互体系](../core/presentation-layer.md)**
 
 ---
 
@@ -474,34 +474,24 @@ Filament 协议的解析是实时流式进行的，包含以下关键机制：
 
 ### 10.1 模块摘要
 
-本模块定义了 Clotho 运行时环境的核心架构，即 **"分层叠加模型 (Layered Sandwich Model)"**。该模型将 SillyTavern 角色卡概念解构为四个物理隔离但逻辑叠加的层次：**框架层 (L0)**、**环境层 (L1)**、**蓝图层 (L2)** 和 **实例层 (L3)**。通过引入 **"写时复制 (Copy-on-Write)"** 和 **"动态补丁 (Patching)"** 机制，实现了角色成长与原始设定的完美分离，支持平行宇宙与无损回溯。
+本模块定义了 Clotho 运行时环境的核心架构，即 **"织卷编织模型 (Tapestry Weaving Model)"**。该模型将传统的会话概念解构为三个逻辑层次：**织谱 (Pattern/L2)**、**丝络 (Threads/L3)** 和 **织卷 (Tapestry/Instance)**。通过引入 **"写时复制 (Copy-on-Write)"** 和 **"动态补丁 (Patching)"** 机制，实现了角色成长与原始设定的完美分离。
 
 ### 10.2 核心要素
 
 #### 10.2.1 四层叠加模型 (The Layered Sandwich)
 
-运行时上下文 (Runtime Context) 是由以下四层数据在内存中动态 **"编织 (Weaving)"** 而成的：
+**织卷 (Tapestry)** 是由以下四层数据在内存中动态 **"编织 (Weaving)"** 而成的：
 
-| 层级 | 名称 | 职责 (Responsibility) | 读写权限 | 典型数据内容 |
+| 层级 | 隐喻名称 | 职责 (Responsibility) | 读写权限 | 典型数据内容 |
 | :--- | :--- | :--- | :--- | :--- |
-| **L0** | **Infrastructure** | **骨架**：定义与 LLM 的通信协议和 Prompt 结构。 | Read-Only | Prompt Template (ChatML/Alpaca), API Settings, Tokenizer Config |
-| **L1** | **Global Context** | **环境**：定义跨角色共享的世界规则与用户身份。 | Read-Only | User Persona, Global Lorebooks (D&D Rules), Global UI Scripts |
-| **L2** | **Character Assets** | **蓝图**：定义角色的初始设定与固有特质。 | Read-Only | Character Card V3 Data (Name, Desc, First Mes), Base Lorebooks, Assets |
-| **L3** | **Session State** | **灵魂**：记录角色的成长、记忆与状态变更。 | **Read-Write** | **Patches**, History Chain, VWD State Tree, Active Lore IDs |
+| **L0** | **Infrastructure** | **骨架**：定义与 LLM 的通信协议和 Prompt 结构。 | Read-Only | Prompt Template (ChatML/Alpaca), API Settings |
+| **L1** | **Environment** | **环境**：定义跨角色共享的世界规则与用户身份。 | Read-Only | User Persona, Global Lorebooks |
+| **L2** | **The Pattern** | **织谱/蓝图**：定义角色的初始设定与固有特质 (原 Character Card)。 | Read-Only | Pattern Definition, Base Lorebooks, Assets |
+| **L3** | **The Threads** | **丝络/状态**：记录角色的成长、记忆与状态变更。 | **Read-Write** | **Patches**, History Chain, VWD State Tree |
 
 #### 10.2.2 Patching 机制 (The Patching Mechanism)
 
-Patching 是 L3 层的核心特性，它允许运行时状态对 L2 的静态定义进行 **非破坏性修改**。
-
-* **工作原理**: Mnemosyne 在聚合上下文时，执行 **Deep Merge (深度合并)** 操作：
-    1. **Base**: 加载 L2 的原始数据对象。
-    2. **Apply**: 将 L3 中的 `patches` 字典应用到对象上。
-    3. **Result**: 生成用于本次推理的临时对象 (Projected Entity)。
-
-* **应用场景**:
-  * **属性成长**: 角色从 level 1 升级到 level 99。L3 的 State Tree 更新，不影响 L2。
-  * **设定重写**: 剧情导致角色从“修女”黑化为“魔女”。L3 存储一个针对 `description` 字段的 Patch，覆盖 L2 的原始描述。
-  * **世界变迁**: 角色炸毁了“新手村”。L3 将 L2 中的“新手村”Lorebook 条目标记为 `enabled: false`，并新增一个 L3 独有的“废墟”条目。
+Patching 是 L3 层的核心特性，它允许运行时状态对 L2 的静态定义进行 **非破坏性修改**，实现了角色成长与状态演变。详细的实现原理、合并策略及数据结构定义，请参阅 **[分层运行时环境架构 (Layered Runtime Architecture)](../runtime/layered-runtime-architecture.md)**。
 
 #### 10.2.3 运行时数据流 (Runtime Data Flow)
 

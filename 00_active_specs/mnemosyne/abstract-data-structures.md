@@ -110,6 +110,17 @@ v1.2 新增，用于长线目标管理。PlannerContext 随 Turn 变化，是 Tu
 - **lastThought**: String (上一轮的思维链残留)
 - **archivedGoals**: List<String> (已完成目标, 可选)
 
+### 2.7 世界书条目 (Lorebook Entry)
+
+`LorebookEntry` 是 RAG 的静态知识库源，存储关于世界观、历史、魔法系统等非叙事性知识。
+
+- **id**: String (UUID)
+- **keys**: List<String> (触发关键词，用于关键词匹配)
+- **content**: String (实际内容)
+- **category**: String (分类，e.g., "Location", "History", "Magic")
+- **activeStatus**: Enum { active, inactive } (是否启用)
+- **vectorId**: String (关联向量库 ID, 指向 `vec_lorebook` 表)
+
 ---
 
 ## 3. 状态管理结构 (State Management Structures)
@@ -271,6 +282,26 @@ sequenceDiagram
     3. 加载快照。
     4. 重放 OpLogs 直到 `targetTurnIndex`。
     5. 截断 `targetTurnIndex` 之后的 History 和 Events。
+
+#### 5.2.4 RAG 检索操作 (RAG Retrieval Operations)
+
+- `search(query: RetrievalQuery) -> List<RetrievalResult>`:
+    执行混合检索（向量相似度 + 关键词/元数据过滤）。
+
+**检索请求 (RetrievalQuery)**:
+- **text**: String (查询文本)
+- **embedding**: List<Float> (查询向量，可选)
+- **topK**: Integer (返回数量，默认 5)
+- **threshold**: Float (相似度阈值，默认 0.7)
+- **filters**: Dictionary<String, Any> (混合检索过滤器, e.g., `{ "turnId": { "$gt": 10 } }`)
+- **sources**: List<Enum> { narrative, event, lore } (指定检索源)
+
+**检索结果 (RetrievalResult)**:
+- **score**: Float (相似度分数/距离)
+- **sourceType**: Enum { narrative, event, lore }
+- **content**: String
+- **originalId**: String (原始实体的 ID)
+- **metadata**: Dictionary<String, Any> (额外上下文，如 Turn ID)
 
 ### 5.3 聚合存储与分支切换 (Aggregated Storage & Branching)
 

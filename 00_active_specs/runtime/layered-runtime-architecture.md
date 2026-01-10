@@ -14,10 +14,12 @@
 
 这一架构借鉴了游戏引擎的 **"蓝图 (Blueprint) vs 实例 (Instance)"** 以及 Git 的 **"写时复制 (Copy-on-Write)"** 思想，将一个运行中的角色会话解构为四个物理隔离但逻辑叠加的层次。
 
+在 Clotho 的隐喻体系中，我们将这种运行时结构描述为 **"织卷 (The Tapestry)"** 的编织过程。
+
 **核心价值**:
 
-* **动静分离**: 原始角色卡（蓝图）永远保持只读，确保可以随时重置。
-* **成长性**: 角色可以在特定存档中经历性格突变，而不会污染原始设定。
+* **动静分离**: 原始 **织谱 (The Pattern / L2)** 永远保持只读，作为编织的基准纹样。
+* **成长性**: **织卷 (The Tapestry)** 可以在编织过程中通过 **丝络 (The Threads / L3)** 的变化经历性格突变，而不会污染原始织谱。
 * **模版独立**: Prompt 结构（如 ChatML/Alpaca）与角色内容彻底解耦。
 * **平行宇宙**: 支持基于同一角色的无限分支存档。
 
@@ -25,54 +27,51 @@
 
 ## 2. 四层叠加模型 (The Layered Sandwich)
 
-Clotho 的运行时上下文 (Runtime Context) 是由以下四层数据在内存中动态 **"编织 (Weaving)"** 而成的：
+Clotho 的 **织卷 (The Tapestry)** 是由以下四层数据在内存中动态 **"编织 (Weaving)"** 而成的：
 
 ```mermaid
 graph TD
-    subgraph "Layer 0: Infrastructure (框架层)"
-        Preset[Prompt Template / API Config]
-        Note0[Read-Only: 定义对话协议与骨架]
+    subgraph "Top Level: The Tapestry (织卷 / 运行时实例)"
+        direction TB
+        
+        subgraph "L0: Infrastructure (骨架)"
+            Preset[Prompt Template]
+        end
+
+        subgraph "L1: Global Context (环境)"
+            GlobalLore[通用纹理 / Lore]
+            Persona[观察者 / Persona]
+        end
+
+        subgraph "L2: The Pattern (织谱 / 蓝图)"
+            CardMeta[静态设定 (Name, Desc)]
+            CharLore[固有纹理 (Base Lore)]
+            CharAssets[视觉图样 (Assets)]
+            Note2[Read-Only: 静态基因，决定织物底色]
+        end
+
+        subgraph "L3: The Threads (丝络 / 状态)"
+            History[历史经纬 (History Chain)]
+            StateTree[状态变量 (VWD)]
+            Patches[动态修补 (Patches)]
+            Note3[Read-Write: 动态生长，随时间演进]
+        end
+        
+        Preset & GlobalLore --> TapestryNode((Tapestry Instance))
+        CardMeta -->|Instantiated as| TapestryNode
+        Patches -.->|Override| CardMeta
+        History -->|Woven into| TapestryNode
     end
-
-    subgraph "Layer 1: Global Context (环境层)"
-        GlobalLore[通用世界书 / RPG规则]
-        GlobalScript[通用正则 / UI插件]
-        Persona[用户设 (Persona)]
-        Note1[Read-Only: 跨角色共享，用户级配置]
-    end
-
-    subgraph "Layer 2: Character Assets (蓝图层)"
-        CardMeta[CCv3 原始数据 (Name, Desc)]
-        CharLore[角色专属 Lore]
-        CharAssets[立绘 / 背景]
-        Note2[Read-Only: 静态不可变，作为工厂蓝图]
-    end
-
-    subgraph "Layer 3: Session State (实例层)"
-        History[历史记录链]
-        StateTree[变量状态树 (VWD)]
-        LoreStatus[世界书激活状态]
-        Patches[Patch 对 L2 的动态修正]
-        Note3[Read-Write: 动态可变，随存档独立]
-    end
-
-    Preset -->|Structure| Context
-    GlobalLore -->|Inject| Context
-    CardMeta -->|Content| Context
-    History -->|State| Context
-    Patches -.->|Override| CardMeta
-
-    Context[Mnemosyne Context]
 ```
 
 ### 2.1 层级详解
 
-| 层级 | 名称 | 职责 (Responsibility) | 读写权限 | 典型数据内容 |
-| :--- | :--- | :--- | :--- | :--- |
-| **L0** | **Infrastructure** | **骨架**：定义与 LLM 的通信协议和 Prompt 结构。 | Read-Only | Prompt Template (ChatML/Alpaca), API Settings, Tokenizer Config |
-| **L1** | **Global Context** | **环境**：定义跨角色共享的世界规则与用户身份。 | Read-Only | User Persona, Global Lorebooks (D&D Rules), Global UI Scripts |
-| **L2** | **Character Assets** | **蓝图**：定义角色的初始设定与固有特质。 | Read-Only | Character Card V3 Data (Name, Desc, First Mes), Base Lorebooks, Assets |
-| **L3** | **Session State** | **灵魂**：记录角色的成长、记忆与状态变更。 | **Read-Write** | **Patches**, History Chain, VWD State Tree, Active Lore IDs |
+| 层级 | 隐喻名称 (Metaphor) | 功能名称 | 职责 (Responsibility) | 读写权限 | 典型数据内容 |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **L0** | **Infrastructure** | **骨架** | 定义与 LLM 的通信协议和 Prompt 结构。 | Read-Only | Prompt Template, API Config |
+| **L1** | **Environment** | **环境** | 定义跨角色共享的世界规则与用户身份。 | Read-Only | User Persona, Global Lorebooks |
+| **L2** | **The Pattern (织谱)** | **蓝图** | 定义角色的初始设定、固有特质与潜在逻辑。**(原 Character Card)** | Read-Only | **Pattern Data** (Name, Desc, First Mes), Base Lorebooks, Regex Scripts |
+| **L3** | **The Threads (丝络)** | **状态** | 记录角色的成长、记忆与状态变更。 | **Read-Write** | **Patches**, History Chain, VWD State Tree |
 
 ---
 

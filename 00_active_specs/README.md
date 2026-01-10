@@ -113,9 +113,10 @@ graph TD
 ### 6. 参考 (Reference)
 
 - **定位**: 技术参考与工具文档
-- **内容**: 术语表、API 参考、配置指南、架构分析
-- **目标读者**: 所有技术用户
+- **内容**: 术语表、API 参考、配置指南、架构分析、**文档标准**
+- **目标读者**: 所有技术用户、**文档贡献者**
 - **文件列表**:
+  - [`documentation_standards.md`](documentation_standards.md) - 文档编写与检查规范 (Documentation Writing & Checking Guidelines)
   - [`macro-system-spec.md`](reference/macro-system-spec.md) - 宏系统规范 (Clotho/Jinja2)
   - [`st-macro-reference.md`](reference/st-macro-reference.md) - SillyTavern 宏参考
   - [`acu-architecture-analysis.md`](reference/acu-architecture-analysis.md) - ACU 架构分析

@@ -236,6 +236,49 @@ CREATE TABLE narrative_logs (
 );
 ```
 
+### 3.6 世界书链 (Lorebook Chain)
+
+用于存储静态的世界观知识 (RAG 语义记忆)。
+
+```sql
+CREATE TABLE lorebook_entries (
+    id TEXT PRIMARY KEY,
+    
+    -- 关键词列表：用于简单的关键词匹配 (JSON Array of strings)
+    keys_json TEXT NOT NULL,
+    
+    content TEXT NOT NULL,
+    category TEXT, -- e.g. "Location", "History", "Magic"
+    
+    is_active BOOLEAN DEFAULT 1,
+    updated_at INTEGER NOT NULL,
+    
+    -- 向量关联 ID (Shadow Table Link)
+    vector_id TEXT
+);
+```
+
+### 3.7 向量存储 (Vector Stores using sqlite-vec)
+
+采用 **Shadow Table** 模式：实体表存数据，虚拟表存向量。通过应用层逻辑保持 ID 同步。
+
+> **注意**: `vec0` 是 `sqlite-vec` 扩展提供的虚拟表引擎。
+> 假设 embedding 维度为 1536 (OpenAI text-embedding-3-small)。
+
+```sql
+-- 叙事向量表 (关联 narrative_logs.vector_id)
+CREATE VIRTUAL TABLE vec_narratives USING vec0(
+    id TEXT PRIMARY KEY,
+    embedding FLOAT[1536]
+);
+
+-- 知识向量表 (关联 lorebook_entries.vector_id)
+CREATE VIRTUAL TABLE vec_lorebook USING vec0(
+    id TEXT PRIMARY KEY,
+    embedding FLOAT[1536]
+);
+```
+
 ---
 
 ## 4. 关键查询与性能优化策略
@@ -283,8 +326,28 @@ ORDER BY t.turn_index ASC, o.id ASC;
 ```sql
 SELECT t.turn_index, json_extract(value_json, '$.name') as item_name
 FROM state_oplogs, json_tree(value_json)
-WHERE path LIKE '%/inventory/%' 
+WHERE path LIKE '%/inventory/%'
   AND json_extract(value_json, '$.type') = 'weapon';
+```
+
+### 4.4 RAG 混合检索 (Hybrid Search)
+
+结合向量相似度 (Semantic) 和 SQL 过滤 (Metadata/Recency)。
+
+*   **示例**: 查找最近 20 回合内，关于 "Dark Magic" 的叙事记录。
+
+```sql
+SELECT
+    n.content,
+    n.turn_id,
+    vec_distance_cosine(v.embedding, ?) AS distance
+FROM vec_narratives v
+JOIN narrative_logs n ON v.id = n.vector_id  -- 通过 vector_id 关联
+JOIN turns t ON n.turn_id = t.id
+WHERE distance < 0.3              -- 向量相似度阈值
+  AND t.turn_index > (Current_Index - 20) -- SQL 时间过滤 (Recency Bias)
+ORDER BY distance ASC
+LIMIT 5;
 ```
 
 ---
@@ -298,4 +361,14 @@ WHERE path LIKE '%/inventory/%'
 
 *   **向量搜索集成**: 架构预留了 `vector_id` 字段。未来可以通过 `sqlite-vec` 插件直接在 SQLite 中添加向量表，或者通过 FFI 桥接外部向量库，将 ID 存回此表，保持松耦合。
 *   **多端同步**: 单一 `.db` 文件结构极易通过云盘或 WebDAV 进行文件级同步。对于更细粒度的同步，可以基于 `state_oplogs` 表实现基于 Log 的增量同步协议。
+
+### 6.1 跨平台扩展加载 (Extension Loading)
+
+为了在 Flutter (Windows/Android) 环境下支持 `sqlite-vec`，我们需要处理原生扩展的加载问题。
+
+*   **架构决策**: 仅支持 64 位架构 (Arm64-v8a for Android, x64 for Windows) 以简化编译和兼容性测试。
+*   **加载流程**:
+    1.  **Android**: 将编译好的 `libsqlite_vec.so` (arm64-v8a) 放入 `jniLibs` 目录。在 Dart 中通过 `DynamicLibrary.open('libsqlite_vec.so')` 加载，并调用 `sqlite3_vec_init`。
+    2.  **Windows**: 将 `sqlite_vec.dll` (x64) 随应用分发。在 Dart 中通过 `DynamicLibrary.open('sqlite_vec.dll')` 加载。
+    3.  **运行时绑定**: 使用 `sqlite3` Dart 包的 `loadExtension` 接口在数据库连接打开时注入扩展。
 

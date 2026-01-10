@@ -1,0 +1,45 @@
+# Project Wiki & Knowledge Base Rules
+
+## Documentation Source of Truth (SSOT)
+The directory `00_active_specs/` is the designated **Wiki** and **Single Source of Truth** for this project.
+- **Index**: `00_active_specs/README.md` is the entry point.
+- **Scope**: It contains the Architecture, Core Components, Runtime Behaviors, and Protocols.
+
+## Automatic Referencing Instructions
+1.  **ALWAYS Check Specs First**: When the user asks about project architecture, features, data structures, or workflows, you MUST mentally (or via tools) consult the relevant files in `00_active_specs/` BEFORE answering.
+2.  **Do Not Guess**: Do not hallucinate or guess implementation details if they are defined in `00_active_specs/`.
+3.  **Context Awareness**: Be aware that the user considers `00_active_specs/` as the active context. If you need to "remember" how a specific module works (e.g., Mnemosyne, Jacquard), read the corresponding file in that directory.
+
+## Directory Map & Key Files
+
+### 1. Overview & Vision (`overview/`)
+- `overview/vision-and-philosophy.md`: Core design philosophy ("The Caesar Principle").
+- `overview/architecture-panorama.md`: High-level system map.
+
+### 2. Core Architecture (`core/`)
+- `core/jacquard-orchestration.md`: **The Loom** - Orchestration, Pipeline, and Plugins.
+- `core/mnemosyne-data-engine.md`: **Mnemosyne** - Data Engine overview and logic.
+- `core/presentation-layer.md`: **The Stage** - UI/UX and Flutter implementation.
+- `core/infrastructure-layer.md`: Base services and DI.
+
+### 3. Data Storage & Schema (`mnemosyne/`)
+*Specific implementation details for the Data Engine.*
+- `mnemosyne/sqlite-architecture.md`: SQL Schema definitions.
+- `mnemosyne/abstract-data-structures.md`: In-memory data structures.
+
+### 4. Runtime Dynamics (`runtime/`)
+- `runtime/layered-runtime-architecture.md`: Session management, state patching, and layers (L0-L3).
+
+### 5. Protocols & Formats (`protocols/`)
+- `protocols/filament-protocol-overview.md`: The unified interaction protocol.
+- `protocols/filament-input-format.md`: XML+YAML input specs.
+- `protocols/filament-output-format.md`: XML+JSON output specs.
+- `protocols/jinja2-macro-system.md`: Template engine and macros.
+
+### 6. Workflows (`workflows/`)
+- `workflows/prompt-processing.md`: The complete prompt generation pipeline.
+- `workflows/character-import-migration.md`: Logic for importing/migrating character cards.
+- `workflows/migration-strategy.md`: Strategic approach to migration.
+
+### 7. References (`reference/`)
+- `reference/`: Technical references, ACU analysis, and legacy documentation.
