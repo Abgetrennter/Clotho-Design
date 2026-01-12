@@ -56,9 +56,12 @@ Jacquard 维护一个插件列表，每个插件实现特定的接口。这种�
 1. **Pre-Flash (Planner) Plugin**:
     * **职责**: 意图分流与长短期目标规划。
     * **短期规划**: 识别用户意图是“日常数值交互”还是“关键剧情事件”。
-    * **长期规划 (新增)**: 
-        * **Read**: 启动时读取 L3 Session State 中的 `planner_context` (包含 `current_goal`, `pending_subtasks`)。
-        * **Write**: 规划下一轮行动，并在生成后更新 `planner_context`，确保 AI 即使被打断也不会忘记主线任务。
+    * **长期规划 (新增)**:
+        * **Read**: 启动时读取 L3 Session State 中的 `planner_context` 和 `state.quests` (Active Quests)。
+        * **Focus (聚焦与切换)**:
+            * **意图检测**: 分析用户输入是否包含“打断”、“切换话题”或“启动新任务”的意图。
+            * **指针更新**: 如果检测到切换意图，修改 `planner_context.activeQuestId` 指向目标任务，实现任务的挂起与激活。
+        * **Write**: 更新 `planner_context` (特别是 `current_goal` 和 `currentObjectiveId`)，确保 AI 的短期行动服务于长线任务。
     * **动作**: 如果是数值交互，直接计算结果并短路后续流程；如果是事件，则规划使用哪个 Skein 模板，并更新 `planner_context`。
     * **产出**: `PlanContext` (包含模板 ID、初始指令、更新后的 `planner_context`)。
 

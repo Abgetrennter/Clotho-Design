@@ -103,14 +103,40 @@
 
 ### 2.6 规划上下文 (Planner Context)
 
-v1.2 新增，用于长线目标管理。PlannerContext 随 Turn 变化，是 Turn 的一部分。
+v1.2 新增，用于长线目标管理。PlannerContext 随 Turn 变化，是 Turn 的一部分。它充当了 "Attention Mechanism" (注意力机制)，决定了当前回合 LLM 聚焦于哪个 Active Quest。
 
-- **currentGoal**: String (当前主要目标)
-- **pendingSubtasks**: List<String> (待办子任务列表)
+- **currentGoal**: String (当前回合的战术目标，如 "Pick the lock")
+- **activeQuestId**: String (当前聚焦的 Quest ID, 指向 `state.quests` 中的条目)
+- **currentObjectiveId**: String (当前聚焦的 Quest Objective ID)
+- **pendingSubtasks**: List<String> (待办子任务列表 - 仅限当前战术层面的小步骤)
 - **lastThought**: String (上一轮的思维链残留)
 - **archivedGoals**: List<String> (已完成目标, 可选)
 
-### 2.7 世界书条目 (Lorebook Entry)
+### 2.7 任务与长线剧情 (Quest & Macro-Event)
+
+v1.3 新增，用于管理 **状态化 (Stateful)** 的长线剧情。与 `GameEvent` (只读日志) 不同，Quest 驻留在 L3 的 `state.quests` 中，拥有生命周期。
+
+#### 2.7.1 Quest (任务/宏观事件)
+
+- **id**: String (UUID or Unique Slug, e.g., "quest_escape_dungeon")
+- **title**: String
+- **description**: String (任务背景描述)
+- **status**: Enum { inactive, active, completed, failed, paused }
+- **objectives**: List<QuestObjective> (子目标列表)
+- **variables**: Dictionary<String, Any> (任务局部变量, e.g. `{ "keys_found": 2 }`)
+- **parentQuestId**: String (可选，用于嵌套子任务)
+- **startTurn**: Integer
+- **endTurn**: Integer (可选)
+
+#### 2.7.2 QuestObjective (任务目标/微观事件)
+
+- **id**: String (Unique Slug within Quest, e.g., "find_key")
+- **description**: String
+- **status**: Enum { active, completed, failed }
+- **isOptional**: Boolean (默认 false)
+- **isHidden**: Boolean (默认 false, 隐藏目标)
+
+### 2.8 世界书条目 (Lorebook Entry)
 
 `LorebookEntry` 是 RAG 的静态知识库源，存储关于世界观、历史、魔法系统等非叙事性知识。
 
@@ -447,10 +473,18 @@ classDiagram
         +String[] sourceRefs
     }
 
+    class Quest {
+        +String id
+        +String title
+        +QuestStatus status
+        +QuestObjective[] objectives
+    }
+
     Session "1" *-- "many" Turn : contains
     Turn "1" *-- "many" Message : contains
     Turn "1" *-- "many" GameEvent : triggers
     
     MnemosyneContext "1" o-- "1" SessionLayer : manages
     SessionLayer "1" o-- "1" PlannerContext : holds
+    SessionLayer "1" o-- "many" Quest : maintains state
 ```

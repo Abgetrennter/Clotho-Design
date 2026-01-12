@@ -336,6 +336,82 @@ Post-Flash 是 Mnemosyne 的异步 **Consolidation Worker**，当活跃上下文
 
 ---
 
+## 9. 任务与宏观事件系统 (Quest & Macro-Event System)
+
+为了解决长线剧情在 LLM 概率生成中容易被遗忘或过早终结的问题，Mnemosyne 在 v1.3 引入了 **状态化 (Stateful) 的任务系统**。
+
+### 9.1 状态 vs 日志 (State vs Log)
+
+这是理解该系统的核心差异：
+
+1.  **Event Chain (事件日志)**:
+    *   **定义**: 历史的投影。
+    *   **性质**: **Immutable (不可变)**, **Append-only (仅追加)**。
+    *   **例子**: `Event: { type: "enemy_killed", target: "goblin_king", turn: 5 }`
+    *   **作用**: 用于 RAG 检索过去发生的事实。
+
+2.  **Quest System (任务状态)**:
+    *   **定义**: 当前的义务与目标。
+    *   **性质**: **Mutable (可变)**, **Stateful (状态化)**。
+    *   **例子**: `Quest: { id: "purge_goblins", status: "active", progress: "1/3" }`
+    *   **作用**: 驻留在 L3 State 中，作为明确的约束条件注入 Prompt，防止任务因为玩家聊偏了而被 AI 遗忘。
+
+### 9.2 交互闭环 (The Interaction Loop)
+
+Quest System 与 Planner 紧密配合，形成一个闭环：
+
+1.  **Read (Pre-Flash)**: Jacquard 启动时，`Planner Plugin` 读取 `state.quests` 中所有状态为 `active` 的任务。
+2.  **Focus (Attention)**: `PlannerContext` 根据当前对话上下文，决定聚焦于哪个具体的 Quest，并更新 `currentObjectiveId`。
+3.  **Execute (LLM)**: LLM 接收 Prompt，生成剧情文本。
+4.  **Update (Post-Flash)**: `State Updater` 解析 LLM 输出的 `<quest_update>` 指令，更新 `state.quests` (如标记子目标完成)。
+5.  **Log (Consolidation)**: 如果某个 Quest 状态变为 `completed`，Mnemosyne 会自动在 Event Chain 中生成一条对应的永久记录。
+
+```mermaid
+sequenceDiagram
+    participant State as L3 State (Quests)
+    participant Planner as Pre-Flash (Planner)
+    participant LLM as LLM Invoker
+    participant Updater as Post-Flash (Updater)
+    participant Log as Event Chain (Log)
+
+    Note over Planner, State: 1. Read & Focus
+    State->>Planner: Load Active Quests
+    Planner->>Planner: Select Focus (activeQuestId)
+    Planner->>LLM: Inject Context (Current Goal + Quest Info)
+
+    Note over LLM, Updater: 2. Execute & Parse
+    LLM->>Updater: Output <quest_update>
+
+    Note over Updater, Log: 3. Update & Archive
+    Updater->>State: Update Quest Status (e.g. 1/3 -> 2/3)
+    
+    alt Quest Completed
+        Updater->>State: Mark Status = Completed
+        Updater->>Log: Append Immutable GameEvent
+    end
+```
+
+### 9.3 任务切换与多线程 (Context Switching & Multi-threading)
+
+针对“更换对象”或“暂时搁置”的场景，Mnemosyne 采用了 **“聚光灯 (Spotlight)”** 机制。
+
+1.  **后台挂起 (Background Active)**:
+    *   系统中可以同时存在多个 `status: active` 的任务（如“游乐园约会”、“寻找丢失的猫”、“主线：击败魔王”）。
+    *   它们的状态（子目标进度、变量）均保留在 `L3 State` 中，不会丢失。
+
+2.  **前台聚焦 (Foreground Focus)**:
+    *   `PlannerContext.activeQuestId` 是唯一的聚光灯。
+    *   **切换逻辑**: 当检测到用户意图改变（如“先不约会了，帮那个老奶奶找猫”）时，Planner 仅仅是将 `activeQuestId` 指向新的任务 ID。
+
+3.  **示例流程 (搁置与恢复)**:
+    *   **Step 1 (约会中)**: `activeQuestId` = "quest_date_alice"。 Prompt 注入约会相关子任务。
+    *   **Step 2 (被打断)**: 用户触发支线。Planner 更新 `activeQuestId` = "quest_find_cat"。
+    *   **Step 3 (执行支线)**: 此时 LLM 专注于找猫，"约会"任务在后台静默（进度保持 2/3）。
+    *   **Step 4 (恢复)**: 支线完成或用户说“回游乐园吧”。Planner 重新将 `activeQuestId` 切回 "quest_date_alice"。
+    *   **结果**: LLM 立即读取到约会进度为 2/3，无缝接续之前的对话。
+
+---
+
 ## 附录 A: 完整 Schema 示例 (v1.1)
 
 (原 4.4 节内容移动至此)

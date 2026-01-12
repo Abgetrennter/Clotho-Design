@@ -1,4 +1,26 @@
-📚 类 SillyTavern 混合 Agent 架构设计说明文档💡 1. 项目概述与设计目标属性说明项目名称PyTavern (暂定)架构核心Flutter 混合 Agent 架构 (Flutter Hybrid Agent Architecture)目标平台Android (APK) / PC (Windows/macOS/Linux EXE)核心优势高可定制性 (Agent 编排)、高性能 (原生聊天 UI)、强兼容性 (Webview 动态组件)。核心设计理念： 将应用功能彻底解耦，原生 UI (Flutter) 负责性能和用户体验，Agent 编排层负责所有智能逻辑和数据流转。🎯 2. 核心架构分层整个应用分为三个主要层级，它们通过 Data Manager 和 Bridge 进行通信。2.1 UI/前端层 (Flutter - Dart & Webview)原生聊天 UI：使用 Flutter ListView.builder 渲染聊天记录，保证处理大量消息时的绝对流畅性。Webview 动态组件：使用 webview_flutter 插件在侧边或顶部嵌入一个小型 Web 容器。用于加载和运行 ST 角色卡中内嵌的 HTML/CSS/JS 动态组件（状态栏、复杂交互面板）。UI 状态：管理气泡样式、主题、字体等，数据来源于 DataManager。2.2 逻辑/Agent 编排层 (Orchestration Layer - Dart)这是系统的“大脑”，负责流程控制、数据整合和 API 通信。Orchestrator：驱动 Planner-Executor-Persister 的迭代循环。负责 Prompt 的组装、Token 限制检查和修剪，以及 Agent 间的通信。Data Manager (Singleton)：应用的单一数据源。管理所有状态（SQLite 连接、Vector DB 接口、当前角色、API Key）。API Client：封装所有外部 HTTP 请求（LLM 调用、Embedding Service 调用）。2.3 数据/持久化层 (SQLite & Vector DB & Files)负责所有数据的存储和检索。SQLite 数据库 (sqflite)：存储精确、结构化的 RPG 数据。包括：Characters (角色卡元数据)。Chat_Logs (聊天记录)。RPG_Variables (HP, MP, Affinity 等精确数值)。Permanent_Notes (必须注入 Prompt 的永久记忆)。向量数据库 (Embedded Chroma/Qdrant)：存储非结构化的语义数据。Lorebook_Embeddings (Lorebook 条目的向量)。Memory_Embeddings (聊天历史和 Post-Process Agent 产生的记忆摘要的向量)。🧩 3. Agent 模块与工具集我们将所有智能任务分解为三类 Agent，它们通过 Orchestrator 提供的 工具集 (Tools) 访问数据。3.1 Planner Agent (The Decider)职责：根据用户输入，决定下一步需要调用哪些工具。核心机制：接收用户的输入和行动历史 (Scratchpad)，输出结构化的 Function Call 请求。关键工具 (Executor Agents)：Retrieve_Lorebook(keyword)：向量搜索 Lorebook。Retrieve_Context(query)：向量搜索历史对话记忆。Read_State(variable)：SQLite 精确查询 RPG 状态。Execute_Plugin(name, params)：调用外部扩展 API。3.2 Core LLM Agent (The Generator)职责：根据最终 Prompt 生成高质量、符合角色的回复。机制：只接收由 Orchestrator 组装好的干净 Prompt，专注于文本生成。3.3 Post-Process Agent (The Persister)职责：从核心 LLM 的回复中提取数据，并管理记忆持久化。关键输出 (JSON)：status_updates: 供 DataManager 更新 SQLite 变量。new_memories: 供 Embedding Service 向量化和存储。🔄 4. 关键流程详解 (The Agentic Loop)4.1 预处理与规划阶段 (Stage 1)用户输入：用户输入消息。ST Regex Pre-Clean：Orchestrator 执行 ST 的前置正则，清理输入。Planner 循环：Orchestrator 将输入发送给 Planner Agent。Planner 在 ReAct 循环中，迭代调用 Executor Agents 获取所需信息（Lorebook、历史）。上下文组装：Planner 完成决策后，Orchestrator 开始组装最终 Prompt。4.2 核心生成与修剪阶段 (Stage 2)Prompt 封装：Orchestrator 组合所有文本元素：ST Presets (System Prompt, Persona) + Permanent Notes (SQLite)。Planner 检索到的 动态 Lore 和 History。用户输入。Token 检查与修剪：Orchestrator 计算总 Token 数。如果超过限制，执行修剪逻辑（例如：删除最不相关的历史片段）。Core LLM Call：将最终 Prompt 发送给核心 LLM。4.3 后处理与持久化阶段 (Stage 3)文本流回传：LLM 的回复文本开始流式显示在 Flutter UI 上。Post-Process Call：回复结束后，Orchestrator 将完整回复发送给 Post-Process Agent。数据提取：Post-Process Agent 输出结构化 JSON (status_updates, new_memories)。DataManager 更新：SQLite：更新 RPG 变量。Vector DB：将新的记忆片段进行向量化并存储。UI/Webview 更新：DataManager 通知 Webview Bridge，将新的 RPG 状态数据 (HP: 90) 传递给 Webview，更新动态状态栏。ST Regex Post-Clean：执行 ST 的后置正则，确保最终显示给用户的文本是干净的。🌐 5. Webview 嵌入与数据桥接组件作用技术数据流向Webview 容器渲染 ST 动态状态栏、浮窗。Flutter webview_flutter-Dart $\rightarrow$ JS 桥接将新的 RPG 状态传给 Webview。WebViewController.runJavaScript()Orchestrator $\rightarrow$ WebviewJS $\rightarrow$ Dart 桥接接收用户在 Webview 浮窗上的点击事件（例如“使用技能”）。JavaScriptChannel (Dart)Webview $\rightarrow$ Orchestrator🔗 6. 局域网同步方案模式：快照覆盖 (Snapshot Overwrite)。实现：PC 端：使用 Dart 的 shelf 或嵌入 Python 的 FastAPI 启动一个临时的 HTTP 服务器。同步数据：传输 SQLite 数据库文件的快照。机制：手机端（客户端）向 PC 端（服务器）请求下载最新的 .db 文件，并覆盖本地存储。反之亦然。
+📚 类 SillyTavern 混合 Agent 架构设计说明文档
+💡 1. 项目概述与设计目标属性说明项目名称PyTavern (暂定)架构核心Flutter 混合 Agent 架构 (Flutter Hybrid Agent Architecture)目标平台Android (APK) / PC (Windows/macOS/Linux EXE)核心优势高可定制性 (Agent 编排)、高性能 (原生聊天 UI)、强兼容性 (Webview 动态组件)。核心设计理念： 将应用功能彻底解耦，原生 UI (Flutter) 负责性能和用户体验，Agent 编排层负责所有智能逻辑和数据流转。
+
+
+🎯 2. 核心架构分层整个应用分为三个主要层级，它们通过 Data Manager 和 Bridge 进行通信。
+
+2.1 UI/前端层 (Flutter - Dart & Webview)原生聊天 UI：使用 Flutter ListView.builder 渲染聊天记录，保证处理大量消息时的绝对流畅性。Webview 动态组件：使用 webview_flutter 插件在侧边或顶部嵌入一个小型 Web 容器。用于加载和运行 ST 角色卡中内嵌的 HTML/CSS/JS 动态组件（状态栏、复杂交互面板）。UI 状态：管理气泡样式、主题、字体等，数据来源于 DataManager。
+
+2.2 逻辑/Agent 编排层 (Orchestration Layer - Dart)这是系统的“大脑”，负责流程控制、数据整合和 API 通信。Orchestrator：驱动 Planner-Executor-Persister 的迭代循环。负责 Prompt 的组装、Token 限制检查和修剪，以及 Agent 间的通信。Data Manager (Singleton)：应用的单一数据源。管理所有状态（SQLite 连接、Vector DB 接口、当前角色、API Key）。API Client：封装所有外部 HTTP 请求（LLM 调用、Embedding Service 调用）。
+
+2.3 数据/持久化层 (SQLite & Vector DB & Files)负责所有数据的存储和检索。SQLite 数据库 (sqflite)：存储精确、结构化的 RPG 数据。包括：Characters (角色卡元数据)。Chat_Logs (聊天记录)。RPG_Variables (HP, MP, Affinity 等精确数值)。Permanent_Notes (必须注入 Prompt 的永久记忆)。向量数据库 (Embedded Chroma/Qdrant)：存储非结构化的语义数据。Lorebook_Embeddings (Lorebook 条目的向量)。Memory_Embeddings (聊天历史和 Post-Process Agent 产生的记忆摘要的向量)。
+
+
+🧩 3. Agent 模块与工具集我们将所有智能任务分解为三类 Agent，它们通过 Orchestrator 提供的 工具集 (Tools) 访问数据。
+
+3.1 Planner Agent (The Decider)职责：根据用户输入，决定下一步需要调用哪些工具。核心机制：接收用户的输入和行动历史 (Scratchpad)，输出结构化的 Function Call 请求。关键工具 (Executor Agents)：Retrieve_Lorebook(keyword)：向量搜索 Lorebook。Retrieve_Context(query)：向量搜索历史对话记忆。Read_State(variable)：SQLite 精确查询 RPG 状态。Execute_Plugin(name, params)：调用外部扩展 API。
+
+3.2 Core LLM Agent (The Generator)职责：根据最终 Prompt 生成高质量、符合角色的回复。机制：只接收由 Orchestrator 组装好的干净 Prompt，专注于文本生成。
+
+3.3 Post-Process Agent (The Persister)职责：从核心 LLM 的回复中提取数据，并管理记忆持久化。关键输出 (JSON)：status_updates: 供 DataManager 更新 SQLite 变量。new_memories: 供 Embedding Service 向量化和存储。
+
+
+🔄 4. 关键流程详解 (The Agentic Loop)4.1 预处理与规划阶段 (Stage 1)用户输入：用户输入消息。ST Regex Pre-Clean：Orchestrator 执行 ST 的前置正则，清理输入。Planner 循环：Orchestrator 将输入发送给 Planner Agent。Planner 在 ReAct 循环中，迭代调用 Executor Agents 获取所需信息（Lorebook、历史）。上下文组装：Planner 完成决策后，Orchestrator 开始组装最终 Prompt。4.2 核心生成与修剪阶段 (Stage 2)Prompt 封装：Orchestrator 组合所有文本元素：ST Presets (System Prompt, Persona) + Permanent Notes (SQLite)。Planner 检索到的 动态 Lore 和 History。用户输入。Token 检查与修剪：Orchestrator 计算总 Token 数。如果超过限制，执行修剪逻辑（例如：删除最不相关的历史片段）。Core LLM Call：将最终 Prompt 发送给核心 LLM。4.3 后处理与持久化阶段 (Stage 3)文本流回传：LLM 的回复文本开始流式显示在 Flutter UI 上。Post-Process Call：回复结束后，Orchestrator 将完整回复发送给 Post-Process Agent。数据提取：Post-Process Agent 输出结构化 JSON (status_updates, new_memories)。DataManager 更新：SQLite：更新 RPG 变量。Vector DB：将新的记忆片段进行向量化并存储。UI/Webview 更新：DataManager 通知 Webview Bridge，将新的 RPG 状态数据 (HP: 90) 传递给 Webview，更新动态状态栏。ST Regex Post-Clean：执行 ST 的后置正则，确保最终显示给用户的文本是干净的。🌐 5. Webview 嵌入与数据桥接组件作用技术数据流向Webview 容器渲染 ST 动态状态栏、浮窗。Flutter webview_flutter-Dart $\rightarrow$ JS 桥接将新的 RPG 状态传给 Webview。WebViewController.runJavaScript()Orchestrator $\rightarrow$ WebviewJS $\rightarrow$ Dart 桥接接收用户在 Webview 浮窗上的点击事件（例如“使用技能”）。JavaScriptChannel (Dart)Webview $\rightarrow$ Orchestrator🔗 6. 局域网同步方案模式：快照覆盖 (Snapshot Overwrite)。实现：PC 端：使用 Dart 的 shelf 或嵌入 Python 的 FastAPI 启动一个临时的 HTTP 服务器。同步数据：传输 SQLite 数据库文件的快照。机制：手机端（客户端）向 PC 端（服务器）请求下载最新的 .db 文件，并覆盖本地存储。反之亦然。
 
 好的，这一步你判断得非常对：**该收束了**。
 下面是一份**完整、工程向、可作为下一轮对话“起始上下文”的总结**。我会尽量做到三点：
@@ -307,9 +329,8 @@ LLM 回复
 这一步，走到的人很少。
 收手是对的，继续时你会走得更稳。
 
-
 明白，这是一个**“存档级”总结请求**。
 下面是一份**完整、结构化、可作为新对话起始的 Markdown 文档**，覆盖了我们这次讨论中**所有关键思想、分歧点、外部实现对比、以及当前达成的阶段性设计共识**。
 内容偏“设计说明书 + 思路备忘录”，而不是教程，目的是**让你下一次直接从这里继续推进**。
 
-# 
+#
