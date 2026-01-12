@@ -1,7 +1,7 @@
 # Clotho 系统架构文档索引
 
-**版本**: 2.0.0
-**日期**: 2025-12-30
+**版本**: 3.0.0
+**日期**: 2026-01-12
 **状态**: Reorganized
 **作者**: Clotho 文档重构团队
 
@@ -20,7 +20,7 @@ Clotho 架构文档按逻辑领域划分为六个主要类别，每个类别包�
 ```mermaid
 graph TD
     ROOT[架构文档] --> OVERVIEW[概览 Overview]
-    ROOT --> CORE[核心架构 Core Architecture]
+    ROOT --> SUBSYSTEMS[子系统 Subsystems]
     ROOT --> PROTOCOLS[协议与格式 Protocols & Formats]
     ROOT --> WORKFLOWS[工作流与处理 Workflows]
     ROOT --> RUNTIME[运行时环境 Runtime]
@@ -28,12 +28,14 @@ graph TD
     
     OVERVIEW --> O1[愿景与哲学]
     OVERVIEW --> O2[架构原则]
-    OVERVIEW --> O3[快速入门]
+    OVERVIEW --> O3[术语表]
+    OVERVIEW --> O4[快速入门]
     
-    CORE --> C1[Jacquard 编排层]
-    CORE --> C2[Mnemosyne 数据引擎]
-    CORE --> C3[表现层]
-    CORE --> C4[基础设施层]
+    SUBSYSTEMS --> S1[Jacquard 编排层]
+    SUBSYSTEMS --> S2[Mnemosyne 数据引擎]
+    SUBSYSTEMS --> S3[表现层]
+    SUBSYSTEMS --> S4[基础设施层]
+    SUBSYSTEMS --> S5[Muse 智能服务]
     
     PROTOCOLS --> P1[Filament 协议概述]
     PROTOCOLS --> P2[输入格式 (XML+YAML)]
@@ -48,9 +50,10 @@ graph TD
     RUNTIME --> R1[分层运行时架构]
     RUNTIME --> R2[状态管理与 Patching]
     
-    REFERENCE --> REF1[术语表]
-    REFERENCE --> REF2[API 参考]
-    REFERENCE --> REF3[配置指南]
+    REFERENCE --> REF1[文档标准]
+    REFERENCE --> REF2[ACU 架构分析]
+    REFERENCE --> REF3[宏系统规范]
+    REFERENCE --> REF4[ST 宏参考]
 ```
 
 ## 📚 文档类别详解
@@ -61,23 +64,31 @@ graph TD
 - **内容**: 项目愿景、设计哲学、核心概念、快速入门
 - **目标读者**: 新用户、项目管理者、外部合作者
 - **文件列表**:
-  - [`architecture-panorama.md`](overview/architecture-panorama.md) - 架构全景图与导航
-  - [`vision-and-philosophy.md`](overview/vision-and-philosophy.md) - 愿景与哲学
-  - [`architecture-principles.md`](overview/architecture-principles.md) - 架构原则
+  - [`vision-and-philosophy.md`](vision-and-philosophy.md) - 愿景与哲学
+  - [`architecture-principles.md`](architecture-principles.md) - 架构原则
+  - [`metaphor-glossary.md`](metaphor-glossary.md) - 术语表与隐喻体系
   - [`quick-introduction.md`](quick-introduction.md) - AI 快速了解（根目录）
 
-### 2. 核心架构 (Core Architecture)
+### 2. 子系统 (Subsystems)
 
 - **定位**: 系统核心组件的详细设计
-- **内容**: 三大生态（编排、数据、表现）与基础设施
+- **内容**: 五大子系统（编排、数据、表现、基础设施、智能服务）
 - **目标读者**: 系统架构师、核心开发者
 - **文件列表**:
-  - [`jacquard-orchestration.md`](core/jacquard-orchestration.md) - Jacquard 编排层
-  - [`mnemosyne-data-engine.md`](core/mnemosyne-data-engine.md) - Mnemosyne 数据引擎
+  - **Jacquard 编排层**:
+    - [`jacquard/README.md`](jacquard/README.md) - Jacquard 编排层总览
+    - [`jacquard/planner-component.md`](jacquard/planner-component.md) - Pre-Flash Planner 组件
+  - **Mnemosyne 数据引擎**:
+    - [`mnemosyne/README.md`](mnemosyne/README.md) - Mnemosyne 数据引擎总览
     - [`mnemosyne/sqlite-architecture.md`](mnemosyne/sqlite-architecture.md) - SQLite 物理存储架构
+    - [`mnemosyne/abstract-data-structures.md`](mnemosyne/abstract-data-structures.md) - 抽象数据结构
     - [`mnemosyne/hybrid-resource-management.md`](mnemosyne/hybrid-resource-management.md) - 混合资源管理与 Asset 协议
-  - [`presentation-layer.md`](core/presentation-layer.md) - 表现层
-  - [`infrastructure-layer.md`](core/infrastructure-layer.md) - 基础设施层
+  - **表现层**:
+    - [`presentation/README.md`](presentation/README.md) - 表现层总览
+  - **基础设施层**:
+    - [`infrastructure/README.md`](infrastructure/README.md) - 基础设施层总览
+  - **Muse 智能服务**:
+    - [`muse/README.md`](muse/README.md) - Muse 智能服务总览
 
 ### 3. 协议与格式 (Protocols & Formats)
 
@@ -128,13 +139,13 @@ graph TD
 ### 新用户阅读路径
 
 1. **第一步**: 阅读 [`quick-introduction.md`](quick-introduction.md) 快速了解项目
-2. **第二步**: 阅读 [`overview/vision-and-philosophy.md`](overview/vision-and-philosophy.md) 理解设计理念
-3. **第三步**: 浏览 [`core/`](core/) 目录了解核心组件
-4. **第四步**: 根据兴趣深入特定领域
+2. **第二步**: 阅读 [`vision-and-philosophy.md`](vision-and-philosophy.md) 理解设计理念
+3. **第三步**: 阅读 [`metaphor-glossary.md`](metaphor-glossary.md) 理解核心术语
+4. **第四步**: 根据兴趣深入特定子系统目录
 
 ### 开发者阅读路径
 
-1. **架构师**: 关注 `core/` 和 `runtime/` 目录
+1. **架构师**: 关注各子系统目录 (`jacquard/`, `mnemosyne/`, `presentation/`, `infrastructure/`, `muse/`)
 2. **协议开发者**: 关注 `protocols/` 目录
 3. **迁移工程师**: 关注 `workflows/` 目录
 4. **集成工程师**: 关注 `reference/` 目录
@@ -148,17 +159,19 @@ graph TD
 
 ## 📝 文档更新说明
 
-本文档系列于 2025-12-30 进行了全面重组，采用了新的分层结构和语义化命名。如果您发现任何问题或缺失，请通过项目 Issue 系统反馈。
+本文档系列于 2026-01-12 进行了全面重构，采用了新的分层结构和语义化命名。如果您发现任何问题或缺失，请通过项目 Issue 系统反馈。
 
 **重要变更**:
 
-- 将原有的 10 个数字前缀文件重组为 6 个逻辑类别
+- 将原有的 `core/` 目录内容下沉到各子系统目录 (`jacquard/`, `mnemosyne/`, `presentation/`, `infrastructure/`, `muse/`)
+- 将原有的 `overview/` 目录核心概念文件上浮到根目录
+- 删除了 `overview/` 目录，其内容已整合到根 `README.md` 或上浮到根目录
 - 将 Filament 协议文档拆分为 5 个专题文件
 - 合并了迁移相关的重复内容
 - 新增了快速介绍、术语表、API 参考等实用文档
-- 将 `structure/REORGANIZATION_SUMMARY.md` 归档至 `structure/reference/legacy/`
+- 将 `structure/REORGANIZATION_SUMMARY.md` 归档至 `reference/legacy/`
 
 ---
 
-*最后更新: 2026-01-03*  
-*文档版本: 2.1.0*
+*最后更新: 2026-01-12*  
+*文档版本: 3.0.0*

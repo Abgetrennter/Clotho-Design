@@ -17,7 +17,8 @@
 1. **流程调度**: 协调 Prompt 组装、API 调用、结果解析等步骤。
 2. **Skein 构建**: 维护上下文容器，支持动态裁剪。
 3. **模板渲染**: 集成 Jinja2 引擎，支持高级宏逻辑和动态内容组装。
-4. **协议解析**: 实时解析 Filament 协议流，分发事件。
+4. **意图与焦点管理**: 通过 Planner Plugin 实现任务分流与长线记忆的聚焦。
+5. **协议解析**: 实时解析 Filament 协议流，分发事件。
 
 ### 1.2 架构拓扑
 
@@ -54,15 +55,34 @@ Jacquard 维护一个插件列表，每个插件实现特定的接口。这种�
 ### 2.1 核心插件定义
 
 1. **Pre-Flash (Planner) Plugin**:
-    * **职责**: 意图分流与长短期目标规划。
-    * **短期规划**: 识别用户意图是“日常数值交互”还是“关键剧情事件”。
-    * **长期规划 (新增)**:
-        * **Read**: 启动时读取 L3 Session State 中的 `planner_context` 和 `state.quests` (Active Quests)。
-        * **Focus (聚焦与切换)**:
-            * **意图检测**: 分析用户输入是否包含“打断”、“切换话题”或“启动新任务”的意图。
-            * **指针更新**: 如果检测到切换意图，修改 `planner_context.activeQuestId` 指向目标任务，实现任务的挂起与激活。
-        * **Write**: 更新 `planner_context` (特别是 `current_goal` 和 `currentObjectiveId`)，确保 AI 的短期行动服务于长线任务。
-    * **动作**: 如果是数值交互，直接计算结果并短路后续流程；如果是事件，则规划使用哪个 Skein 模板，并更新 `planner_context`。
+    * **定位**: 系统的“副官 (Adjutant)”，在生成开始前负责决策“本轮聊什么”以及“如何聊”。
+    * **核心职责 (The 4 Pillars)**:
+        * **1. 意图分流 (Triage)**: 判断用户输入是“数值化交互”（走快速数值通道）还是“剧情化交互”（走完整生成通道）。
+        * **2. 聚焦管理 (Focus Management)**: **聚光灯 (Spotlight)** 机制。检测用户是否想切换话题，据此更新 `state.planner_context.activeQuestId`，实现任务的挂起与激活。
+        * **3. 目标规划 (Goal Planning)**: 在进入 Skein 构建前，直接写入 L3 State 的 `planner_context`，更新 `current_goal` 和 `pending_subtasks`，为 Main LLM 设定具体的战术目标。
+        * **4. 策略选型 (Strategy)**: 决定使用哪个 Prompt Template (Skein ID)（如“日常模式”、“战斗模式”、“回忆模式”）。
+    * **数据权限**:
+        * **Read**: History, Active Quests, Lorebook Metadata.
+        * **Write**: `planner_context` (Pre-Generation Update). 这是一个特殊的权限，允许 Planner 在 LLM 介入前直接修改逻辑上下文。
+    * **决策流**:
+        ```mermaid
+        graph TD
+            UserInput[用户输入] --> Planner[Pre-Flash Planner]
+            
+            subgraph "Planner Decision Brain"
+                CheckTriage{1. Is Numerical?} -- Yes --> RouteNum[Route: Numerical Pipeline]
+                CheckTriage -- No --> CheckFocus{2. Intent Change?}
+                
+                CheckFocus -- "Switch Topic" --> Switch[Update activeQuestId\nSuspend Old Quest]
+                CheckFocus -- "Continue" --> Keep[Keep Focus]
+                
+                Switch & Keep --> SetGoal[3. Update current_goal\n(Write to L3 Context)]
+                SetGoal --> SelectTempl[4. Select Template ID]
+            end
+            
+            RouteNum --> StateUpdate[Direct State Update]
+            SelectTempl --> SkeinBuilder[Proceed to Skein Builder]
+        ```
     * **产出**: `PlanContext` (包含模板 ID、初始指令、更新后的 `planner_context`)。
 
 2. **Skein Builder Plugin**:

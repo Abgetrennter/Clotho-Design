@@ -12,34 +12,47 @@ The directory `00_active_specs/` is the designated **Wiki** and **Single Source 
 
 ## Directory Map & Key Files
 
-### 1. Overview & Vision (`overview/`)
-- `overview/vision-and-philosophy.md`: Core design philosophy ("The Caesar Principle").
-- `overview/architecture-panorama.md`: High-level system map.
+### 1. Overview & Vision (Root Level)
+- `vision-and-philosophy.md`: Core design philosophy ("The Caesar Principle").
+- `architecture-principles.md`: Core architecture principles and design decisions.
+- `metaphor-glossary.md`: Terminology and metaphor system.
 
-### 2. Core Architecture (`core/`)
-- `core/jacquard-orchestration.md`: **The Loom** - Orchestration, Pipeline, and Plugins.
-- `core/mnemosyne-data-engine.md`: **Mnemosyne** - Data Engine overview and logic.
-- `core/presentation-layer.md`: **The Stage** - UI/UX and Flutter implementation.
-- `core/infrastructure-layer.md`: Base services and DI.
+### 2. Subsystems (Domain-based Organization)
+- `infrastructure/README.md`: Base services, DI, and cross-platform abstraction.
+- `jacquard/README.md`: **The Loom** - Orchestration, Pipeline, and Plugins.
+- `mnemosyne/README.md`: **Mnemosyne** - Data Engine overview and logic.
+- `presentation/README.md`: **The Stage** - UI/UX and Flutter implementation.
+- `muse/README.md`: Muse Intelligence Service - Agent hosting and LLM gateway.
 
-### 3. Data Storage & Schema (`mnemosyne/`)
+### 3. Jacquard Components
+*Specific implementation details for the Orchestration Engine.*
+- `jacquard/planner-component.md`: Pre-Flash Planner, Triage, and Focus Management.
+
+### 4. Data Storage & Schema
 *Specific implementation details for the Data Engine.*
 - `mnemosyne/sqlite-architecture.md`: SQL Schema definitions.
 - `mnemosyne/abstract-data-structures.md`: In-memory data structures.
+- `mnemosyne/hybrid-resource-management.md`: Hybrid resource management and Asset protocol.
 
-### 4. Runtime Dynamics (`runtime/`)
+### 5. Runtime Dynamics
 - `runtime/layered-runtime-architecture.md`: Session management, state patching, and layers (L0-L3).
 
-### 5. Protocols & Formats (`protocols/`)
+### 6. Protocols & Formats
 - `protocols/filament-protocol-overview.md`: The unified interaction protocol.
 - `protocols/filament-input-format.md`: XML+YAML input specs.
 - `protocols/filament-output-format.md`: XML+JSON output specs.
 - `protocols/jinja2-macro-system.md`: Template engine and macros.
+- `protocols/schema-library.md`: Schema library specifications.
+- `protocols/filament-parsing-workflow.md`: Filament parsing workflow.
 
-### 6. Workflows (`workflows/`)
+### 7. Workflows
 - `workflows/prompt-processing.md`: The complete prompt generation pipeline.
 - `workflows/character-import-migration.md`: Logic for importing/migrating character cards.
 - `workflows/migration-strategy.md`: Strategic approach to migration.
 
-### 7. References (`reference/`)
-- `reference/`: Technical references, ACU analysis, and legacy documentation.
+### 8. References
+- `reference/documentation_standards.md`: Documentation writing and checking guidelines.
+- `reference/macro-system-spec.md`: Macro system specification (Clotho/Jinja2).
+- `reference/st-macro-reference.md`: SillyTavern macro reference.
+- `reference/acu-architecture-analysis.md`: ACU architecture analysis.
+- `reference/legacy/`: Legacy documentation and archives.
