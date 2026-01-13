@@ -7,6 +7,9 @@
 
 ---
 
+## 0. 项目自检 (Self Exam)
+[该项目目前的项目关键设计审查文件](critical_design_review)
+
 ## 1. 项目概览 (Executive Summary)
 
 ### 1.1 背景与痛点

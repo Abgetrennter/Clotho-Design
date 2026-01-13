@@ -15,4 +15,16 @@
 *.py
 *.vue
 *.ts
-10_references/LittleWhiteBox-main/*
+*.html
+*.toml
+*.yml
+LICENSE*
+COPYRIGHT
+*.txt
+*.data
+*.rs
+*.png
+*.mtn
+*.vrm
+*.ico
+10_references/PeroCore-tauri/*

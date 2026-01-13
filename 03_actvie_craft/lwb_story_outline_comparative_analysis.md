@@ -106,10 +106,18 @@ LWB 的 UAUA 结构（预填充 Assistant 回复以引导风格）是一个有�
 *   **Layer 2 (The Current State)**: 当前局势（LWB 的 L1/L2），World Sim 主要更新此层。
 *   **Layer 3 (The Local Scene)**: 玩家当前场景，随每一轮对话剧烈变化。
 
-### 4.3 增强 "UAUA" 策略
-在 `Jacquard` 的 `Skein Builder` 中，增加一种策略：**Pre-fill Assistant Thought**。
-*   利用 Filament 的 `<thought>` 标签，在 User Input 之后、真正的 Reply 之前，强制插入一段由 `Planner` 生成的思维链或风格指引。
-*   这类似 LWB 的 UAUA，但更加结构化和可控。
+### 4.3 增强 "UAUA" 策略 (Revision)
+将 UAUA 模式正式确立为 **MuseAgent Host** 的一种**高级编排策略**，专门用于处理结构化强、上下文独立的辅助任务（如生成短信、生成新闻、场景切换描述）。
+
+*   **职责修正**:
+    *   **Jacquard (主流程)**: 继续使用标准的 Prompt 组装，专注于 Roleplay 的流畅性。
+    *   **Muse (辅助流程)**: 在 `MuseAgent` 中内置 **"UAUA Strategy"**。当 Jacquard 请求生成一条短信时，它不直接调用 LLM，而是委托给一个配置了 UAUA 策略的 MuseAgent。
+*   **流程映射**:
+    *   **U1 (Identity)**: Agent 的 `System Prompt` (注入 Persona, World Info, History)。
+    *   **A1 (CoT)**: Agent 内部的隐式思维链 (Internal Monologue)，用于确认指令。
+    *   **U2 (Trigger)**: 具体的生成请求 (如 "Alice 发来一条关于晚餐的短信")。
+    *   **A2 (Prefill)**: **关键创新点**。MuseAgent 自动在请求末尾追加 `Assistant Prefill` (如 `JSON output start:` 或 `<sms_content>`)，强制 LLM 进入特定的输出模式。
+*   **收益**: 这种设计将“格式依从性”的复杂性封装在 Muse 层，保持了 Jacquard 主逻辑的整洁，同时利用了 Agent Host 现有的上下文管理能力。
 
 ### 4.4 状态分层可视化
 参考 LWB 的 UI，利用 Clotho 的 `Inspector` 组件，可视化展示：
