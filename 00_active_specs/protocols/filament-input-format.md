@@ -80,7 +80,7 @@ weather: Stormy
 |------|------|------|
 | `<system_instruction>` | 系统级指令和规则 | 角色扮演规则、输出格式要求 |
 | `<character_card>` | **织谱 (Pattern) 定义** | 姓名、性格、外貌、背景 (对应 L2 Pattern) |
-| `<world_state>` | 当前世界状态 | 位置、时间、环境 |
+| `<world_state>` | 当前世界状态 | **由 Jacquard 自动生成的 YAML** (位置、时间、环境) |
 | `<lorebook_entry>` | 世界书条目 | 设定、规则、背景知识 |
 | `<conversation_history>` | 对话历史 | 历史消息列表 |
 | `<use_protocol>` | **引用协议 Schema** (v2.1) | 动态加载 Schema 库中的定义。详见 [Schema 库规范](schema-library.md) |

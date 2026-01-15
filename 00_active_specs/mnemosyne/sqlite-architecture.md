@@ -8,7 +8,7 @@
 
 *   **单一事实来源 (SSOT)**: 所有的运行时状态、历史记录、事件日志均存储在单一的 `.db` 文件中，便于存档管理。
 *   **混合存储 (Hybrid Storage)**:
-    *   **Relational**: 用于需要索引、聚合查询、外键约束的数据（如 `Event Log`, `History Chain`）。
+    *   **Relational**: 用于需要索引、聚合查询、外键约束的数据（如 `Event Log`, `History Stream`）。
     *   **JSON Document**: 用于结构多变、层级深、Schema 不固定的数据（如 `State Tree (VWD)`, `Character Profile`）。
 *   **Event Sourcing (事件溯源)**: 状态不仅仅是快照，而是由一系列 `OpLog` 演变而来，支持完美的时间旅行 (Time Travel)。
 
@@ -16,7 +16,7 @@
 
 ## 2. 实体关系模型 (ER Diagram)
 
-Mnemosyne 的数据模型围绕着 **Timeline (时间轴)** 展开，连接着四条核心数据链。
+Mnemosyne 的数据模型围绕着 **Timeline (时间轴)** 展开，连接着四条核心数据流。
 
 ```mermaid
 erDiagram
@@ -26,11 +26,11 @@ erDiagram
     TURN ||--o{ STATE_SNAPSHOT : has_keyframe
     TURN ||--o{ STATE_OPLOG : has_changes
     
-    %% Event Chain
+    %% Event Stream
     TURN ||--o{ EVENT : triggers
     EVENT }|--|| EVENT_TYPE : classifies
     
-    %% Narrative Chain
+    %% Narrative Stream
     TURN ||--o{ NARRATIVE_LOG : summarizes
     NARRATIVE_LOG }|--o{ NARRATIVE_CHAPTER : groups_into
     
@@ -125,7 +125,7 @@ CREATE TABLE turns (
 CREATE INDEX idx_turns_session_index ON turns(session_id, turn_index);
 ```
 
-### 3.2 历史链 (History Chain)
+### 3.2 历史流 (History Stream)
 
 ```sql
 -- 消息表：实际的对话内容
@@ -145,7 +145,7 @@ CREATE TABLE messages (
 CREATE INDEX idx_messages_turn ON messages(turn_id);
 ```
 
-### 3.3 状态链与热缓存 (State Chain & Hot Cache)
+### 3.3 状态流与热缓存 (State Stream & Hot Cache)
 
 采用 **混合存储策略**：
 *   `active_states` 表存储会话当前的最新状态 (Head State)，用于极速启动。
@@ -205,7 +205,7 @@ CREATE TABLE state_oplogs (
 CREATE INDEX idx_oplogs_turn ON state_oplogs(turn_id);
 ```
 
-### 3.4 事件链 (Event Chain)
+### 3.4 事件流 (Event Stream)
 
 采用 **结构化存储**，以便于 SQL 查询统计（如“查询在地点 X 发生的所有事件”）。
 
@@ -238,7 +238,7 @@ CREATE INDEX idx_events_type ON events(event_type);
 CREATE INDEX idx_events_turn ON events(turn_id);
 ```
 
-### 3.5 叙事链 (Narrative Chain)
+### 3.5 叙事流 (Narrative Stream)
 
 用于 RAG 和长时记忆。
 
@@ -261,7 +261,7 @@ CREATE TABLE narrative_logs (
 );
 ```
 
-### 3.6 世界书链 (Lorebook Chain)
+### 3.6 世界书 (Lorebook)
 
 用于存储静态的世界观知识 (RAG 语义记忆)。
 

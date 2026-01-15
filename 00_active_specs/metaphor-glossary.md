@@ -59,11 +59,3 @@ Clotho 项目的命名源自希腊神话中的命运三女神之一 **克洛托 
 | **World Info (世界书)** | **Lore / Texture (纹理)** | Pattern 的一部分，为织卷提供背景纹理。 |
 
 ---
-
-## 4. 引用规范
-
-在后续文档和代码注释中，应优先使用新术语：
-
-*   ✅ "Load the **Pattern** into memory." (将织谱加载到内存)
-*   ✅ "Save the current **Tapestry**." (保存当前织卷)
-*   ✅ "Apply a patch to the **Threads**." (对丝络应用补丁)

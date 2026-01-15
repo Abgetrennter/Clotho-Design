@@ -73,6 +73,14 @@
 - **统一范畴**: 贯穿提示词格式、标签类型、嵌入式前端、状态管理
 - **统一解析**: 实时流式解析，路由分发
 
+### 2.4 数据与表现解耦 (Decoupling Data from Presentation)
+
+**原则**: 上下文格式化 (Context Formatting) 是编排层的职责，而非数据层的职责。
+
+*   **数据层 (Mnemosyne)**: 专注数据的存储与检索，只提供纯净的结构化数据对象 (Native Objects)，**绝对不包含**任何针对特定 LLM 优化的 Prompt 模板或格式化逻辑（如 Markdown/YAML 转换）。
+*   **编排层 (Jacquard)**: 负责将 Mnemosyne 提供的原始数据对象转换为适合 LLM 阅读的格式（如 YAML），组装成 Filament 协议的 Prompt。
+*   **优势**: 这种解耦允许我们在不修改底层存储逻辑的情况下，灵活调整对 LLM 的输入格式。
+
 ## 3. 开发与维护原则
 
 ### 3.1 绝对约束 (The "Must-Nots")
