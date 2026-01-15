@@ -81,11 +81,12 @@ Patching 是 L3 层的核心特性，它允许运行时状态对 L2 的静态定
 
 ### 3.1 工作原理
 
-Mnemosyne 在 **上下文加载 (Context Load)** 阶段执行一次性的 **Deep Merge (深度合并)** 操作，构建运行时的 `Projected Entity`：
+Mnemosyne 在 **上下文加载 (Context Load)** 阶段执行一次性的 **Deep Merge (深度合并)** 操作，构建运行时的 `Projected Entity`。为了优化启动性能，引入了 **Head State** 优先策略：
 
-1.  **Initialize (初始化)**: 加载 L2 的原始静态数据作为基底。
-2.  **Hydrate (注水)**: 读取 L3 中的 `patches` 记录，将其重放应用到基底上，生成内存中的 `Projected State`。
-3.  **Runtime Modification (运行时修改)**: 此后所有的属性变更（如脚本修改 `character.description`）直接作用于内存中的 `Projected State`，并同步 **Write-Back (回写)** 到 L3 的 `patches` 存储中，供下次加载使用。
+1.  **Fast Path (Head State)**: 尝试从 `active_states` 表读取最新的完整状态树。如果命中，直接跳过 OpLog 重放过程，仅需将状态树中的 `patches` 应用于 L2 基底。
+2.  **Slow Path (Reconstruction)**: 如果 Head State 缺失，则回退到 "Snapshot + OpLog" 机制，重建出最新的状态树。
+3.  **Hydrate (注水)**: 将重建/加载的状态树（包含变量与 Patch）应用到 L2 静态基底上，生成最终的 `Projected State`。
+4.  **Runtime Modification (运行时修改)**: 此后所有的属性变更直接作用于内存对象，并同步触发 **Write-Back (回写)**，同时更新 `active_states` (热缓存) 和 `oplogs` (历史记录)。
 
 `patches` 字典采用 **"路径-值"** 结构，例如：
 

@@ -145,13 +145,27 @@ CREATE TABLE messages (
 CREATE INDEX idx_messages_turn ON messages(turn_id);
 ```
 
-### 3.3 状态链 (State Chain: Snapshot + OpLog)
+### 3.3 状态链与热缓存 (State Chain & Hot Cache)
 
 采用 **混合存储策略**：
-*   `snapshots` 表存储完整的 JSON 状态树（VWD 结构），作为 Keyframe。
-*   `oplogs` 表存储 JSON Patch 操作，作为 Delta。
+*   `active_states` 表存储会话当前的最新状态 (Head State)，用于极速启动。
+*   `snapshots` 表存储历史时刻的完整状态树 (Keyframe)，用于长距离回溯。
+*   `oplogs` 表存储 JSON Patch 操作 (Delta)，用于精确的步进式回溯。
 
 ```sql
+-- 热缓存表：Head State
+-- 存储每个 Session 当前最新的完整状态树，实现 O(1) 启动
+-- 写入策略：每次 Turn 结束时同步更新 (Write-Back)
+CREATE TABLE active_states (
+    session_id TEXT PRIMARY KEY REFERENCES sessions(id) ON DELETE CASCADE,
+    turn_id TEXT NOT NULL REFERENCES turns(id) ON DELETE CASCADE,
+    
+    -- 完整的 VWD State Tree
+    state_json TEXT NOT NULL,
+    
+    updated_at INTEGER NOT NULL
+);
+
 -- 状态快照表：Keyframes
 -- 策略：每 N 个 Turn (如 50) 存储一次全量快照
 CREATE TABLE state_snapshots (
@@ -159,7 +173,18 @@ CREATE TABLE state_snapshots (
     
     -- 核心：存储完整的 VWD State Tree
     -- 格式：{"character": {"hp": [100, "Health"], ...}}
-    state_json TEXT NOT NULL 
+    state_json TEXT NOT NULL
+);
+
+-- 活跃状态表：Head State / Hot Cache (v1.3 新增)
+-- 存储当前会话的最新 Projected State (VWD Tree)
+-- 用于 O(1) 快速启动，无需回放 OpLog
+CREATE TABLE active_states (
+    session_id TEXT PRIMARY KEY REFERENCES sessions(id) ON DELETE CASCADE,
+    turn_id TEXT NOT NULL REFERENCES turns(id), -- 关联的最后一次 Turn
+    
+    state_json TEXT NOT NULL, -- 完整的 VWD State Tree
+    updated_at INTEGER NOT NULL
 );
 
 -- 操作日志表：Deltas
@@ -283,9 +308,19 @@ CREATE VIRTUAL TABLE vec_lorebook USING vec0(
 
 ## 4. 关键查询与性能优化策略
 
-### 4.1 状态重构 (State Reconstruction)
+### 4.1 状态加载与重构 (State Loading & Reconstruction)
 
-当需要获取 Turn `T` 的状态时，采用 **"最近快照 + 前滚"** 策略。
+#### A. 快速启动路径 (Fast Path: Head State)
+当加载当前最新会话时，直接读取 `active_states` 表。
+
+```sql
+SELECT state_json FROM active_states WHERE session_id = ?;
+```
+*   如果存在且 valid，直接反序列化为内存对象。
+*   **复杂度**: O(1)
+
+#### B. 历史回溯路径 (Slow Path: Reconstruction)
+当需要获取任意历史时刻 Turn `T` 的状态时，采用 **"最近快照 + 前滚"** 策略。
 
 **SQL 逻辑**:
 

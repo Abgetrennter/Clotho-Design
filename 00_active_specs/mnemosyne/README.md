@@ -227,6 +227,15 @@ Mnemosyne 支持在状态树中定义 `$meta.template`，并在数据访问时�
 
 为了应对长对话（1000+ 轮次）和复杂织谱 (Pattern)（几千条 World Info）带来的性能挑战，Mnemosyne 采用了激进的优化策略。
 
+### 5.0 Head State 持久化 (Head State Persistence)
+
+为了实现 **O(1)** 级别的极速启动体验，Mnemosyne 引入了 **Head State** 机制。
+
+*   **定义**: Head State 是当前会话最新时刻的完整状态树 (VWD Tree) 的序列化副本。
+*   **存储**: 位于 SQLite 的 `active_states` 表中。
+*   **回写策略 (Write-Back)**: 每次 Turn 结束时，系统将内存中的 Projected State 同步回写到数据库。
+*   **价值**: 无论历史有多长，启动时直接加载 Head State，无需重放 OpLogs。
+
 ### 5.1 稀疏快照与 OpLog (Sparse Snapshots & OpLog)
 
 传统的 "Keyframe + Delta" 在长对话中会因 Delta 链过长导致读取性能崩塌。我们引入了 **稀疏快照** 机制：
@@ -239,15 +248,16 @@ Mnemosyne 支持在状态树中定义 `$meta.template`，并在数据访问时�
     { "op": "replace", "path": "/character/hp", "value": 80 }
     ```
 
-### 5.2 惰性求值视图 (Lazy Evaluation View)
+### 5.2 惰性求值视图 (Lazy Evaluation View) - [Low Priority / Optional]
 
-为了避免在每次 Trace 时全量组装庞大的 Lorebook 和复杂的织谱 (Pattern) 状态，Mnemosyne 进化为 **按需加载**。
+> **注意**: 随着 **Head State** 机制的引入以及现代设备内存容量的提升，针对纯文本 RPG 场景，**全量加载 (Eager Load)** 通常已足够高效且代码更简单。本机制降级为处理极端大规模静态资源（如数百 MB 设定集或 Base64 图片库）时的**可选防御性优化**。
 
-* **现状**: Trace -> Project -> Assemble -> Punchcards (全量计算)。
-* **优化**: `Punchcards` 返回的是一个 **Proxy (代理对象)**。
+为了避免在极端场景下全量组装庞大的 Lorebook 导致内存压力，Mnemosyne 保留了 **按需加载** 的设计蓝图。
+
+* **优化设计**: `Punchcards` 可返回一个 **Proxy (代理对象)**。
 * **触发机制**:
   * 只有当 Jinja2 模板真正访问变量（如 `{{ character.inventory }}`）时，Mnemosyne 才会去计算该节点的最终状态。
-  * 对于未被引用的数据（如深埋的 Lore），跳过 Deep Merge 过程，显著降低 I/O 和 CPU 开销。
+  * 对于未被引用的数据（如深埋的 Lore），跳过 Deep Merge 过程。
 
 ### 5.3 状态更新流程
 
