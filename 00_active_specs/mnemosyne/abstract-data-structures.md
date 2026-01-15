@@ -112,11 +112,30 @@ v1.2 新增，用于长线目标管理。PlannerContext 随 Turn 变化，是 Tu
 - **lastThought**: String (上一轮的思维链残留)
 - **archivedGoals**: List<String> (已完成目标, 可选)
 
-### 2.7 任务与长线剧情 (Quest & Macro-Event)
+### 2.7 调度上下文 (Scheduler Context)
+
+v1.4 新增，用于支持 LittleWhiteBox 风格的精细化间隔控制和事件触发。
+
+- **counters**: Dictionary<String, Integer> (全局计数器)
+    - **total_floor**: 总消息数
+    - **user_floor**: 用户发送数
+    - **model_floor**: 模型回复数
+    - **last_interaction_ts**: 最后交互时间戳 (Unix ms)
+- **tasks**: Dictionary<String, SchedulerTaskState> (任务状态追踪)
+
+#### 2.7.1 调度任务状态 (SchedulerTaskState)
+
+- **last_triggered_floor**: Integer (上次触发时的 total_floor)
+- **last_triggered_ts**: Timestamp (上次触发的时间戳)
+- **trigger_count**: Integer (触发次数)
+- **status**: Enum { active, suspended, completed }
+- **cooldown_remaining**: Integer (剩余冷却回合数)
+
+### 2.8 任务与长线剧情 (Quest & Macro-Event)
 
 v1.3 新增，用于管理 **状态化 (Stateful)** 的长线剧情。与 `GameEvent` (只读日志) 不同，Quest 驻留在 L3 的 `state.quests` 中，拥有生命周期。
 
-#### 2.7.1 Quest (任务/宏观事件)
+#### 2.8.1 Quest (任务/宏观事件)
 
 - **id**: String (UUID or Unique Slug, e.g., "quest_escape_dungeon")
 - **title**: String
@@ -416,7 +435,29 @@ DELETE FROM turns WHERE id = 'turn_xyz';
 }
 ```
 
-### 6.3 显式叙事链接 (Event with Source Refs)
+### 6.3 调度上下文 (Scheduler Context)
+
+```json
+{
+  "scheduler_context": {
+    "counters": {
+      "total_floor": 42,
+      "user_floor": 21,
+      "model_floor": 21,
+      "last_interaction_ts": 1704350000000
+    },
+    "tasks": {
+      "daily_greeting": {
+        "last_triggered_floor": 10,
+        "trigger_count": 1,
+        "status": "active"
+      }
+    }
+  }
+}
+```
+
+### 6.4 显式叙事链接 (Event with Source Refs)
 
 ```json
 {
@@ -464,6 +505,7 @@ classDiagram
         +Message[] history
         +StateTree state
         +PlannerContext planner
+        +SchedulerContext scheduler
         +PatchMap patches
     }
     

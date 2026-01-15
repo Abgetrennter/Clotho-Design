@@ -31,6 +31,7 @@ graph TD
         
         subgraph NativePlugins [原生插件流水线]
             PreFlash[Pre-Flash (Planner) Plugin]:::orch
+            Scheduler[Scheduler Shuttle]:::orch
             Builder[Skein Builder]:::orch
             Renderer[Template Renderer (Jinja2)]:::orch
             Assembler[Prompt Assembler]:::orch
@@ -85,7 +86,13 @@ Jacquard 维护一个插件列表，每个插件实现特定的接口。这种�
         ```
     * **产出**: `PlanContext` (包含模板 ID、初始指令、更新后的 `planner_context`)。
 
-2. **Skein Builder Plugin**:
+2. **Scheduler Shuttle Plugin**:
+    * **定位**: 自动化任务执行器。
+    * **职责**: 基于时间（楼层）或事件（变量变更）触发预定义任务。
+    * **动作**: 维护全局计数器 (`scheduler_context`)，执行注入 Prompt 或更新状态的动作。
+    * **详情**: 参见 [`scheduler-component.md`](scheduler-component.md)。
+
+3. **Skein Builder Plugin**:
 * 职责: 向数据层 (Mnemosyne) 请求快照 (`Punchcards`)。
 * **Routing Logic**: v1.2 引入了基于 `LorebookCategory` 的分流装填逻辑。
     * **Axiom**: 注入到 `System Chain` (Extension Block)。
@@ -94,37 +101,37 @@ Jacquard 维护一个插件列表，每个插件实现特定的接口。这种�
     * **Directive**: 注入到 `Instruction Block` (紧邻 User Input)。
 * 产出: 初始化的 `Skein` 对象。
 
-3. **Template Renderer Plugin (Jinja2)**:
+4. **Template Renderer Plugin (Jinja2)**:
     * **原 PromptASTExecutor**: 已升级为标准的模板渲染引擎。
     * **职责**: 编译并执行 Skein 中的 Jinja2 模板（支持 `{% if %}`, `{% set %}` 等逻辑）。
     * **输入**: 包含 Jinja2 语法的 Skein。
     * **上下文**: 注入 `Mnemosyne` 状态树（只读）和 `Skein` 元数据。
     * **产出**: 逻辑处理完毕、变量已替换的纯文本 Skein。
 
-4. **LLM Invoker Plugin**:
+5. **LLM Invoker Plugin**:
     * 职责: 调用 LLM API，获取流式响应。
     * 输入: 最终渲染的 Prompt 字符串。
 
-5. **Filament Parser Plugin**:
+6. **Filament Parser Plugin**:
     * 职责: 实时解析 LLM 的 Filament 输出。
     * 动作: 提取 `<reply>` 推送给 UI，提取 `<state_update>` 准备后续处理。
 
-6. **State Updater Plugin**:
+7. **State Updater Plugin**:
     * 职责: 收集所有状态变更指令。
     * 动作: 调用 Mnemosyne 更新状态，并持久化历史。
 
-7. **Post-Flash (Consolidation) Worker**:
+8. **Post-Flash (Consolidation) Worker**:
     * **职责**: 记忆整合与归档（异步执行）。负责处理 **增量 (Incremental)、近实时** 的记忆整理。
     * **动作**: 在会话结束或缓冲区满时，提取关键事件存入 Event Chain，生成角色反思，并归档原始日志。
 
-8. **维护流水线 (MaintenancePipeline & BatchShuttle)**:
+9. **维护流水线 (MaintenancePipeline & BatchShuttle)**:
     * **职责**: 负责处理 **批量 (Bulk)、非实时** 的重型维护任务。这是 Post-Flash 的必要补充。
-    * **场景**: 
+    * **场景**:
         * **历史导入 (History Import)**: 处理外部导入的成百上千条聊天记录，分块快速重建状态和事件链。
         * **长线记忆重构 (Memory Refactoring)**: 当用户修改世界设定或觉得 AI 变笨时，对过去的历史记忆进行一次全量的“重新总结”。
     * **动作**: 在独立的后台 `MaintenancePipeline` 中运行，分块读取历史，模拟 AI “阅读”并批量提交更新，低频高吞吐。
 
-9. **Schema Injector Plugin**:
+10. **Schema Injector Plugin**:
     * **职责**: 管理协议 Schema 的动态注入。
     * **动作**: 扫描角色卡配置和动态协议标签 (`<use_protocol>`)，加载对应的 YAML Schema，并将其 `instruction` 和 `examples` 合并到 Skein 中。
 

@@ -56,3 +56,95 @@ The directory `00_active_specs/` is the designated **Wiki** and **Single Source 
 - `reference/st-macro-reference.md`: SillyTavern macro reference.
 - `reference/acu-architecture-analysis.md`: ACU architecture analysis.
 - `reference/legacy/`: Legacy documentation and archives.
+
+### 9. Drafts & Plans (Working Directories)
+
+#### 9.1 Design Drafts (`01_drafts/`)
+**Purpose**: Work-in-progress design documents and architecture decision records.
+- `architecture_review.md`: Architecture decision records (ADRs) for key design choices.
+- `auxiliary_intelligence_design.md`: Design for auxiliary intelligence components.
+- `clotho_architecture_presentation.md`: Architecture presentation materials.
+- `figma-design-resources.md`: Figma design resources and UI specifications.
+- `frontend-ui-modular-analysis.md`: Modular analysis of frontend UI components.
+- `implementation-summary.md`: Implementation summaries and technical notes.
+- Various Chinese design documents (存档序列化设计说明, 酒馆提示词处理流程, etc.)
+
+#### 9.2 Active Plans (`02_active_plans/`)
+**Purpose**: Active design specifications for specific features and integrations.
+- `galgame-memory-system-spec.md`: Specialized memory system for Galgame scenarios with dual-layer event model.
+- `lwb_integration_plan.md`: Integration plan for LittleWhiteBox framework.
+
+#### 9.3 Detailed Craft Specifications (`03_actvie_craft/`)
+**Purpose**: Detailed component design specifications and analysis documents.
+- `narrative_director_design_spec.md`: Narrative Director (宏观仿真引擎) design specification for life simulation.
+- `agent_skills_integration_analysis.md`: Analysis of agent skills integration.
+- `auxiliary_llm_component_design.md`: Design of auxiliary LLM components.
+- `clotho-acu-integration-proposal.md`: Integration proposal for ACU architecture.
+- `hybrid_context_construction_design.md`: Design for hybrid context construction.
+- `lwb_onion_layers_analysis.md`: Analysis of LWB onion-layered architecture.
+- `lwb_story_outline_comparative_analysis.md`: Comparative analysis of LWB story outline systems.
+- `lwb_technical_analysis.md`: Technical analysis of LWB implementation.
+- Various design evaluation and analysis reports.
+
+### 10. Reference Materials (`10_references/`)
+**Purpose**: External references, third-party libraries, and technical analysis documents.
+
+#### 10.1 Design References
+- `自定义函数`: Custom function definitions.
+- `character_import_logic.md`: Character card import logic.
+- `st_prompt_template_analysis.md`: Analysis of SillyTavern prompt templates.
+- `st_prompt_template_integration_plan.md`: Integration plan for ST prompt templates.
+- `st_prompt_template_migration_design.md`: Migration design for ST prompt templates.
+
+#### 10.2 Database Analysis (`10_references/数据库/`)
+- `11_data_processing_layer.md`: Data processing layer specifications.
+- `12_update_intelligence_layer.md`: Update intelligence layer specifications.
+- `数据库分析.md`: Database analysis documents.
+- `ACU_Architecture_Analysis.md`: ACU architecture analysis.
+- `acu-integration-insights.md`: Integration insights for ACU.
+- `clotho-acu-integration-roadmap.md`: Integration roadmap for Clotho-ACU.
+- `Data_Processing_Layer_Spec.md`: Data processing layer specifications.
+- `Data_Schema_and_Templates.md`: Data schema and template definitions.
+- Various analysis documents on JS split-merged architecture, fault tolerance comparisons, and update intelligence examples.
+
+#### 10.3 Third-Party Libraries
+- `agentskills-main/`: AgentSkills framework source code and documentation.
+- `character-card-spec-v3-main/`: Character Card Specification v3.0 reference.
+- `LittleWhiteBox-main/`: LittleWhiteBox framework source code.
+- `ERA/`: ERA variable framework and documentation.
+- `PeroCore-tauri/`: PeroCore Tauri application reference.
+
+### 11. Meta Critical Analysis (`15_meta_crital/`)
+**Purpose**: Project-wide design audits, critical reviews, and meta-analysis.
+- `comprehensive-design-audit-report.md`: Comprehensive audit of all design documents.
+- `critical_design_review.md`: Critical design review and assessment.
+- `DESIGN_MATURITY_ASSESSMENT.md`: Design maturity assessment across all modules.
+- `documentation-refactor-plan.md`: Documentation restructuring plan.
+
+### 12. Gifts & Extras (`66_gift/`)
+**Purpose**: Supplementary materials and additional resources.
+- `metaphor-glossary-greek.md`: Extended metaphor glossary with Greek mythology references.
+
+### 13. Archive (`99_archive/`)
+**Purpose**: Historical documents, deprecated designs, and legacy references.
+
+#### 13.1 Legacy Architecture (`99_archive/legacy_architecture/`)
+- Complete legacy architecture documentation (10 documents) from previous design iterations.
+- Includes architecture panorama, vision, orchestration, data engine, presentation, infrastructure, migration strategy, etc.
+
+#### 13.2 Legacy Plans (`99_archive/legacy_plans/`)
+- Deprecated implementation plans and architectural proposals.
+- Includes JS refactor plans, era integration analyses, filament enhancements, function call designs, etc.
+
+#### 13.3 Legacy UI (`99_archive/legacy_ui/`)
+- Historical UI design specifications including:
+  - Design tokens, color system, typography
+  - Component specifications (buttons, forms, cards, navigation)
+  - Layout grids and modal systems
+  - Animation and transition guidelines
+
+#### 13.4 Legacy Misc (`99_archive/legacy_misc/`)
+- Miscellaneous legacy documents including cross-platform abstraction, MVU integration, system architecture, UI layouts, and subsystem designs.
+
+#### 13.5 Archive Drafts (`99_archive/archive_draft/`)
+- Early drafts and experimental documents including git-like message design, history engineering design, macro language feasibility, message system design, etc.
