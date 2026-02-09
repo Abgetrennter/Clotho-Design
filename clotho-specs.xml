@@ -1,0 +1,4960 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<clotho-specs>
+  <category name="root">
+    <document path="README.md">
+      <title>Clotho 系统架构文档索引</title>
+      <content>
+        <![CDATA[
+# Clotho 系统架构文档索引
+
+**版本**: 3.0.0
+**日期**: 2026-01-12
+**状态**: Reorganized
+**作者**: Clotho 文档重构团队
+
+---
+
+## 📖 文档简介
+
+欢迎阅读 Clotho 系统架构文档。Clotho 是一个面向下一代 AI 角色扮演（RPG）的高性能、确定性客户端，旨在解决现有方案（如 SillyTavern）在逻辑处理、上下文管理和性能上的根本性痛点。
+
+本文档系列采用全新的分层结构组织，旨在提供逻辑清晰、易于导航和理解的架构参考。
+
+## 🏗️ 文档结构概览
+
+Clotho 架构文档按逻辑领域划分为六个主要类别，每个类别包含若干详细文档：
+
+```mermaid
+graph TD
+    ROOT[架构文档] --&gt; OVERVIEW[概览 Overview]
+    ROOT --&gt; SUBSYSTEMS[子系统 Subsystems]
+    ROOT --&gt; PROTOCOLS[协议与格式 Protocols &amp; Formats]
+    ROOT --&gt; WORKFLOWS[工作流与处理 Workflows]
+    ROOT --&gt; RUNTIME[运行时环境 Runtime]
+    ROOT --&gt; REFERENCE[参考 Reference]
+    
+    OVERVIEW --&gt; O1[愿景与哲学]
+    OVERVIEW --&gt; O2[架构原则]
+    OVERVIEW --&gt; O3[术语表]
+    OVERVIEW --&gt; O4[快速入门]
+    
+    SUBSYSTEMS --&gt; S1[Jacquard 编排层]
+    SUBSYSTEMS --&gt; S2[Mnemosyne 数据引擎]
+    SUBSYSTEMS --&gt; S3[表现层]
+    SUBSYSTEMS --&gt; S4[基础设施层]
+    SUBSYSTEMS --&gt; S5[Muse 智能服务]
+    
+    PROTOCOLS --&gt; P1[Filament 协议概述]
+    PROTOCOLS --&gt; P2[输入格式 (XML+YAML)]
+    PROTOCOLS --&gt; P3[Jinja2 宏系统]
+    PROTOCOLS --&gt; P4[输出格式 (XML+JSON)]
+    PROTOCOLS --&gt; P5[解析流程]
+    
+    WORKFLOWS --&gt; W1[提示词处理工作流]
+    WORKFLOWS --&gt; W2[角色卡导入与迁移]
+    WORKFLOWS --&gt; W3[迁移指南]
+    
+    RUNTIME --&gt; R1[分层运行时架构]
+    RUNTIME --&gt; R2[状态管理与 Patching]
+    
+    REFERENCE --&gt; REF1[文档标准]
+    REFERENCE --&gt; REF2[ACU 架构分析]
+    REFERENCE --&gt; REF3[宏系统规范]
+    REFERENCE --&gt; REF4[ST 宏参考]
+```
+
+## 📚 文档类别详解
+
+### 1. 概览 (Overview)
+
+- **定位**: 高层次介绍与入门指引
+- **内容**: 项目愿景、设计哲学、核心概念、快速入门
+- **目标读者**: 新用户、项目管理者、外部合作者
+- **文件列表**:
+  - [`vision-and-philosophy.md`](vision-and-philosophy.md) - 愿景与哲学
+  - [`architecture-principles.md`](architecture-principles.md) - 架构原则
+  - [`metaphor-glossary.md`](metaphor-glossary.md) - 术语表与隐喻体系
+  - [`quick-introduction.md`](quick-introduction.md) - AI 快速了解（根目录）
+
+### 2. 子系统 (Subsystems)
+
+- **定位**: 系统核心组件的详细设计
+- **内容**: 五大子系统（编排、数据、表现、基础设施、智能服务）
+- **目标读者**: 系统架构师、核心开发者
+- **文件列表**:
+  - **Jacquard 编排层**:
+    - [`jacquard/README.md`](jacquard/README.md) - Jacquard 编排层总览
+    - [`jacquard/planner-component.md`](jacquard/planner-component.md) - Pre-Flash Planner 组件
+  - **Mnemosyne 数据引擎**:
+    - [`mnemosyne/README.md`](mnemosyne/README.md) - Mnemosyne 数据引擎总览
+    - [`mnemosyne/sqlite-architecture.md`](mnemosyne/sqlite-architecture.md) - SQLite 物理存储架构
+    - [`mnemosyne/abstract-data-structures.md`](mnemosyne/abstract-data-structures.md) - 抽象数据结构
+    - [`mnemosyne/hybrid-resource-management.md`](mnemosyne/hybrid-resource-management.md) - 混合资源管理与 Asset 协议
+  - **表现层**:
+    - [`presentation/README.md`](presentation/README.md) - 表现层总览
+  - **基础设施层**:
+    - [`infrastructure/README.md`](infrastructure/README.md) - 基础设施层总览
+  - **Muse 智能服务**:
+    - [`muse/README.md`](muse/README.md) - Muse 智能服务总览
+
+### 3. 协议与格式 (Protocols &amp; Formats)
+
+- **定位**: 系统间通信的标准化协议
+- **内容**: Filament 协议规范、模板引擎、数据格式
+- **目标读者**: 协议开发者、集成工程师
+- **文件列表**:
+  - [`filament-protocol-overview.md`](protocols/filament-protocol-overview.md) - Filament 协议概述
+  - [`filament-input-format.md`](protocols/filament-input-format.md) - 输入格式 (XML+YAML)
+  - [`schema-library.md`](protocols/schema-library.md) - Schema 库规范
+  - [`jinja2-macro-system.md`](protocols/jinja2-macro-system.md) - Jinja2 宏系统
+  - [`filament-output-format.md`](protocols/filament-output-format.md) - 输出格式 (XML+JSON)
+  - [`filament-parsing-workflow.md`](protocols/filament-parsing-workflow.md) - 解析流程
+
+### 4. 工作流与处理 (Workflows)
+
+- **定位**: 具体业务处理流程
+- **内容**: 提示词处理、角色卡迁移、用户交互
+- **目标读者**: 功能开发者、迁移专家
+- **文件列表**:
+  - [`prompt-processing.md`](workflows/prompt-processing.md) - 提示词处理工作流
+  - [`character-import-migration.md`](workflows/character-import-migration.md) - 角色卡导入与迁移
+  - [`migration-strategy.md`](workflows/migration-strategy.md) - 迁移策略
+
+### 5. 运行时环境 (Runtime)
+
+- **定位**: 系统运行时行为与状态管理
+- **内容**: 分层运行时架构、状态管理、Patching 机制
+- **目标读者**: 运行时工程师、状态管理开发者
+- **文件列表**:
+  - [`layered-runtime-architecture.md`](runtime/layered-runtime-architecture.md) - 分层运行时架构
+  - [`README.md`](runtime/README.md) - 运行时环境导读
+        ]]>
+      </content>
+    </document>
+
+    <document path="architecture-principles.md">
+      <title>架构原则</title>
+      <content>
+        <![CDATA[
+# 架构原则
+
+**版本**: 1.0.0
+**日期**: 2026-01-10
+**状态**: Draft
+**作者**: Clotho 架构团队
+
+---
+
+## 1. 核心设计原则
+
+### 1.1 凯撒原则 (The Caesar Principle)
+
+&gt; **"Render unto Caesar the things that are Caesar's, and unto God the things that are God's."**  
+&gt; **（凯撒的归凯撒，上帝的归上帝）**
+
+#### 1.1.1 凯撒的归凯撒 (Code's Domain)
+
+- **确定性逻辑**: 逻辑判断、数值计算、状态管理、流程控制必须由确定性代码严密掌控
+- **绝不外包**: 严禁将此类逻辑外包给 LLM
+- **代码权威**: Jacquard（编排层）和 Mnemosyne（数据层）拥有最终决策权
+
+#### 1.1.2 上帝的归上帝 (LLM's Domain)
+
+- **语义理解**: LLM 专注于语义理解、情感演绎、剧情生成、文本润色
+- **神性保留**: 不分散 LLM 注意力于琐碎的逻辑计算
+- **拒绝全权接管**: 不相信 LLM 能在处理复杂逻辑的同时保持高质量角色扮演
+
+### 1.2 混合代理 (Hybrid Agency)
+
+- **分工明确**: 人类提供意图，代码提供逻辑，LLM 提供语义
+- **协同工作**: 三者各司其职，通过严格定义的协议交互
+- **能力互补**: 发挥各自优势，避免短板效应
+
+### 1.3 缪斯原则 (The Muses Principle)
+
+&gt; **"凯撒掌管律法，上帝掌管灵魂，而缪斯掌管灵感与技艺。"**
+
+- **辅助智能**: 在核心对话之外，广泛利用 LLM 处理辅助性任务（如记忆整理、属性提取、文本润色）。
+- **独立信道**: 建立独立于主对话流的“缪斯信道”，使用专门的 Prompt 和（可选的）独立模型。
+- **结构化输出**: 缪斯任务必须产出 Filament 结构化数据，以便系统自动采纳结果。
+
+## 2. 系统架构原则
+
+### 2.1 三层物理隔离
+
+系统划分为三个物理隔离但逻辑紧密的层次：
+
+1. **表现层 (Presentation)**
+   - 职责: 用户交互与界面渲染
+   - 技术: Flutter UI, Webview
+   - 约束: **严禁包含业务逻辑**
+
+2. **编排层 (Jacquard)**
+   - 职责: 流程控制与 Prompt 组装
+   - 特性: 插件化流水线，确定性编排
+   - 核心: Skein 容器，模板渲染
+
+3. **数据层 (Data &amp; Infra)**
+   - 职责: 数据存储、检索与快照生成
+   - 组件: Mnemosyne 记忆引擎
+   - 能力: 时空回溯，动态快照
+
+### 2.2 单向数据流
+
+- **UI → 逻辑**: UI 只能生成 Intent/Event，不能直接修改数据模型
+- **逻辑 → UI**: 逻辑层通过 Stream 广播状态变更，UI 被动接收并重绘
+- **数据权威**: Mnemosyne 是唯一的状态权威源
+
+### 2.3 协议统一化 (Filament Unification)
+
+- **统一格式**: "XML + YAML IN, XML + JSON OUT"
+- **统一范畴**: 贯穿提示词格式、标签类型、嵌入式前端、状态管理
+- **统一解析**: 实时流式解析，路由分发
+
+## 3. 开发与维护原则
+
+### 3.1 绝对约束 (The "Must-Nots")
+
+1. **UI 层严禁包含业务逻辑**: UI 组件不得直接修改数据模型
+2. **LLM 输出严禁直接执行**: 必须经过 Parser 清洗与校验，严禁 `eval`
+3. **状态严禁多头管理**: 所有状态变更必须提交给 Mnemosyne 统一处理
+4. **严禁 Prompt 污染**: 严禁在 Prompt 中包含复杂的逻辑运算指令
+
+### 3.2 可扩展性原则
+
+- **插件化**: Jacquard 采用插件化流水线，支持自定义逻辑单元
+- **模板化**: 使用 Jinja2 模板引擎，支持动态逻辑控制
+- **协议化**: Filament 协议提供标准化的扩展接口
+
+### 3.3 兼容性原则
+
+- **向后兼容**: 支持 SillyTavern 角色卡导入与迁移
+- **向前兼容**: 协议版本演进保持兼容性
+- **生态兼容**: 通过 WebView 兼容第三方 HTML/JS 内容
+
+## 4. 性能与质量原则
+
+### 4.1 性能基调
+
+- **首屏加载**: &lt; 1s
+- **长列表滚动**: 60fps（即使在大量消息历史下）
+- **内存占用**: 严格控制图片与上下文对象缓存策略
+- **响应时间**: 用户操作到视觉反馈 &lt; 100ms
+
+### 4.2 质量属性
+
+- **可靠性**: 异常转化机制，防止崩溃传播
+- **可维护性**: 清晰的架构分层，模块化设计
+- **可测试性**: 依赖倒置，支持单元测试和集成测试
+- **可观测性**: 完整的日志和监控体系
+
+### 4.3 安全原则
+
+- **沙箱隔离**: 脚本运行在受限沙箱中
+- **输入验证**: 所有外部输入必须经过严格验证
+- **权限控制**: 细粒度的数据访问权限
+- **隐私保护**: 用户数据本地优先，可选加密
+
+## 5. 演进与变更原则
+
+### 5.1 版本管理
+
+- **语义化版本**: 遵循语义化版本规范
+- **协议版本**: Filament 协议独立版本管理
+- **数据迁移**: 提供自动化数据迁移工具
+
+### 5.2 变更控制
+
+- **架构变更**: 必须经过架构评审委员会批准
+- **协议变更**: 保持向后兼容，提供迁移指南
+- **数据变更**: 支持数据结构的渐进式演进
+
+### 5.3 文档同步
+
+- **代码即文档**: 关键设计决策必须在代码注释中记录
+- **文档更新**: 架构变更必须同步更新相关文档
+- **知识共享**: 建立架构决策记录 (ADR) 库
+
+## 6. 关联文档
+
+- **[愿景与哲学](vision-and-philosophy.md)**: 项目根本指导思想
+- **[核心架构](../core/README.md)**: 具体组件实现原则
+- **[Filament 协议](../protocols/filament-protocol-overview.md)**: 协议设计原则
+- **[分层运行时架构](../runtime/layered-runtime-architecture.md)**: 运行时设计原则
+
+---
+
+**最后更新**: 2025-12-30  
+**文档状态**: 草案，待架构评审委员会审议
+
+        ]]>
+      </content>
+    </document>
+
+
+    <document path="metaphor-glossary.md">
+      <title>Clotho 隐喻体系与术语表 (Clotho Metaphor System &amp; Glossary)</title>
+      <content>
+        <![CDATA[
+# Clotho 隐喻体系与术语表 (Clotho Metaphor System &amp; Glossary)
+
+**版本**: 1.0.0  
+**日期**: 2026-01-10  
+**状态**: Active  
+**作者**: 资深系统架构师 (Architect Mode)  
+
+---
+
+## 1. 核心隐喻：纺织命运 (Weaving Fate)
+
+Clotho 项目的命名源自希腊神话中的命运三女神之一 **克洛托 (Clotho)**，她是负责纺织生命之线的女神。受此启发，整个系统采用了一套完整的 **"纺织 (Weaving)"** 隐喻体系，将复杂的软件架构映射为直观的纺织工艺。
+
+### 1.1 核心理念
+
+&gt; **"以织谱 (Pattern) 为魂，以时间为线，编织而成的命运织卷 (Tapestry)。"**
+
+我们不再将对话视为简单的“消息列表”，而是视为一幅不断编织、延伸的 **"织卷 (Tapestry)"**。
+*   **Jacquard (提花机)** 读取 **Pattern (织谱)** 的指令。
+*   它调度 **Shuttle (梭子)** 穿梭往复。
+*   将 **Threads (丝络)** 编织进时间的经纬。
+*   最终生成独一无二的 **Tapestry (织卷)**。
+
+---
+
+## 2. 术语定义表 (Glossary)
+
+### 2.1 系统组件 (System Components)
+
+| 术语 (EN) | 术语 (CN) | 隐喻原型 | 技术定义 |
+| :--- | :--- | :--- | :--- |
+| **Clotho** | **Clotho** | 纺织女神 | **整个应用系统**。它是用户交互的载体，是命运发生的场所。 |
+| **Jacquard** | **Jacquard** | 提花织机 | **编排引擎 (Orchestration Layer)**。系统的核心调度器，负责解析指令、组装 Prompt、调用 LLM 并处理响应。它像提花机一样，精确控制每一步编织。 |
+| **Mnemosyne** | **Mnemosyne** | 记忆女神 | **数据引擎 (Data Engine)**。系统的存储中枢，负责管理状态快照、历史记录和知识检索。它不仅仅是存储，更是"动态投影"的生成者。 |
+| **Shuttle** | **梭子** | 织机梭子 | **功能单元 / 插件**。Jacquard 流水线中的具体执行模块（如 `Planner`, `Renderer`, `Invoker`）。它们在流水线上穿梭，完成特定任务。 |
+
+### 2.2 数据实体 (Data Entities)
+
+| 术语 (EN) | 术语 (CN) | 隐喻原型 | 架构层级 | 技术定义 |
+| :--- | :--- | :--- | :--- | :--- |
+| **The Tapestry** | **织卷** | 挂毯/织物 | **Top Level**&lt;br&gt;(Instance) | **运行时实例 (Runtime Instance)**。它是用户感知的“一个存档”或“一段人生”。它是由静态定义的 Pattern 和动态演进的 Threads 共同编织而成的完整实体。包含了历史、状态和设定。 |
+| **The Pattern** | **织谱** | 纹板/图样 | **L2 Layer**&lt;br&gt;(Blueprint) | **静态定义集 (Static Definition)**。曾称为 "Character Card"。它是一组指令、模具或基因。它定义了织卷的风格、世界观、逻辑规则和初始状态。它是只读的 (Read-Only)。 |
+| **The Threads** | **丝络** | 丝线/经纬 | **L3 Layer**&lt;br&gt;(State) | **动态状态流 (Dynamic State)**。它是在编织过程中不断加入的、改变织卷走向的变量、状态 Patch 和历史记录。它是可变的 (Read-Write)。 |
+| **Punchcards** | **穿孔卡** | 提花织机穿孔卡 | **Snapshot**&lt;br&gt;(Serialization) | **世界状态快照 (World State Snapshot)**。它是织卷 (Tapestry) 在特定冻结时刻的静态切片。用于序列化、保存进度及恢复上下文。(参见: Mnemosyne) |
+| **Skein** | **绞纱** | 纱束 | **Pipeline Obj** | **结构化容器 (Structured Container)**。Jacquard 处理过程中的临时数据载体，包裹了 Prompt 的各个部分（System, User, History），等待被编织（渲染）成最终文本。 |
+| **Filament** | **纤丝** | 纤维 | **Protocol** | **交互协议 (Interaction Protocol)**。连接各组件的标准化数据格式（XML+YAML/JSON），如同一根根强韧的纤维，贯穿系统始终。 |
+
+---
+
+## 3. 概念映射 (Concept Mapping)
+
+为了方便从旧体系（如 SillyTavern）迁移，提供以下映射对照：
+
+| 传统概念 (Legacy) | Clotho 新概念 (New Metaphor) | 备注 |
+| :--- | :--- | :--- |
+| **Character Card (角色卡)** | **The Pattern (织谱)** | 强调其作为"生成式蓝图"的本质，包含角色、世界书、正则、UI等复杂结构。 |
+| **Chat / Session (对话)** | **The Tapestry (织卷)** | 强调其作为"完整编织物"的整体性，包含 Pattern 的投影和运行时的演变。 |
+| **Message History (历史)** | **Threads (丝络)** | 强调其作为构成织卷的原材料。 |
+| **World Info (世界书)** | **Lore / Texture (纹理)** | Pattern 的一部分，为织卷提供背景纹理。 |
+
+---
+
+## 4. 引用规范
+
+在后续文档和代码注释中，应优先使用新术语：
+
+*   ✅ "Load the **Pattern** into memory." (将织谱加载到内存)
+*   ✅ "Save the current **Tapestry**." (保存当前织卷)
+*   ✅ "Apply a patch to the **Threads**." (对丝络应用补丁)
+
+        ]]>
+      </content>
+    </document>
+
+    
+
+    <document path="vision-and-philosophy.md">
+      <title>第一章：宏观愿景与设计哲学 (Vision &amp; Philosophy)</title>
+      <content>
+        <![CDATA[
+# 第一章：宏观愿景与设计哲学 (Vision &amp; Philosophy)
+
+**版本**: 1.0.0
+**日期**: 2025-12-23
+**状态**: Draft
+**作者**: 资深系统架构师 (Architect Mode)
+**源文档**: `project_core_blueprint.md`, `system_architecture.md`
+
+---
+
+## 1. 核心价值主张
+
+Clotho 旨在重新定义 AI 角色扮演（RPG）的交互体验，构建一个**高性能、跨平台、确定性与沉浸感并存**的次世代客户端。我们致力于解决现有方案（如 SillyTavern）中“逻辑与表现混杂”、“上下文管理混沌”以及“性能随对话长度指数级衰减”的根本性痛点。
+
+### 1.1 解决的根本问题域
+
+1. **性能与跨平台**：摒弃 Web 技术栈，拥抱 **Flutter** 生态。通过原生编译实现高性能渲染，同时确保 Windows、Android 等多端体验的高度一致性，彻底解决长文本渲染卡顿与内存泄漏问题。
+2. **时空一致性**：引入“多重宇宙树”模型，确保在频繁的回溯（Undo）、重绘（Reroll）与分支（Branching）操作中，世界状态与剧情发展严丝合缝，绝无错乱。
+3. **逻辑解耦**：彻底切断 UI 层与逻辑层的直接耦合，确保界面重构不影响业务逻辑，逻辑升级不破坏界面表现。
+
+---
+
+## 2. 设计哲学：凯撒原则 (The Caesar Principle)
+
+我们的核心哲学是 **"Hybrid Agency"（混合代理）**，并遵循 **"The Caesar Principle" (凯撒原则)**：
+
+&gt; **"Render unto Caesar the things that are Caesar's, and unto God the things that are God's."**
+&gt; **(凯撒的归凯撒，上帝的归上帝)**
+
+### 2.1 凯撒的归凯撒 (Code's Domain)
+
+逻辑判断、数值计算、状态管理、流程控制、工具调用。这些必须由确定性的代码 (Jacquard/Mnemosyne) 严密掌控，绝不外包给 LLM。
+
+### 2.2 上帝的归上帝 (LLM's Domain)
+
+语义理解、情感演绎、剧情生成、文本润色。这是 LLM 的神性所在，应让其专注于此，不被琐碎的逻辑计算分散注意力。
+
+**拒绝 LLM 全权接管**：我们不相信 LLM 能在处理复杂逻辑的同时保持高质量的角色扮演。任何试图让 LLM "既当爹又当妈" 的设计都是对算力的浪费和对稳定性的破坏。
+
+---
+
+## 3. 核心功能抽象体系
+
+我们将系统能力抽象为三大核心生态模块，各模块各司其职，通过严格定义的协议交互。
+
+### 3.1 表现生态 (The Stage)
+
+* **定位**: 纯粹的渲染与交互界面，**无业务逻辑**。
+* **职责**: 负责将底层的数据流（Stream）转化为可视化的像素，并将用户的操作意图（Intent）转化为标准指令发送给编排层。
+* **核心价值**: 极致的流畅度、响应式布局适配、沉浸式视觉体验。
+
+### 3.2 编排生态 (The Loom - Jacquard)
+
+* **定位**: 系统的“大脑”与“总线”
+* **职责**: 作为一个插件化的流水线执行器，它不直接存储数据，而是根据预定义的流程（Pipeline），调度各个功能单元（Shuttles）完成 Prompt 组装、LLM 调用、结果解析等任务。
+* **核心价值**: 高度的可扩展性与流程的可编排性。
+
+### 3.3 记忆生态 (The Memory - Mnemosyne)
+
+* **定位**: 系统的“海马体”与“世界书”。
+* **职责**: 管理多维度的上下文链（历史链、状态链、知识链）。它不只是存储数据，更是一个**动态快照生成引擎**，能根据当前的时间指针（Time Pointer），瞬间投影出该时刻的完整世界状态（Punchcards）。
+* **核心价值**: 数据的完整性、时空的可回溯性、上下文的精准构建。
+
+---
+
+## 4. 系统约束与演进原则
+
+### 4.1 绝对约束 (The "Must-Nots")
+
+1. **UI 层严禁包含业务逻辑**: UI 组件不得直接修改数据模型，必须通过 Intent/Event 发送给逻辑层。
+2. **LLM 输出严禁直接执行**: LLM 生成的内容必须经过 Parser 清洗与校验，严禁直接作为代码执行（No `eval`）。
+3. **状态严禁多头管理**: 所有的状态变更必须提交给 Mnemosyne 统一处理，严禁组件私自维护全局状态副本。
+4. **严禁 Prompt 污染 (The Caesar Rule)**: 严禁在 Prompt 中包含复杂的逻辑运算指令（如“请计算 HP - 10 后的结果”）。此类运算必须在 Prompt 组装前由代码完成，直接将结果（“你受到了 10 点伤害，剩余 HP 80”）注入 Prompt。
+
+### 4.2 性能基调
+
+* **首屏加载**: &lt; 1s。
+* **长列表滚动**: 即使在大量消息的历史记录下，滚动必须保持 60fps（利用 Flutter 的惰性构建）。
+* **内存占用**: 严格控制图片与上下文对象的缓存策略，防止 OOM。
+* **性能分析器**: 检测是什么在消耗性能
+
+### 4.3 协议统一化 (Filament Unification)
+
+为了消除“自然语言”与“机器指令”之间的模糊地带，我们将系统的所有交互统一在 **Filament 协议** 之下。
+
+* **统一格式**: 遵循 **"XML + YAML IN, XML + JSON OUT"** 的非对称设计。
+  * **IN (Context)**: 使用 XML 定义结构，YAML 描述数据。YAML 的高可读性与低 Token 消耗使其成为 Prompt 上下文的最佳载体。
+  * **OUT (Instruction)**: 使用 XML 定义意图，JSON 描述参数。JSON 的严格语法确保了状态变更与工具调用的确定性。
+* **统一范畴**: Filament 不仅是 LLM 的输出协议，更是系统的通用语言，统一管理：
+    1. **提示词格式 (Prompt Engineering)**: 所有的 Character Card、World Info 均通过 Filament 结构化注入。
+    2. **标签类型 (Tag System)**: 定义一套标准化的 XML 标签集，用于控制流程。
+    3. **嵌入式前端 (Embedded UI)**: 允许 LLM 通过协议直接请求渲染原生的嵌入式网页组件（Mini-Apps），实现交互维度的升维。
+
+        ]]>
+      </content>
+    </document>
+
+  </category>
+
+
+  <category name="jacquard">
+    <document path="jacquard\README.md">
+      <title>第二章：系统核心架构与编排层 (Jacquard Layer)</title>
+      <content>
+        <![CDATA[
+# 第二章：系统核心架构与编排层 (Jacquard Layer)
+
+**版本**: 1.0.0
+**日期**: 2025-12-23
+**状态**: Draft
+**作者**: 资深系统架构师 (Architect Mode)
+**源文档**: `system_architecture.md`, `mvu_integration_design.md`
+
+---
+
+## 1. 编排层概览 (Jacquard Overview)
+
+**Jacquard** 是逻辑层的核心，它被重新设计为一个 **Pipeline Runner**。它不包含具体的业务逻辑，而是负责按顺序执行注册的插件。它是系统的“大脑”，通过确定性的编排来驾驭概率性的 LLM 生成。
+
+### 1.1 核心职责
+
+1. **流程调度**: 协调 Prompt 组装、API 调用、结果解析等步骤。
+2. **Skein 构建**: 维护上下文容器，支持动态裁剪。
+3. **模板渲染**: 集成 Jinja2 引擎，支持高级宏逻辑和动态内容组装。
+4. **意图与焦点管理**: 通过 Planner Plugin 实现任务分流与长线记忆的聚焦。
+5. **协议解析**: 实时解析 Filament 协议流，分发事件。
+
+### 1.2 架构拓扑
+
+```mermaid
+graph TD
+    classDef orch fill:#fff3e0,stroke:#e65100,stroke-width:2px;
+    
+    subgraph Jacquard [Jacquard Pipeline]
+        Bus[Jacquard 总线]:::orch
+        
+        subgraph NativePlugins [原生插件流水线]
+            PreFlash[Pre-Flash (Planner) Plugin]:::orch
+            Scheduler[Scheduler Shuttle]:::orch
+            Builder[Skein Builder]:::orch
+            Renderer[Template Renderer (Jinja2)]:::orch
+            Assembler[Prompt Assembler]:::orch
+            Invoker[LLM Invoker]:::orch
+            Parser[Filament Parser]:::orch
+            Updater[State Updater]:::orch
+            PostFlash[Post-Flash (Consolidation) Worker]:::orch
+        end
+
+        subgraph Maintenance [维护流水线]
+            BatchPipeline[Batch Processor Shuttle]:::orch
+        end
+    end
+```
+
+---
+
+## 2. 插件化流水线 (Pipeline Mechanics)
+
+Jacquard 维护一个插件列表，每个插件实现特定的接口。这种设计允许系统灵活扩展，甚至支持用户自定义逻辑。
+
+### 2.1 核心插件定义
+
+1. **Pre-Flash (Planner) Plugin**:
+    * **定位**: 系统的“副官 (Adjutant)”，在生成开始前负责决策“本轮聊什么”以及“如何聊”。
+    * **核心职责 (The 4 Pillars)**:
+        * **1. 意图分流 (Triage)**: 判断用户输入是“数值化交互”（走快速数值通道）还是“剧情化交互”（走完整生成通道）。
+        * **2. 聚焦管理 (Focus Management)**: **聚光灯 (Spotlight)** 机制。检测用户是否想切换话题，据此更新 `state.planner_context.activeQuestId`，实现任务的挂起与激活。
+        * **3. 目标规划 (Goal Planning)**: 在进入 Skein 构建前，直接写入 L3 State 的 `planner_context`，更新 `current_goal` 和 `pending_subtasks`，为 Main LLM 设定具体的战术目标。
+        * **4. 策略选型 (Strategy)**: 决定使用哪个 Prompt Template (Skein ID)（如“日常模式”、“战斗模式”、“回忆模式”）。
+    * **数据权限**:
+        * **Read**: History, Active Quests, Lorebook Metadata.
+        * **Write**: `planner_context` (Pre-Generation Update). 这是一个特殊的权限，允许 Planner 在 LLM 介入前直接修改逻辑上下文。
+    * **决策流**:
+        ```mermaid
+        graph TD
+            UserInput[用户输入] --&gt; Planner[Pre-Flash Planner]
+            
+            subgraph "Planner Decision Brain"
+                CheckTriage{1. Is Numerical?} -- Yes --&gt; RouteNum[Route: Numerical Pipeline]
+                CheckTriage -- No --&gt; CheckFocus{2. Intent Change?}
+                
+                CheckFocus -- "Switch Topic" --&gt; Switch[Update activeQuestId\nSuspend Old Quest]
+                CheckFocus -- "Continue" --&gt; Keep[Keep Focus]
+                
+                Switch &amp; Keep --&gt; SetGoal[3. Update current_goal\n(Write to L3 Context)]
+                SetGoal --&gt; SelectTempl[4. Select Template ID]
+            end
+            
+            RouteNum --&gt; StateUpdate[Direct State Update]
+            SelectTempl --&gt; SkeinBuilder[Proceed to Skein Builder]
+        ```
+    * **产出**: `PlanContext` (包含模板 ID、初始指令、更新后的 `planner_context`)。
+
+2. **Scheduler Shuttle Plugin**:
+    * **定位**: 自动化任务执行器。
+    * **职责**: 基于时间（楼层）或事件（变量变更）触发预定义任务。
+    * **动作**: 维护全局计数器 (`scheduler_context`)，执行注入 Prompt 或更新状态的动作。
+    * **详情**: 参见 [`scheduler-component.md`](scheduler-component.md)。
+
+3. **Skein Builder Plugin**:
+* 职责: 向数据层 (Mnemosyne) 请求快照 (`Punchcards`)。
+* **Routing Logic**: v1.2 引入了基于 `LorebookCategory` 的分流装填逻辑。
+    * **Axiom**: 注入到 `System Chain` (Extension Block)。
+    * **Agent**: 注入到 `Floating Chain` (High Priority, Depth 3-5)。
+    * **Encyclopedia**: 注入到 `Floating Chain` (Standard Priority, Depth 5-10)。
+    * **Directive**: 注入到 `Instruction Block` (紧邻 User Input)。
+* 产出: 初始化的 `Skein` 对象。
+
+4. **Template Renderer Plugin (Jinja2)**:
+    * **原 PromptASTExecutor**: 已升级为标准的模板渲染引擎。
+    * **职责**: 编译并执行 Skein 中的 Jinja2 模板（支持 `{% if %}`, `{% set %}` 等逻辑）。
+    * **输入**: 包含 Jinja2 语法的 Skein。
+    * **上下文**: 注入 `Mnemosyne` 状态树（只读）和 `Skein` 元数据。
+    * **产出**: 逻辑处理完毕、变量已替换的纯文本 Skein。
+
+5. **LLM Invoker Plugin**:
+    * 职责: 调用 LLM API，获取流式响应。
+    * 输入: 最终渲染的 Prompt 字符串。
+
+6. **Filament Parser Plugin**:
+    * 职责: 实时解析 LLM 的 Filament 输出。
+    * 动作: 提取 `&lt;reply&gt;` 推送给 UI，提取 `&lt;state_update&gt;` 准备后续处理。
+
+7. **State Updater Plugin**:
+    * 职责: 收集所有状态变更指令。
+    * 动作: 调用 Mnemosyne 更新状态，并持久化历史。
+
+8. **Post-Flash (Consolidation) Worker**:
+    * **职责**: 记忆整合与归档（异步执行）。负责处理 **增量 (Incremental)、近实时** 的记忆整理。
+    * **动作**: 在会话结束或缓冲区满时，提取关键事件存入 Event Chain，生成角色反思，并归档原始日志。
+
+9. **维护流水线 (MaintenancePipeline &amp; BatchShuttle)**:
+    * **职责**: 负责处理 **批量 (Bulk)、非实时** 的重型维护任务。这是 Post-Flash 的必要补充。
+    * **场景**:
+        * **历史导入 (History Import)**: 处理外部导入的成百上千条聊天记录，分块快速重建状态和事件链。
+        * **长线记忆重构 (Memory Refactoring)**: 当用户修改世界设定或觉得 AI 变笨时，对过去的历史记忆进行一次全量的“重新总结”。
+    * **动作**: 在独立的后台 `MaintenancePipeline` 中运行，分块读取历史，模拟 AI “阅读”并批量提交更新，低频高吞吐。
+
+10. **Schema Injector Plugin**:
+    * **职责**: 管理协议 Schema 的动态注入。
+    * **动作**: 扫描角色卡配置和动态协议标签 (`&lt;use_protocol&gt;`)，加载对应的 YAML Schema，并将其 `instruction` 和 `examples` 合并到 Skein 中。
+
+### 2.2 宏与脚本沙箱 (Macro &amp; Script Sandbox)
+
+为了支持用户自定义扩展和安全的逻辑控制，系统采用了双层沙箱策略：
+
+1. **Jinja2 Sandbox (Macro Layer)**:
+    * 用于 Prompt 组装阶段的文本生成和简单逻辑控制。
+    * 特性: 语法简洁，天然无副作用（无法修改 Mnemosyne），适合处理“动态开关”和“内容注入”。
+2. **QuickJS/LuaJIT (Script Layer)**:
+    * 用于复杂的业务逻辑计算（如伤害公式）。
+    * 特性: 功能强大，但受限于严格的 API 白名单。
+
+---
+
+## 3. Skein (绞纱) - 结构化 Prompt 容器
+
+**Skein** 是 Jacquard 流水线处理的核心数据对象。它是一个 **异构容器 (Heterogeneous Container)**，模块化地管理 System Prompt, Lore, User Input 等内容。
+
+### 3.1 为什么需要 Skein?
+
+传统的字符串拼接方式（String Concatenation）在处理复杂上下文时难以维护且容易出错。Skein 允许我们以“块 (Block)”为单位管理 Prompt，支持动态排序、裁剪和优先级控制。
+**结合 Jinja2**: 每个 Block 都可以是一段 Jinja2 模板，在渲染阶段动态求值。
+
+### 3.2 深度注入 (Depth Injection) 与块结构
+
+为了支持类似 SillyTavern 的高级注入机制（如“在倒数第3条消息前插入 World Info”），Skein 被重新设计为基于 **PromptBlock** 的复合结构。
+
+#### 3.2.1 PromptBlock 定义
+
+每个 Block 不再仅仅是字符串，而是包含元数据的原子单元：
+
+* **Content**: 文本内容或 Jinja2 模板。
+* **Role**: 语义角色 (System, User, Assistant, Tool)，最终映射到 API 格式。
+* **InjectionConfig**: (可选) 定义该 Block 的注入策略。
+  * `position`: `relativeToStart` (从头数) 或 `relativeToEnd` (从尾数/深度)。
+  * `depth`: 具体的偏移量索引。
+
+#### 3.2.2 Skein 链网结构
+
+Skein 内部维护三条逻辑链：
+
+1. **System Chain**: 固定的头部指令 (System Prompt, Main Scenario)。
+2. **History Chain**: 标准的对话历史记录 (Linear Chat History)。
+3. **Floating Chain (浮动链)**: 尚未确定最终位置的注入块 (World Info, Author's Note, RAG 结果)。这些块带有 `InjectionConfig`，将在编织阶段被“缝合”进历史链。
+
+### 3.3 编织 (Weaving) 算法
+
+在 `Assembler` 阶段之前，必须执行 **Weaving** 操作，将 `Floating Chain` 合并入 `History Chain`。
+
+1. **Clone**: 复制当前的 History Chain。
+2. **Sort**: 根据 `depth` 和 `priority` 对 Floating Chain 进行排序。
+3. **Inject**: 遍历 Floating Chain，根据 `relativeToEnd` 计算目标索引，将其插入到 History Chain 的特定位置。
+4. **Output**: 生成最终的有序 Block 列表供 Assembler 使用。
+
+---
+
+## 5. 注入与处理流程 (Injection Workflow)
+
+### 5.1 Jacquard 组装流程
+
+1. **扫描**: Jacquard 扫描当前角色卡配置 + 活跃的动态协议列表。
+2. **加载**: 从 `data/schemas` 读取对应的 YAML 文件。
+3. **合并**:
+    * 将 `instruction` 内容按优先级合并到 System Prompt 的 `Extension Block` 区域。
+    * 将 `examples` 合并到 Few-shot Examples 区域。
+4. **注册**: 将 `parser_hints` 注册到 Filament Parser 的配置中，确保流式解析器知道如何处理新出现的标签（例如 `&lt;live&gt;`）。
+
+### 5.2 冲突解决
+
+* 如果多个 Schema 定义了相同的 `parser_hints.root_tag`，优先级高的覆盖优先级低的。
+* 如果同时激活了多个 `type: override` 的 Schema，系统应发出警告或仅使用优先级最高的一个。
+
+---
+
+## 6. Filament 协议 (Filament Protocol)
+
+**Filament 协议**是 Clotho 系统的通用交互语言，贯穿于系统的所有交互环节。由于协议的复杂性和广泛的应用范畴，Filament 协议已独立为专门的章节进行详细阐述。
+
+### 6.1 协议定位
+
+* **输入端**: 使用 **XML + YAML** 格式构建结构化 Prompt，确保 LLM 理解内容的层级与边界。
+* **输出端**: 使用 **XML + JSON** 格式定义意图和参数，实现确定性的机器解析。
+
+### 6.2 在 Jacquard 中的应用
+
+Jacquard 编排层作为 Filament 协议的主要使用者和分发者：
+
+1. **Prompt 组装**: Skein Builder 使用 Filament 格式组装 System Prompt、Character Card、World State 等内容。
+2. **输出解析**: Filament Parser 插件实时解析 LLM 的流式输出，识别并分发不同的标签。
+3. **状态更新**: 将 `&lt;state_update&gt;` 标签中的 JSON 指令传递给 Mnemosyne 执行。
+4. **UI 事件**: 将 `&lt;ui_component&gt;` 标签中的组件请求发送给表现层渲染。
+
+### 6.3 详细文档
+
+Filament 协议的完整规范、标签体系、解析流程、版本演进等内容请参阅 **[Filament 协议概述](../protocols/filament-protocol-overview.md)**。
+
+**关键章节索引**:
+
+* **输入协议**: [Filament 输入格式](../protocols/filament-input-format.md) - 提示词构建
+* **输出协议**: [Filament 输出格式](../protocols/filament-output-format.md) - 指令与响应
+* **Jinja2 宏系统**: [Jinja2 宏系统](../protocols/jinja2-macro-system.md) - 动态提示词构建
+* **Schema 库规范**: [Schema 库规范](../protocols/schema-library.md) - 协议库存储与引用
+* **解析流程**: [Filament 解析流程](../protocols/filament-parsing-workflow.md) - 协议解析流程
+* **最佳实践与约束**: 请参阅输出格式文档中的最佳实践章节
+* **性能优化**: 请参阅解析流程文档中的性能优化章节
+
+        ]]>
+      </content>
+    </document>
+
+    <document path="jacquard\planner-component.md">
+      <title>核心组件：规划器 (Planner)</title>
+      <content>
+        <![CDATA[
+# 核心组件：规划器 (Planner)
+
+**版本**: 1.0.0
+**日期**: 2026-01-12
+**状态**: Draft
+**作者**: 资深系统架构师 (Architect Mode)
+**源文档**: `jacquard-orchestration.md`, `mnemosyne-data-engine.md`
+
+---
+
+## 1. 概述 (Overview)
+
+**Pre-Flash (Planner) Plugin** 是 Jacquard 编排流水线中的第一道关卡，也是整个 Clotho 系统的“副官 (Adjutant)”。它的核心使命是在主生成模型 (Main LLM) 介入之前，对当前的对话上下文进行**战术分析**和**聚焦管理**。
+
+它不负责生成最终的回复文本，而是负责回答三个关键问题：
+1.  **Intent**: 用户现在想做什么？（闲聊？推进剧情？还是查数值？）
+2.  **Focus**: 我们应该聚焦于哪个任务？（继续当前话题？还是响应打断？）
+3.  **Strategy**: 我们该用什么模板和策略来生成回复？
+
+---
+
+## 2. 核心职责 (The 4 Pillars)
+
+Planner 的功能构建在四大支柱之上，确保 AI 的行为既具有长期的连贯性，又具备短期的灵活性。
+
+### 2.1 意图分流 (Triage)
+
+识别用户输入的性质，决定将其路由到哪个处理管线。这是系统的“快速反应机制”。
+
+*   **数值化交互 (Numerical Route)**:
+    *   **特征**: 短文本、高频、重复性强、无复杂语义（如“摸摸头”、“每日签到”）。
+    *   **处理**: 绕过 Skein Builder 和 Main LLM，直接调用 `State Updater` 修改数值，并返回预设的反馈（如 `*affinity +1*`）。
+    *   **价值**: 节省 Token 成本，防止无意义文本污染 Context Window。
+*   **剧情化交互 (Narrative Route)**:
+    *   **特征**: 需要理解、需要生成、涉及复杂逻辑。
+    *   **处理**: 进入标准的 Jacquard 生成流水线。
+
+### 2.2 聚焦管理 (Focus Management)
+
+这是 v1.3 引入的 **"聚光灯 (Spotlight)"** 机制。Planner 负责管理 L3 State 中的 `activeQuestId` 指针。
+
+*   **背景**: 系统中可能同时存在多个 `active` 状态的任务（如“主线”、“支线A”、“支线B”）。
+*   **逻辑**:
+    1.  **检测切换**: 分析用户输入是否包含“打断”、“切换话题”或“启动新任务”的意图。
+    2.  **更新指针**:
+        *   **保持 (Keep)**: 如果用户仍在聊当前话题，保持 `activeQuestId` 不变。
+        *   **切换 (Switch)**: 如果用户明显转向（如“先别管这个了，快看那只猫！”），将 `activeQuestId` 指向新的任务 ID（或创建新任务）。
+        *   **挂起 (Suspend)**: 旧任务的状态保留在后台，等待未来被唤醒。
+
+### 2.3 目标规划 (Goal Planning)
+
+在确定了“焦点”之后，Planner 需要为 Main LLM 设定具体的战术目标。
+
+*   **操作**: Planner 直接修改 L3 Session State 中的 `planner_context` 对象。
+*   **写入内容**:
+    *   `current_goal`: 当前回合的显式目标（如“引导玩家发现受伤的猫”）。
+    *   `pending_subtasks`: 待解决的子问题列表。
+*   **意义**: Main LLM 在随后的 Prompt 中会直接看到这个 `current_goal`，从而生成高度聚焦的内容，避免“不知所措”。
+
+### 2.4 策略选型 (Strategy Selection)
+
+决定使用哪个 **Skein Template** 来构建 Prompt。
+
+*   **场景示例**:
+    *   **日常对话**: 使用标准 `Chat Template`。
+    *   **战斗遭遇**: 使用 `Combat Encounter Template` (强调数值、回合制逻辑)。
+    *   **回忆模式**: 使用 `Flashback Template` (强调叙事、弱化当前状态)。
+*   **产出**: `PlanContext.templateId`。
+
+---
+
+## 3. 决策工作流 (Decision Workflow)
+
+```mermaid
+graph TD
+    UserInput[用户输入] --&gt; Planner[Pre-Flash Planner]
+    
+    subgraph "Planner Decision Brain"
+        CheckTriage{1 Is Numerical?} -- Yes --&gt; RouteNum["路由: Numerical Pipeline"]
+        CheckTriage -- No --&gt; CheckFocus{2 Intent Change?}
+        
+        CheckFocus -- "Switch Topic" --&gt; Switch[更新 activeQuestId 挂起旧任务]
+        CheckFocus -- "Continue" --&gt; Keep[保持 Focus]
+        
+        Switch &amp; Keep --&gt; SetGoal["3. 更新 current_goal(写入 L3 Context)"]
+        SetGoal --&gt; SelectTempl[4. 选择 Template ID]
+    end
+    
+    RouteNum --&gt; StateUpdate["直接更新状态 (Fast Path)"]
+    SelectTempl --&gt; SkeinBuilder["进入 Skein Builder (Gen Path)"]
+```
+
+---
+
+## 4. 数据权限与交互 (Data Interactions)
+
+Planner 拥有系统中最特殊的权限集，因为它处于“生成前 (Pre-Generation)”的上帝视角。
+
+### 4.1 Read Access (读权限)
+*   **History Chain**: 读取最近的 N 条对话，用于判断上下文连贯性。
+*   **Active Quests**: 读取 `state.quests` 中所有活跃任务的状态，以便决定切换目标。
+*   **Lorebook Metadata**: 读取世界书目录，辅助策略选择。
+
+### 4.2 Write Access (写权限)
+*   **Planner Context**:
+    *   **对象**: `state.planner_context`
+    *   **时机**: **Before** Prompt Generation (在 Skein Builder 运行之前)。
+    *   **性质**: 这是 **Hard Write**（直接修改内存对象），而非 Soft Suggestion。
+*   **Quest Pointers**:
+    *   **对象**: `state.planner_context.activeQuestId`
+    *   **作用**: 改变系统关注的焦点任务。
+
+---
+
+## 5. 与其他组件的关系
+
+| 组件 | 关系 |
+| :--- | :--- |
+| **Skein Builder** | 下游消费者。Builder 根据 Planner 指定的 `templateId` 和 `planner_context` 来组装 Prompt。 |
+| **Main LLM** | 执行者。LLM 不需要猜测“我要做什么”，而是直接执行 `planner_context.current_goal`。 |
+| **State Updater** | 后处理者。Updater 负责解析 LLM 执行后的结果，并更新 Quest 的具体进度（如 1/3 -&gt; 2/3）。 |
+
+        ]]>
+      </content>
+    </document>
+
+    <document path="jacquard\scheduler-component.md">
+      <title>Jacquard 调度穿梭机 (Scheduler Shuttle) 组件规范</title>
+      <content>
+        <![CDATA[
+# Jacquard 调度穿梭机 (Scheduler Shuttle) 组件规范
+
+**版本**: 1.0.0
+**日期**: 2026-01-15
+**状态**: Draft
+**关联文档**:
+- `../mnemosyne/abstract-data-structures.md` (L3 状态定义)
+- `README.md` (Jacquard 概览)
+
+---
+
+## 1. 组件概述
+
+**Scheduler Shuttle** 是 Jacquard 编排层中的一个核心插件（Plugin），负责执行**基于时间和事件的自动化任务**。它实现了 LittleWhiteBox (LWB) 风格的精细化调度逻辑，遵循 **"凯撒原则"**，即调度逻辑属于确定性的代码领域，必须由系统精确控制。
+
+### 1.1 核心职责
+
+1.  **事件监听 (Event Listening)**: 订阅系统生命周期事件（如 `OnMessageReceived`, `OnVariableChanged`）。
+2.  **计数器维护 (Counter Maintenance)**: 自动更新 Mnemosyne 中的 `scheduler_context`（楼层计数、时间戳）。
+3.  **规则评估 (Rule Evaluation)**: 检查活跃的调度任务（Scheduler Tasks），判断是否满足触发条件。
+4.  **动作执行 (Action Execution)**: 执行满足条件的任务动作，如注入 Prompt、更新状态或强制回复。
+
+---
+
+## 2. 架构集成
+
+Scheduler Shuttle 作为 Jacquard 流水线的一环，与 Event Bus 和 Mnemosyne 紧密交互。
+
+```mermaid
+graph TD
+    subgraph "Jacquard Pipeline"
+        Input[User Input] --&gt; PreFlash[Pre-Flash Planner]
+        PreFlash --&gt; EventBus{Event Bus}
+        
+        subgraph "Scheduler Shuttle"
+            EventBus -- "OnMessageReceived" --&gt; CounterUpdate[Update Counters]
+            CounterUpdate --&gt; TaskCheck[Check Active Tasks]
+            EventBus -- "OnVariableChanged" --&gt; EventCheck[Check Event Triggers]
+            
+            TaskCheck &amp; EventCheck --&gt; Condition{Conditions Met?}
+            Condition -- Yes --&gt; Execute[Execute Action]
+        end
+        
+        Execute -- "Inject" --&gt; Skein[Skein Builder]
+        Execute -- "State Update" --&gt; Mnemosyne[Mnemosyne Engine]
+    end
+```
+
+---
+
+## 3. 调度逻辑 (Scheduling Logic)
+
+### 3.1 计数器系统 (Counters)
+
+Scheduler 维护以下核心计数器，存储于 Mnemosyne 的 `scheduler_context.counters` 中：
+
+| 计数器 | 定义 | 更新时机 |
+| :--- | :--- | :--- |
+| **total_floor** | 总消息数 | 任意角色 (User/Model) 发送消息后 +1 |
+| **user_floor** | 用户消息数 | 仅 User 发送消息后 +1 |
+| **model_floor** | 模型回复数 | 仅 Model 发送回复后 +1 |
+| **last_interaction_ts**| 最后交互时间 | 任意消息发送后的 Unix 时间戳 |
+
+### 3.2 触发类型 (Trigger Types)
+
+调度任务支持以下触发器：
+
+#### 3.2.1 间隔触发 (Interval)
+基于楼层计数的模运算触发。
+- **参数**: `counter` (计数器名), `mod` (模数)
+- **逻辑**: `state.counters[counter] % mod == 0`
+- **示例**: 每 10 楼触发一次环境描写。
+
+#### 3.2.2 事件触发 (Event)
+基于系统事件或变量变更触发。
+- **参数**: `event` (事件名), `condition` (条件表达式)
+- **逻辑**: 当事件发生且条件为真时触发。
+- **示例**: 当 `character.health &lt; 20` 时触发受伤状态。
+
+#### 3.2.3 时间触发 (Time) - *Planned*
+基于真实世界时间或游戏内时间流逝触发。
+- **参数**: `interval` (时间间隔)
+- **逻辑**: `current_ts - last_triggered_ts &gt;= interval`
+
+### 3.3 冷却机制 (Cooldown)
+
+为了防止任务过于频繁触发，每个任务可以定义 `cooldown`（冷却回合数）。
+- **检查**: `current_floor - task.last_triggered_floor &gt;= task.cooldown`
+- **更新**: 任务触发后，更新 `last_triggered_floor`。
+
+---
+
+## 4. 配置规范 (Configuration Spec)
+
+调度规则作为 **元数据 (Metadata)** 存在于 `World Info` 或 `Character Card` 中。
+
+**JSON 结构**:
+
+```json
+{
+  "scheduler_rules": [
+    {
+      "id": "unique_task_id",
+      "type": "interval | event | time",
+      "trigger": {
+        // Interval
+        "counter": "total_floor",
+        "mod": 10,
+        
+        // Event
+        "event": "OnVariableChanged",
+        "path": "character.hp",
+        "operator": "&lt;",
+        "value": 20
+      },
+      "action": [
+        {
+          "type": "inject_system | force_thought | update_state",
+          "content": "String content or JSON value",
+          "probability": 1.0 // 0.0 - 1.0
+        }
+      ],
+      "conditions": ["world.location != 'home'"], // 额外前置条件
+      "cooldown": 5,
+      "enabled": true
+    }
+  ]
+}
+```
+
+---
+
+## 5. 动作系统 (Action System)
+
+当任务触发时，Scheduler 可以执行以下动作：
+
+1.  **Inject System/User**: 向当前回合的 Skein 中注入临时的 System 或 User 指令（不存入历史）。
+2.  **Force Thought**: 强制模型输出一段思维链（Thought Block），常用于引导剧情走向。
+3.  **Update State**: 直接修改 Mnemosyne 中的状态变量（如减少金币、给予物品）。
+4.  **Suspend/Resume Task**: 动态控制其他调度任务的启用状态。
+
+---
+
+## 6. 安全与限制 (Safety &amp; Limits)
+
+为了防止死循环和资源滥用，Scheduler 实施以下限制：
+
+1.  **Max Recursion Depth**: 单次 Pipeline 执行中，`OnVariableChanged` 触发链的最大深度限制为 3。
+2.  **Unique Trigger**: 同一回合内，同一 Task ID 只能触发一次。
+3.  **Sandboxed Evaluation**: 条件表达式必须在受限沙箱中执行，禁止访问文件系统或网络。
+
+        ]]>
+      </content>
+    </document>
+
+  </category>
+
+  <category name="mnemosyne">
+    <document path="mnemosyne\README.md">
+      <title>第三章：数据中枢与记忆引擎 (Mnemosyne Layer)</title>
+      <content>
+        <![CDATA[
+# 第三章：数据中枢与记忆引擎 (Mnemosyne Layer)
+
+**版本**: 1.0.0
+**日期**: 2025-12-23
+**状态**: Draft
+**作者**: 资深系统架构师 (Architect Mode)
+**源文档**: `system_architecture.md`, `mvu_integration_design.md`
+
+---
+
+## 1. 引擎概览 (Mnemosyne Overview)
+
+**Mnemosyne** 是数据层的核心，它不再仅仅是静态数据的仓库，而是升级为 **动态上下文生成引擎 (Dynamic Context Generation Engine)**。它负责管理系统的“长期记忆”与“瞬时状态”，并为编排层提供精准的上下文快照。
+
+详细的底层存储与数据架构设计，请参阅：
+* 👉 **[Mnemosyne SQLite 存储架构设计](../mnemosyne/sqlite-architecture.md)**
+* 👉 **[混合资源管理与存储规范](../mnemosyne/hybrid-resource-management.md)** (v1.2 新增: 动静分离架构)
+
+### 1.1 核心职责
+
+1. **数据托管**: 管理 Lorebook, Presets, World Rules。
+2. **混合事件存储**: 区分 **数值 (VWD)** 与 **事件 (Events)**，实现日常互动与关键剧情的分离处理。
+3. **快照生成**: 根据 Time Pointer 聚合数据，生成不可变的 `Punchcards` (隐喻：织谱+丝络的切片)。
+4. **状态管理**: 维护 RPG 变量，处理 VWD (Value with Description) 数据模型，并执行 **ACL 访问控制**。
+
+---
+
+## 2. 多维上下文链 (Multi-dimensional Context Chains)
+
+虽然数据在物理上以 **增量 (Incremental)** 形式存储，但在逻辑上，Mnemosyne 将其投影为数条平行的 **上下文链网**。
+
+### 2.1 链网结构
+
+1. **History Chain (历史链)**:
+    * 内容: 标准对话记录。
+    * 逻辑: 线性投影，提供 LLM 理解剧情的连贯性。
+2. **State Chain (状态链)**:
+    * 内容: 结构化的 RPG 数值与状态 (VWD State Tree)。
+    * 策略: **稀疏快照 (Sparse Snapshots) + 操作日志 (OpLog)**。
+    * 隐喻: **丝络 (Threads)**。它是编织过程中不断加入的、改变织卷走向的“线”。
+    * 作用: 确保“时间旅行”时，世界状态能精确回滚，并优化长对话性能。
+3. **Event Chain (事件链)**:
+    * 内容: **关键逻辑节点** (Quest, Achievement, Relationship Milestones)。
+    * 逻辑: 稀疏存储，专用于游戏逻辑判断 (如 "Has completed Quest X?")。
+4. **Narrative Chain (叙事链) - v1.2 新增**:
+    * 内容: **文本密集型叙事记录** (ACU Summary/Outline)。
+    * 逻辑: 采用双层结构，分离微观日志与宏观大纲，专用于 RAG 检索与 Context 注入。
+    * **结构定义**:
+        * **Level 1 (Micro-Log)**: 每轮对话的客观总结，通过 `source_refs` 链接到原始消息。
+        * **Level 2 (Macro-Event)**: 剧情章节大纲，通过 `child_logs` 聚合多个 Micro-Log。
+    * **显式叙事链接 (Explicit Narrative Linking)**:
+        * 在 Event Schema 中引入 `source_refs` 字段，解决 RAG 检索"有大概无细节"的问题。
+        * 示例:
+          ```json
+          // Event Chain Entry
+          {
+            "event_id": "evt_defeat_wolf",
+            "summary": "击败了暗影狼，获得了核心。",
+            "timestamp": 170000000,
+            // 显式引用原始对话日志的 ID，允许系统在检索到该事件时，精确"下钻"到当时的原始对话
+            "source_refs": ["msg_turn_105", "msg_turn_106"]
+          }
+          ```
+5. **RAG Chain (检索增强链)**:
+    * 内容: 向量化的记忆片段。
+    * 逻辑: 基于 History 的语义检索结果，动态注入背景知识。
+
+### 2.2 Context Pipeline 工作流
+
+当 Jacquard 请求快照时，Pipeline 执行 **投影 (Projection)** 操作：
+
+1. **Trace**: 根据 Session Pointer 回溯树路径。
+2. **Restore**: 查找最近快照并应用 OpLog，恢复基础状态。
+3. **Lazy View**: 返回 `Punchcards` 代理对象，仅在访问时执行 Deep Merge（惰性求值）。
+4. **ACL Filtering**: 对 RAG 检索结果和 Event Chain 内容进行权限过滤 (Global/Shared/Private)。
+
+---
+
+## 3. Value with Description (VWD) 数据模型
+
+为了解决“数值对 LLM 缺乏语义”的问题，我们引入了 MVU 的 **VWD** 模型。
+
+### 3.1 结构定义
+
+状态节点不再是简单的 Key-Value，而是支持 `[Value, Description]` 的复合结构。详细定义请参阅 👉 **[Mnemosyne 抽象数据结构设计](../mnemosyne/abstract-data-structures.md#31-vwd-模型-value-with-description)**。
+
+```text
+// 抽象结构示意 (Abstract Structure)
+VWDNode&lt;T&gt; = T | [T, String]
+
+// JSON 示例
+"health": [80, "HP, 0 is dead"]
+"mana": 50 // 简写形式，无描述
+```
+
+### 3.2 渲染策略
+
+* **System Prompt (给 LLM 看)**: 渲染完整的 `[Value, Description]`，让 LLM 理解变量含义。
+  * `"health": [80, "HP, 0 is dead"]`
+* **UI Display (给用户看)**: 仅渲染 `Value`。
+  * `Health: 80`
+
+---
+
+## 4. 状态 Schema 与元数据 ($meta)
+
+为了规范状态树的结构并增强数据引擎的灵活性，Mnemosyne 支持 `$meta` 字段定义约束、模板与权限。
+
+### 4.1 核心元数据定义
+
+* **template**: 定义当前层级及其子层级的默认结构（支持多级继承）。
+* **updatable**: 是否允许修改该节点的值（默认 true）。
+* **necessary**: 删除保护级别 (`self` | `children` | `all`)。
+* **description**: 语义化描述（VWD 集成）。
+* **extensible**: 是否允许 LLM 在根节点下添加新属性。
+* **required**: 必须存在的字段列表。
+* **ui_schema**: (v1.2 新增) 定义数据的视觉呈现方式（表格列宽、排序、图标等），供 Presentation 层 Inspector 组件使用。
+
+### 4.2 Standard RPG Schema (v1.2 新增)
+
+为了吸收 ACU 插件的成熟数据模型，Clotho 定义了一套标准的 RPG 状态 Schema，作为官方推荐的最佳实践。
+
+| 节点路径 | 对应 ACU 表格 | 结构定义 | 说明 |
+| :--- | :--- | :--- | :--- |
+| `world` | Global Data | `{ time: VWD, location: str, weather: str }` | 世界状态锚点 |
+| `characters.{id}` | Protagonist/NPC | `{ status: VWD_Tree, stats: Map, traits: List }` | 角色核心数据 |
+| `characters.{id}.inventory` | Inventory | `List&lt;{ id, count, type, desc }&gt;` | 物品列表，支持 `$meta.template` 定义默认结构 |
+| `relationships` | N/A (新增) | `{ {char_id}: { affinity: int, status: str } }` | 全局关系矩阵 |
+
+**Inventory 模板示例**:
+```json
+"inventory": {
+  "$meta": {
+    "template": {
+      "id": "unknown_item",
+      "count": 1,
+      "type": "misc",
+      "desc": "No description",
+      "$meta": { "necessary": "self" }
+    }
+  }
+}
+```
+
+### 4.3 多级模板继承 (Multi-level Template Inheritance)
+
+Mnemosyne 支持在状态树中定义 `$meta.template`，并在数据访问时动态计算继承链。
+
+**继承逻辑**:
+
+1. **向上查找**: 从目标节点向上遍历至根节点，收集所有 `$meta.template`。
+2. **深度合并**: 按 "父级 -&gt; 子级 -&gt; 自身数据" 的顺序进行深度合并 (Deep Merge)。
+3. **覆盖机制**: 子级模板覆盖父级，实际数据覆盖所有模板。
+
+**示例**:
+
+```json
+{
+  "characters": {
+    "$meta": {
+      "template": { "hp": 100, "level": 1 } // 基类模板
+    },
+    "npcs": {
+      "$meta": {
+        "template": { "faction": "neutral" } // 子类模板，继承 hp=100
+      },
+      "guard": { "class": "Warrior" } // 实际数据，隐含 hp=100, faction=neutral
+    }
+  }
+}
+```
+
+### 4.3 细粒度权限控制 (Fine-grained Permission) - v1.1
+
+引入 `$meta.necessary` 和 `$meta.updatable` 实现数据保护。
+
+| 权限字段 | 值 | 行为 |
+| :--- | :--- | :--- |
+| **necessary** | `"self"` | 保护节点自身不被删除 |
+| | `"children"` | 保护直属子节点不被删除 |
+| | `"all"` | 保护整个子树不被删除 |
+| **updatable** | `false` | 锁定节点值，禁止修改（除非操作显式覆盖） |
+
+### 4.5 递归规划上下文 (Recursive Planner Context) - v1.2
+
+为了增强长线叙事的稳定性，Mnemosyne 在 L3 Session State 中引入了专用的 `planner_context` 节点，用于持久化 Pre-Flash 插件生成的短期目标与即时念头。
+
+```json
+// L3 Session State 中的 planner_context
+"planner_context": {
+  "current_goal": "探索低语森林深处",
+  "pending_subtasks": ["寻找水源", "设立营地"],
+  "last_thought": "玩家似乎对那个发光的蘑菇感兴趣，下一轮引导他去查看。"
+}
+```
+
+*   **读写循环**: Jacquard 在启动时读取此上下文注入 Prompt，LLM 生成响应后更新此上下文。
+*   **价值**: 即使玩家中断当前话题，`current_goal` 依然保留，确保 AI 不会遗忘主线任务。
+
+### 4.6 完整 Schema 示例
+
+```json
+{
+  "character": {
+    "$meta": {
+      "extensible": false,
+      "required": ["health", "mood"]
+    },
+    "health": [100, "当前生命值"],
+    "inventory": {
+      "$meta": {
+        "extensible": true,
+        "template": {
+           "name": "Unknown Item", 
+           "desc": "物品描述",
+           "$meta": { "necessary": "self" }
+        }
+      }
+    }
+  }
+}
+```
+
+---
+
+## 5. 性能优化策略 (Performance Strategy)
+
+为了应对长对话（1000+ 轮次）和复杂织谱 (Pattern)（几千条 World Info）带来的性能挑战，Mnemosyne 采用了激进的优化策略。
+
+### 5.0 Head State 持久化 (Head State Persistence)
+
+为了实现 **O(1)** 级别的极速启动体验，Mnemosyne 引入了 **Head State** 机制。
+
+*   **定义**: Head State 是当前会话最新时刻的完整状态树 (VWD Tree) 的序列化副本。
+*   **存储**: 位于 SQLite 的 `active_states` 表中。
+*   **回写策略 (Write-Back)**: 每次 Turn 结束时，系统将内存中的 Projected State 同步回写到数据库。
+*   **价值**: 无论历史有多长，启动时直接加载 Head State，无需重放 OpLogs。
+
+### 5.1 稀疏快照与 OpLog (Sparse Snapshots &amp; OpLog)
+
+传统的 "Keyframe + Delta" 在长对话中会因 Delta 链过长导致读取性能崩塌。我们引入了 **稀疏快照** 机制：
+
+* **快照密度**: 强制每 **50 轮** 对话生成一个全量 Keyframe。
+* **重建逻辑**: 查找最近的前向 Keyframe -&gt; 顺序应用随后的 Deltas。
+* **结构优化 (OpLog)**: Delta 不再是简单的 JSON Diff，而是结构化的操作日志，遵循 JSON Patch 标准：
+
+    ```json
+    { "op": "replace", "path": "/character/hp", "value": 80 }
+    ```
+
+### 5.2 惰性求值视图 (Lazy Evaluation View) - [Low Priority / Optional]
+
+&gt; **注意**: 随着 **Head State** 机制的引入以及现代设备内存容量的提升，针对纯文本 RPG 场景，**全量加载 (Eager Load)** 通常已足够高效且代码更简单。本机制降级为处理极端大规模静态资源（如数百 MB 设定集或 Base64 图片库）时的**可选防御性优化**。
+
+为了避免在极端场景下全量组装庞大的 Lorebook 导致内存压力，Mnemosyne 保留了 **按需加载** 的设计蓝图。
+
+* **优化设计**: `Punchcards` 可返回一个 **Proxy (代理对象)**。
+* **触发机制**:
+  * 只有当 Jinja2 模板真正访问变量（如 `{{ character.inventory }}`）时，Mnemosyne 才会去计算该节点的最终状态。
+  * 对于未被引用的数据（如深埋的 Lore），跳过 Deep Merge 过程。
+
+### 5.3 状态更新流程
+
+1. Jacquard 解析出 `State Delta`。
+2. Mnemosyne 接收 Delta，写入 OpLog。
+3. 检查是否达到快照阈值（50轮），若达到则异步生成新的 Keyframe。
+4. 计算用于 UI 展示的 **Display Data** (纯值) 和 **Change Log**。
+
+### 5.4 确定性回溯
+
+由于采用了 OpLog 回放机制，当用户回滚到之前的消息时，Mnemosyne 能瞬间重建当时的状态，确保剧情与数值的完美一致。
+
+## 6. L3 Patching 机制集成
+
+### 6.1 机制摘要
+
+Mnemosyne 负责执行 **L3 (The Threads)** 层对 **L2 (The Pattern)** 层的动态补丁应用，这个过程隐喻为“将新的丝线编织进原始图样中”。
+
+具体的 **Patching 工作原理**、**Deep Merge 算法** 以及 **分层架构定义**，已迁移至单一事实来源 (SSOT) 文档，请务必查阅：
+
+* 👉 **[分层运行时环境架构](../runtime/layered-runtime-architecture.md#3-patching-机制-the-patching-mechanism)**
+
+Mnemosyne 在此过程中扮演执行者的角色，但不是每次推理时临时计算，而是采用 **上下文生命周期 (Context Lifecycle)** 管理：
+
+1. **Context Load (加载)**: 当用户激活 **织谱 (Pattern)** 或切换 **织卷 (Tapestry)** 时，Mnemosyne 读取 L2 静态资源，并立即应用 L3 中的持久化 Patches，在内存中构建出 **Projected Entity**。
+2. **Runtime Sync (运行时同步)**: 所有的属性变更请求（如脚本修改）直接作用于内存中的 Projected Entity，确保即时生效。
+3. **Persist (持久化)**: 变更同时被捕获并回写到 L3 的 `patches` 结构中，确保状态在会话结束或切换后得以保存。
+
+---
+
+## 7. 高级特性：动态作用域与 ACL (Advanced Features)
+
+Mnemosyne 引入了动态作用域 (Dynamic Scopes) 与访问控制列表 (ACL)，以处理复杂的多角色互动与隐私保护。
+
+### 7.1 作用域定义
+
+| 作用域 (Scope) | 定义 | 可见性规则 | 典型应用 |
+| :--- | :--- | :--- | :--- |
+| **Global (全局)** | 公开的事实 | 所有角色、系统旁白可见 | 天气、公共场所事件 |
+| **Shared (共享)** | 特定群体共享 | 仅 `participants` 列表中的角色可见 | 两人约会、特定小团体 |
+| **Private (私有)** | 角色内心独白 | 仅 Owner 可见 | 日记、内心独白 |
+| **Conditional (条件)** | 需满足特定条件 | 满足 `condition` (如好感度 &gt; 90) 可见 | 隐藏剧情、特定回忆 |
+
+### 7.2 ACL 检查机制
+
+检索时，Mnemosyne 会自动执行 ACL 过滤：
+1. 检查当前活跃角色 (Active Character)。
+2. 遍历记忆片段，验证 `canAccessMemory(actor, memory)`。
+3. 仅返回通过验证的片段，防止信息泄漏（如 B 知道 A 的私密想法）。
+
+---
+
+## 8. 记忆生命周期管理 (Memory Lifecycle Management)
+
+Mnemosyne 不仅是静态数据的存储器，更是记忆全生命周期的管理者。为了支持长线叙事并优化上下文效率，引擎引入了 **分流 (Triage)** 和 **整合 (Consolidation)** 机制，将原本平铺直叙的 LLM 交互转化为结构化的长期资产。
+
+详细的业务场景实现规范（以 Galgame 为例），请参考：
+* 👉 **[Galgame 特化记忆系统设计规范](../../plans/galgame-memory-system-spec.md)**
+
+### 8.1 Pre-Flash: 输入分流 (Input Triage)
+
+Pre-Flash 是 Mnemosyne 在主推理循环之前引入的 **Ingestion Pipeline**，用于对输入意图进行分级处理。它识别并非所有用户交互都具有同等叙事权重的事实。
+
+1.  **数值化交互 (Numerical Route)**:
+    *   针对高频、重复、低信息量的行为（如“摸头”、“签到”）。
+    *   **处理**: 直接转化为 VWD 状态树的数值变更（如 `affinity +1`），**不进入** 长期叙事链 (History Chain)。
+    *   **优势**: 避免上下文窗口被无意义的重复文本污染，同时保留行为的长效影响。
+2.  **事件化交互 (Event Route)**:
+    *   针对关键剧情节点、重大抉择或复杂对话。
+    *   **处理**: 完整记录对话历史，并触发 **Event Recorder** 生成结构化事件。
+
+&gt; **Galgame 实现**: 参见规范中的 **Pre-Flash** 机制，它通过轻量级模型对用户意图进行分类 (Routine vs Event)，并动态挂载相应的 Schema。
+
+### 8.2 Post-Flash: 记忆整合与归档 (Consolidation &amp; Archival)
+
+Post-Flash 是 Mnemosyne 的异步 **Consolidation Worker**，当活跃上下文 (Active Context) 超出窗口限制或会话结束时触发，将短期记忆转化为长期记忆。
+
+**核心流程**:
+
+1.  **Log Consolidation (日志压缩)**: 读取缓冲区内的原始对话，生成精简摘要。
+2.  **Event Extraction (事件提取)**: 从非结构化对话中提取结构化事实（如“去过地点X”，“获得物品Y”），存入 **Event Chain**。
+3.  **Reflection (反思与内化)**: 生成角色的主观记忆或私有日志 (Private Logs)，存入向量数据库以供 RAG 检索。
+4.  **Archival (归档)**: 原始对话移入冷存储 (Cold Storage)，从活跃上下文中移除。
+
+&gt; **Galgame 实现**: 参见规范中的 **Post-Flash** 机制，它在缓冲区满或会话结束时触发，负责生成角色的“内心独白”并更新全局事件表。
+
+---
+
+## 9. 任务与宏观事件系统 (Quest &amp; Macro-Event System)
+
+为了解决长线剧情在 LLM 概率生成中容易被遗忘或过早终结的问题，Mnemosyne 在 v1.3 引入了 **状态化 (Stateful) 的任务系统**。
+
+### 9.1 状态 vs 日志 (State vs Log)
+
+这是理解该系统的核心差异：
+
+1.  **Event Chain (事件日志)**:
+    *   **定义**: 历史的投影。
+    *   **性质**: **Immutable (不可变)**, **Append-only (仅追加)**。
+    *   **例子**: `Event: { type: "enemy_killed", target: "goblin_king", turn: 5 }`
+    *   **作用**: 用于 RAG 检索过去发生的事实。
+
+2.  **Quest System (任务状态)**:
+    *   **定义**: 当前的义务与目标。
+    *   **性质**: **Mutable (可变)**, **Stateful (状态化)**。
+    *   **例子**: `Quest: { id: "purge_goblins", status: "active", progress: "1/3" }`
+    *   **作用**: 驻留在 L3 State 中，作为明确的约束条件注入 Prompt，防止任务因为玩家聊偏了而被 AI 遗忘。
+
+### 9.2 交互闭环 (The Interaction Loop)
+
+Quest System 与 Planner 紧密配合，形成一个闭环：
+
+1.  **Read (Pre-Flash)**: Jacquard 启动时，`Planner Plugin` 读取 `state.quests` 中所有状态为 `active` 的任务。
+2.  **Focus (Attention)**: `PlannerContext` 根据当前对话上下文，决定聚焦于哪个具体的 Quest，并更新 `currentObjectiveId`。
+3.  **Execute (LLM)**: LLM 接收 Prompt，生成剧情文本。
+4.  **Update (Post-Flash)**: `State Updater` 解析 LLM 输出的 `&lt;quest_update&gt;` 指令，更新 `state.quests` (如标记子目标完成)。
+5.  **Log (Consolidation)**: 如果某个 Quest 状态变为 `completed`，Mnemosyne 会自动在 Event Chain 中生成一条对应的永久记录。
+
+```mermaid
+sequenceDiagram
+    participant State as L3 State (Quests)
+    participant Planner as Pre-Flash (Planner)
+    participant LLM as LLM Invoker
+    participant Updater as Post-Flash (Updater)
+    participant Log as Event Chain (Log)
+
+    Note over Planner, State: 1. Read &amp; Focus
+    State-&gt;&gt;Planner: Load Active Quests
+    Planner-&gt;&gt;Planner: Select Focus (activeQuestId)
+    Planner-&gt;&gt;LLM: Inject Context (Current Goal + Quest Info)
+
+    Note over LLM, Updater: 2. Execute &amp; Parse
+    LLM-&gt;&gt;Updater: Output &lt;quest_update&gt;
+
+    Note over Updater, Log: 3. Update &amp; Archive
+    Updater-&gt;&gt;State: Update Quest Status (e.g. 1/3 -&gt; 2/3)
+    
+    alt Quest Completed
+        Updater-&gt;&gt;State: Mark Status = Completed
+        Updater-&gt;&gt;Log: Append Immutable GameEvent
+    end
+```
+
+### 9.3 任务切换与多线程 (Context Switching &amp; Multi-threading)
+
+针对“更换对象”或“暂时搁置”的场景，Mnemosyne 采用了 **“聚光灯 (Spotlight)”** 机制。
+
+1.  **后台挂起 (Background Active)**:
+    *   系统中可以同时存在多个 `status: active` 的任务（如“游乐园约会”、“寻找丢失的猫”、“主线：击败魔王”）。
+    *   它们的状态（子目标进度、变量）均保留在 `L3 State` 中，不会丢失。
+
+2.  **前台聚焦 (Foreground Focus)**:
+    *   `PlannerContext.activeQuestId` 是唯一的聚光灯。
+    *   **切换逻辑**: 当检测到用户意图改变（如“先不约会了，帮那个老奶奶找猫”）时，Planner 仅仅是将 `activeQuestId` 指向新的任务 ID。
+
+3.  **示例流程 (搁置与恢复)**:
+    *   **Step 1 (约会中)**: `activeQuestId` = "quest_date_alice"。 Prompt 注入约会相关子任务。
+    *   **Step 2 (被打断)**: 用户触发支线。Planner 更新 `activeQuestId` = "quest_find_cat"。
+    *   **Step 3 (执行支线)**: 此时 LLM 专注于找猫，"约会"任务在后台静默（进度保持 2/3）。
+    *   **Step 4 (恢复)**: 支线完成或用户说“回游乐园吧”。Planner 重新将 `activeQuestId` 切回 "quest_date_alice"。
+    *   **结果**: LLM 立即读取到约会进度为 2/3，无缝接续之前的对话。
+
+---
+
+## 附录 A: 完整 Schema 示例 (v1.1)
+
+(原 4.4 节内容移动至此)
+
+```json
+{
+  "character": {
+    "$meta": {
+      "extensible": false,
+      "required": ["name", "description"]
+    },
+    "name": "Alice",
+    "description": "A shy healer from the forest."
+  },
+  "session_state": {
+    "$meta": {
+      "extensible": true
+    },
+    "patches": {
+      "character.description": "A brave warrior protecting her village."
+    },
+    "history": []
+  }
+}
+```
+
+        ]]>
+      </content>
+    </document>
+
+    <document path="mnemosyne\abstract-data-structures.md">
+      <title>Mnemosyne 抽象数据结构设计 (Abstract Data Structures)</title>
+      <content>
+        <![CDATA[
+# Mnemosyne 抽象数据结构设计 (Abstract Data Structures)
+
+**版本**: 1.0.0
+**日期**: 2026-01-04
+**状态**: Draft
+**作者**: 资深系统架构师 (Architect Mode)
+**关联文档**:
+
+- `mnemosyne-data-engine.md` (逻辑规范)
+- `sqlite-architecture.md` (物理存储)
+- `layered-runtime-architecture.md` (运行时分层)
+
+---
+
+## 1. 设计概述 (Design Overview)
+
+本文档定义了 Mnemosyne 引擎在 **内存中** (In-Memory) 和 **应用层** (Application Layer) 交互时使用的核心数据结构。这些结构充当了 SQLite 物理存储与运行时逻辑之间的桥梁。
+
+设计遵循以下原则：
+- **平台无关性 (Platform Agnostic)**: 仅使用标准数据类型，不依赖特定语言（如 TypeScript/Python）的特性，便于移植。
+- **不可变性 (Immutability)**: 鼓励使用不可变对象，特别是在 Snapshot 和 History 链的处理中。
+- **分层清晰**: 明确区分 `PersistedEntity` (持久化实体) 和 `RuntimeContext` (运行时上下文)。
+- **VWD 原生支持**: 状态管理深度集成 Value-With-Description 模型。
+
+---
+
+## 2. 核心实体 (Core Entities)
+
+这些实体直接映射到数据库表结构，但在应用层可能包含额外的便利方法或展开的 JSON 字段。
+
+### 2.1 会话 (Session)
+
+`Session` 是存档的根节点，代表一个独立的时间线。
+
+- **id**: String (UUID)
+- **title**: String
+- **activeCharacterId**: String
+- **createdAt**: Timestamp (Unix ms)
+- **updatedAt**: Timestamp (Unix ms)
+- **meta**: Dictionary&lt;String, Any&gt; (扩展元数据)
+
+### 2.2 回合 (Turn)
+
+`Turn` 是时间的基本单位，是原子性的事务边界。在持久化层（数据库）中，Turn 尽可能的存储增量（Messages, Events, OpLogs）以节省空间。
+
+- **id**: String (UUID)
+- **sessionId**: String (Session ID)
+- **index**: Integer (全局递增序列号)
+- **createdAt**: Timestamp
+- **messages**: List&lt;Message&gt; (可选，懒加载)
+- **events**: List&lt;GameEvent&gt; (可选，懒加载)
+- **stateSnapshot**: StateSnapshot (可选，仅当此 Turn 触发快照时存在)
+- **opLogs**: List&lt;StateOpLog&gt; (可选)
+- **plannerContext**: PlannerContext (可选，用于持久化当前 Turn 的规划上下文)
+
+### 2.2.1 活跃回合 (Active Turn)
+
+在 **运行时内存** 中，Mnemosyne 维护一个特殊的 `ActiveTurn` 概念。它不直接对应数据库表，而是当前会话的"热端点" (Hot Endpoint)。
+
+- **目的**: 维护当前全量的状态树 (State Tree) 和上下文，避免每次交互都重新计算。
+- **生命周期**:
+    1. **Session Load**: 基于最近快照 + OpLogs 重建，生成初始的 Active Turn。
+    2. **Runtime**: 所有的读取操作直接访问内存中的 `state`。所有的写入操作先更新内存 `state`，同时追加到 `opLogs` 缓冲区。
+    3. **Turn Commit**: 当回合结束时，将缓冲区内的 `messages`, `events`, `opLogs` 刷入数据库，并根据策略决定是否生成 `stateSnapshot`。
+    4. **Context Switch**: 仅在切换 Session 时或者是回滚的时候销毁当前 Active Turn 并重新执行 Load。
+
+### 2.3 消息 (Message)
+
+`Message` 记录了对话和交互的原始内容。
+
+- **id**: String (UUID)
+- **turnId**: String (Turn ID)
+- **role**: Enum { user, assistant, system, pre_flash, post_flash }
+- **content**: String
+- **type**: Enum { text, thought, command }
+- **isActive**: Boolean (支持软删除/隐藏)
+- **meta**: Dictionary&lt;String, Any&gt; (Token 消耗, 模型名称等)
+
+### 2.4 事件 (Event)
+
+`GameEvent` 是结构化的事实记录，用于逻辑判断和 RAG。
+
+- **id**: String (UUID)
+- **turnId**: String (Turn ID)
+- **type**: Enum { plot_point, item_get, location_change, relationship_change, quest_update }
+- **summary**: String (简短描述)
+- **participants**: List&lt;String&gt; (涉及的角色 ID 列表)
+- **location**: String (可选)
+- **payload**: Dictionary&lt;String, Any&gt; (灵活的事件数据, e.g. `{ itemId: "sword_01", count: 1 }`)
+- **sourceRefs**: List&lt;String&gt; (关联的原始 Message ID)
+
+### 2.5 叙事日志 (Narrative Log)
+
+`NarrativeLog` 用于长时记忆和 RAG 检索。
+
+- **id**: String (UUID)
+- **turnId**: String (Turn ID)
+- **level**: Enum { micro, macro }
+- **content**: String
+- **scope**: Enum { global, shared, private }
+- **ownerId**: String (可选, if scope is private)
+- **vectorId**: String (关联向量库 ID)
+
+### 2.6 规划上下文 (Planner Context)
+
+v1.2 新增，用于长线目标管理。PlannerContext 随 Turn 变化，是 Turn 的一部分。它充当了 "Attention Mechanism" (注意力机制)，决定了当前回合 LLM 聚焦于哪个 Active Quest。
+
+- **currentGoal**: String (当前回合的战术目标，如 "Pick the lock")
+- **activeQuestId**: String (当前聚焦的 Quest ID, 指向 `state.quests` 中的条目)
+- **currentObjectiveId**: String (当前聚焦的 Quest Objective ID)
+- **pendingSubtasks**: List&lt;String&gt; (待办子任务列表 - 仅限当前战术层面的小步骤)
+- **lastThought**: String (上一轮的思维链残留)
+- **archivedGoals**: List&lt;String&gt; (已完成目标, 可选)
+
+### 2.7 调度上下文 (Scheduler Context)
+
+v1.4 新增，用于支持 LittleWhiteBox 风格的精细化间隔控制和事件触发。
+
+- **counters**: Dictionary&lt;String, Integer&gt; (全局计数器)
+    - **total_floor**: 总消息数
+    - **user_floor**: 用户发送数
+    - **model_floor**: 模型回复数
+    - **last_interaction_ts**: 最后交互时间戳 (Unix ms)
+- **tasks**: Dictionary&lt;String, SchedulerTaskState&gt; (任务状态追踪)
+
+#### 2.7.1 调度任务状态 (SchedulerTaskState)
+
+- **last_triggered_floor**: Integer (上次触发时的 total_floor)
+- **last_triggered_ts**: Timestamp (上次触发的时间戳)
+- **trigger_count**: Integer (触发次数)
+- **status**: Enum { active, suspended, completed }
+- **cooldown_remaining**: Integer (剩余冷却回合数)
+
+### 2.8 任务与长线剧情 (Quest &amp; Macro-Event)
+
+v1.3 新增，用于管理 **状态化 (Stateful)** 的长线剧情。与 `GameEvent` (只读日志) 不同，Quest 驻留在 L3 的 `state.quests` 中，拥有生命周期。
+
+#### 2.8.1 Quest (任务/宏观事件)
+
+- **id**: String (UUID or Unique Slug, e.g., "quest_escape_dungeon")
+- **title**: String
+- **description**: String (任务背景描述)
+- **status**: Enum { inactive, active, completed, failed, paused }
+- **objectives**: List&lt;QuestObjective&gt; (子目标列表)
+- **variables**: Dictionary&lt;String, Any&gt; (任务局部变量, e.g. `{ "keys_found": 2 }`)
+- **parentQuestId**: String (可选，用于嵌套子任务)
+- **startTurn**: Integer
+- **endTurn**: Integer (可选)
+
+#### 2.7.2 QuestObjective (任务目标/微观事件)
+
+- **id**: String (Unique Slug within Quest, e.g., "find_key")
+- **description**: String
+- **status**: Enum { active, completed, failed }
+- **isOptional**: Boolean (默认 false)
+- **isHidden**: Boolean (默认 false, 隐藏目标)
+
+### 2.8 世界书条目 (Lorebook Entry)
+
+`LorebookEntry` 是 RAG 的静态知识库源，存储关于世界观、历史、魔法系统等非叙事性知识。
+
+v1.2 引入了 **4-Quadrant Static Taxonomy** 分类法，以支持差异化的注入策略。
+
+- **id**: String (UUID)
+- **keys**: List&lt;String&gt; (触发关键词，用于关键词匹配)
+- **content**: String (实际内容)
+- **category**: Enum { axiom, agent, encyclopedia, directive } (标准化分类)
+    - **axiom**: 法则与公理 (注入 System Chain)
+    - **agent**: 角色与代理 (注入 Floating Chain 高优先级/浅层)
+    - **encyclopedia**: 博物与百科 (注入 Floating Chain 标准/深层)
+    - **directive**: 风格与元指令 (注入 Instruction Block/User 附近)
+- **activeStatus**: Enum { active, inactive } (是否启用)
+- **vectorId**: String (关联向量库 ID, 指向 `vec_lorebook` 表)
+- **metadata**: Dictionary&lt;String, Any&gt; (扩展元数据)
+    - **injection_policy**: Dictionary&lt;String, Any&gt; (可选，覆盖默认策略)
+        - **scope**: Enum { global, session }
+        - **position**: Enum { system, floating_head, floating_tail, user_instruction }
+        - **priority**: Integer (0-100)
+
+---
+
+## 3. 状态管理结构 (State Management Structures)
+
+这是 Mnemosyne 最复杂的部分，涉及 VWD 模型、状态树和 Patching 机制。
+
+### 3.1 VWD 模型 (Value With Description)
+
+为了让 LLM 理解数值的含义，任何状态节点都可以是一个 `[Value, Description]` 元组。
+
+- **结构**: `Value` OR `[Value, String]`
+- **Value 类型**: String | Number | Boolean | Null
+- **说明**: 在 JSON 中存储为 `[80, "Health Point"]` 或仅仅是 `80`。
+
+### 3.2 状态元数据 ($meta)
+
+用于定义权限、模板和 UI 呈现。
+
+- **template**: Dictionary&lt;String, Any&gt; (子节点默认模板)
+- **required**: List&lt;String&gt; (必填字段)
+- **extensible**: Boolean (是否允许 LLM 添加新字段)
+- **updatable**: Boolean (是否只读)
+- **necessary**: Enum { self, children, all } (删除保护)
+- **description**: String (节点本身的描述)
+- **uiSchema**: UISchema (v1.2, 定义 Inspector 如何渲染)
+
+**UISchema 结构**:
+- **viewType**: Enum { table, list, card, raw }
+- **columns**: List&lt;{ key: String, label: String, width: String }&gt; (用于表格视图)
+- **icon**: String
+- **color**: String
+
+### 3.3 状态树 (State Tree)
+
+完整的状态树是一个嵌套的字典，包含普通数据和 `$meta` 字段。
+
+- **$meta**: StateMeta (可选)
+- **[key]**: Any | StateTree (递归定义)
+
+### 3.4 操作日志 (OpLog)
+
+基于 JSON Patch (RFC 6902) 标准的变更记录。
+
+- **op**: Enum { add, remove, replace, move, copy, test }
+- **path**: String (JSON Pointer, e.g., "/character/hp")
+- **value**: Any (新值)
+- **from**: String (仅用于 move/copy 操作)
+- **turnId**: String (Turn ID)
+- **reason**: String (变更原因，调试用)
+
+---
+
+## 4. 运行时上下文 (Runtime Context)
+
+这是 Jacquard 在执行推理时持有的聚合对象，对应 "Layered Runtime Architecture"。
+
+### 4.1 Mnemosyne Context (聚合根)
+
+- **infrastructure**: InfrastructureLayer (Read-Only)
+  - **preset**: PromptTemplate
+  - **apiConfig**: ApiConfiguration
+
+- **world**: WorldLayer (Read-Only Source, patched by L3)
+  - **activeCharacter**: ProjectedCharacter (L2 + L3 Patch)
+  - **globalLore**: List&lt;LorebookEntry&gt; (L1 + L3 Status)
+  - **user**: PersonaData (L1)
+
+- **session**: SessionLayer (Read-Write)
+  - **id**: String (Session ID)
+  - **turnIndex**: Integer
+  - **history**: List&lt;Message&gt; (历史窗口)
+  - **state**: StateTree (完整的状态树视图)
+  - **planner**: PlannerContext (当前活跃的规划上下文，源自 Turn)
+  - **patches**: PatchMap (持久化变更集)
+
+### 4.2 投影角色 (Projected Character)
+
+L2 静态资源与 L3 Patch 合并后的结果。
+
+- **name**: String
+- **description**: String
+- **personality**: String
+- **firstMessage**: String
+- **status**: Dictionary&lt;String, Any&gt; (hp, mp, mood, etc.)
+- **inventory**: Dictionary&lt;String, Any&gt;
+- **relationships**: Dictionary&lt;String, Any&gt;
+
+### 4.3 补丁映射 (Patch Map)
+
+L3 层用于存储对 L2/Global 数据的修改。
+
+- **类型**: Dictionary&lt;String, Any&gt;
+- **Key**: JSON Path (e.g., "character.description")
+- **Value**: The new value
+
+---
+
+## 5. 数据流转与操作 (Data Flow &amp; Operations)
+
+### 5.1 数据流转 (Data Flow)
+
+描述数据如何在 SQLite 持久化层与运行时内存层之间转换。
+
+```mermaid
+sequenceDiagram
+    participant DB as SQLite DB
+    participant Engine as Mnemosyne Engine
+    participant Context as Runtime Context (L3)
+    participant Patch as Patch System
+    
+    Note over DB, Context: Load Process
+    DB-&gt;&gt;Engine: Fetch Session Metadata
+    Engine-&gt;&gt;Context: Initialize Context Object
+    
+    DB-&gt;&gt;Engine: Fetch Latest Snapshot + OpLogs
+    Engine-&gt;&gt;Engine: Replay OpLogs on Snapshot
+    Engine-&gt;&gt;Context: Hydrate L3 State Tree (Hot State)
+    
+    DB-&gt;&gt;Engine: Fetch Patches (if any)
+    Engine-&gt;&gt;Patch: Register Patches
+    Patch-&gt;&gt;Context: Apply Patches to L2 Projection
+    
+    Note over DB, Context: Runtime Interaction (Hot State)
+    Context-&gt;&gt;Context: Read/Write State directly in Memory
+    Context-&gt;&gt;Context: Append changes to internal OpLog buffer
+    
+    Note over DB, Context: Save Process (Turn Commit)
+    Context-&gt;&gt;Engine: Flush buffered OpLogs &amp; New Events
+    Engine-&gt;&gt;DB: Write New Turn &amp; Messages
+    Engine-&gt;&gt;DB: Write OpLogs
+    
+    opt Snapshot Threshold Reached
+        Engine-&gt;&gt;Engine: Serialize Full State Tree
+        Engine-&gt;&gt;DB: Write State Snapshot
+    end
+```
+
+### 5.2 操作接口 (Operations)
+
+抽象定义了对这些数据结构的核心操作。
+
+#### 5.2.1 状态树操作 (State Tree Operations)
+
+- `getValue(path: String) -&gt; VWDNode | Any`: 获取指定路径的值。
+- `setValue(path: String, value: Any, reason: String) -&gt; StateOpLog`: 更新值并生成 OpLog。
+- `deleteNode(path: String) -&gt; StateOpLog`: 删除节点（需检查 `$meta.necessary`）。
+- `mergeTemplate(path: String) -&gt; void`: 强制应用 `$meta.template` 到当前节点。
+
+#### 5.2.2 补丁操作 (Patch Operations)
+
+- `applyPatch(path: String, value: Any) -&gt; void`: 在内存投影中应用补丁。
+- `commitPatches() -&gt; void`: 将内存中的补丁变更持久化到 L3 Session 数据中。
+
+#### 5.2.3 时间旅行操作 (Time Travel Operations)
+
+- `rollback(targetTurnIndex: Integer) -&gt; void`:
+    1. 查找 `index &lt;= targetTurnIndex` 的最近快照。
+    2. 清除当前内存状态。
+    3. 加载快照。
+    4. 重放 OpLogs 直到 `targetTurnIndex`。
+    5. 截断 `targetTurnIndex` 之后的 History 和 Events。
+
+#### 5.2.4 RAG 检索操作 (RAG Retrieval Operations)
+
+- `search(query: RetrievalQuery) -&gt; List&lt;RetrievalResult&gt;`:
+    执行混合检索（向量相似度 + 关键词/元数据过滤）。
+
+**检索请求 (RetrievalQuery)**:
+- **text**: String (查询文本)
+- **embedding**: List&lt;Float&gt; (查询向量，可选)
+- **topK**: Integer (返回数量，默认 5)
+- **threshold**: Float (相似度阈值，默认 0.7)
+- **filters**: Dictionary&lt;String, Any&gt; (混合检索过滤器, e.g., `{ "turnId": { "$gt": 10 } }`)
+- **sources**: List&lt;Enum&gt; { narrative, event, lore } (指定检索源)
+
+**检索结果 (RetrievalResult)**:
+- **score**: Float (相似度分数/距离)
+- **sourceType**: Enum { narrative, event, lore }
+- **content**: String
+- **originalId**: String (原始实体的 ID)
+- **metadata**: Dictionary&lt;String, Any&gt; (额外上下文，如 Turn ID)
+
+### 5.3 聚合存储与分支切换 (Aggregated Storage &amp; Branching)
+
+为了支持“时间旅行”和“分支切换”，Mnemosyne 采用了 **Turn-Centric (以回合为中心)** 的存储策略。
+
+#### 5.3.1 Turn 作为聚合根
+
+所有的持久化数据都严格关联到特定的 `Turn ID`。这确保了只要我们能定位到一个 `Turn`，就能检索到该时间点所有的上下文。
+
+*   **关联性**: `Messages`, `Events`, `OpLogs`, `StateSnapshots`, `NarrativeLogs`, `PlannerContext` 都有一个非空的 `turnId` 字段（或直接作为 Turn 的一部分）。
+*   **原子性**: 在 SQLite 中，一个 Turn 及其所有附属数据的写入必须在一个数据库事务 (Transaction) 中完成。要么全部写入，要么全部不写入。
+
+#### 5.3.2 分支切换逻辑 (Branch Switching Logic)
+
+当用户决定“从这里重新开始”或切换到一个平行的故事线时，Mnemosyne 执行以下操作：
+
+1.  **Target Identification**: 确定目标切入点 `Target Turn T`.
+2.  **Full Context Reconstruction (Rollback/Forward)**:
+    *   **State Tree**: 找到 `T` 之前的最近快照 `S`，重放 OpLogs，生成 `T` 时刻的精确 VWD 状态树。
+    *   **Event Chain**: 重新加载并索引 `T` 之前的所有关键 `Events` (用于逻辑判断，如 "HasMetKeyNPC")。
+    *   **Narrative Chain**: 重新加载 `T` 之前的 `NarrativeLogs` (用于 RAG 上下文注入)。
+    *   **Planner Context**: 直接从 `Target Turn T` 加载 `PlannerContext` 对象 (Goals, Subtasks, Thought)。
+3.  **Context Pruning (Memory Only)**:
+    *   清空内存中的 `ActiveTurn` 缓冲区。
+    *   加载 `T` 之前的最后 N 条消息到 `history` 窗口。
+    *   将重构后的 State, Events, NarrativeLogs 设置为当前上下文。
+4.  **New Timeline Creation (Optional)**:
+    *   如果是“分支”，系统可能会创建一个新的 `Session ID` (Fork)，并将 `T` 作为新 Session 的起点（复制一份初始状态）。
+    *   如果是“重试” (Retry)，则直接丢弃 `T` 之后的所有 Turns（级联删除），并从 `T` 继续。
+
+#### 5.3.3 级联删除与外键
+
+依赖 SQLite 的 `ON DELETE CASCADE` 特性：
+
+```sql
+-- 当删除一个 Turn 时...
+DELETE FROM turns WHERE id = 'turn_xyz';
+
+-- 自动删除所有关联数据：
+-- - messages WHERE turn_id = 'turn_xyz'
+-- - events WHERE turn_id = 'turn_xyz'
+-- - state_oplogs WHERE turn_id = 'turn_xyz'
+```
+
+---
+
+## 6. JSON 数据示例 (JSON Examples)
+
+### 6.1 复合 VWD 状态树
+
+```json
+{
+  "character": {
+    "hp": [85, "Current Health Points"],
+    "inventory": {
+      "$meta": {
+        "uiSchema": { "viewType": "table", "columns": [{"key": "name", "label": "Item"}, {"key": "count", "label": "Qty"}] }
+      },
+      "potion_01": { "name": "Health Potion", "count": 3, "effect": "Heal 50 HP" }
+    }
+  }
+}
+```
+
+### 6.2 规划上下文 (Planner Context)
+
+```json
+{
+  "planner_context": {
+    "currentGoal": "Infiltrate the Dark Castle",
+    "pendingSubtasks": ["Find the sewers entrance", "Obtain a disguise"],
+    "lastThought": "The guard mentioned a shift change at midnight.",
+    "archivedGoals": ["Cross the Silent River"]
+  }
+}
+```
+
+### 6.3 调度上下文 (Scheduler Context)
+
+```json
+{
+  "scheduler_context": {
+    "counters": {
+      "total_floor": 42,
+      "user_floor": 21,
+      "model_floor": 21,
+      "last_interaction_ts": 1704350000000
+    },
+    "tasks": {
+      "daily_greeting": {
+        "last_triggered_floor": 10,
+        "trigger_count": 1,
+        "status": "active"
+      }
+    }
+  }
+}
+```
+
+### 6.4 显式叙事链接 (Event with Source Refs)
+
+```json
+{
+  "event_id": "evt_12345",
+  "type": "item_get",
+  "summary": "Obtained the Ancient Key from the Old Man.",
+  "timestamp": 1704350000000,
+  "sourceRefs": ["msg_turn_10_user", "msg_turn_10_assistant"],
+  "payload": { "itemId": "key_ancient", "count": 1 }
+}
+```
+
+---
+
+## 7. 类图概览 (Class Diagram)
+
+```mermaid
+classDiagram
+    class Session {
+        +String id
+        +String activeCharacterId
+        +Timestamp createdAt
+        +getTurns()
+        +getCurrentState()
+    }
+
+    class Turn {
+        +String id
+        +Int index
+        +Message[] messages
+        +GameEvent[] events
+        +StateOpLog[] opLogs
+        +PlannerContext plannerContext
+    }
+
+    class MnemosyneContext {
+        +InfrastructureLayer infrastructure
+        +WorldLayer world
+        +SessionLayer session
+        +applyPatch(path, value)
+        +commitTurn()
+    }
+
+    class SessionLayer {
+        +Message[] history
+        +StateTree state
+        +PlannerContext planner
+        +SchedulerContext scheduler
+        +PatchMap patches
+    }
+    
+    class GameEvent {
+        +String type
+        +String summary
+        +String[] sourceRefs
+    }
+
+    class Quest {
+        +String id
+        +String title
+        +QuestStatus status
+        +QuestObjective[] objectives
+    }
+
+    Session "1" *-- "many" Turn : contains
+    Turn "1" *-- "many" Message : contains
+    Turn "1" *-- "many" GameEvent : triggers
+    
+    MnemosyneContext "1" o-- "1" SessionLayer : manages
+    SessionLayer "1" o-- "1" PlannerContext : holds
+    SessionLayer "1" o-- "many" Quest : maintains state
+```
+
+        ]]>
+      </content>
+    </document>
+
+    <document path="mnemosyne\hybrid-resource-management.md">
+      <title>Mnemosyne 混合资源管理规范 (Hybrid Resource Management Specification)</title>
+      <content>
+        <![CDATA[
+# Mnemosyne 混合资源管理规范 (Hybrid Resource Management Specification)
+
+**版本**: 1.0.0
+**日期**: 2026-01-10
+**状态**: Active
+**作者**: 资深系统架构师 (Architect Mode)
+**关联文档**:
+- `sqlite-architecture.md` (L3 存储)
+- `../core/infrastructure-layer.md` (资源服务)
+- `../workflows/character-import-migration.md` (导入逻辑)
+
+---
+
+## 1. 核心理念与架构 (Core Philosophy &amp; Architecture)
+
+Mnemosyne 的存储架构遵循 **“动静分离，逻辑聚合 (Separate Physically, Aggregate Logically)”** 的核心原则。我们严格区分“只读资产”与“读写状态”，以解决长期运行导致的数据库膨胀和资源复用问题。
+
+### 1.1 三大存储支柱 (Three Pillars of Storage)
+
+系统将数据存储划分为三个物理隔离的区域，以满足不同的生命周期和管理需求：
+
+1.  **Library (L2 Static)**: 存放 **织谱 (Patterns)**。
+    *   **隐喻**: “游戏卡带”或“安装目录”。
+    *   **特性**: 只读、可替换、版本化、易于分享。
+    *   **内容**: 角色卡元数据、默认立绘、背景音乐、世界观设定 (Lorebook)。
+2.  **Session Data (L3 Dynamic)**: 存放 **会话 (Sessions/Tapestries)**。
+    *   **隐喻**: “游戏存档”。
+    *   **特性**: 读写频繁、私有、依赖 L2 但不包含 L2。
+    *   **内容**: 聊天记录、变量状态 (State Tree)、用户上传的图片 (Diff)、Schema 快照。
+3.  **The Vault (Global Cache)**: 存放 **共享资源 (Blobs)**。
+    *   **隐喻**: “系统动态链接库”或“Steam 公共资源库”。
+    *   **特性**: 内容寻址 (Content-Addressable)、去重、惰性加载。
+    *   **内容**: 网络图片缓存、跨 Pattern 复用的大型多媒体文件。
+
+### 1.2 架构全景图
+
+```mermaid
+graph TD
+    subgraph "Application Layer"
+        UI[Presentation Layer]
+        L3Session[Session Context (L3)]
+    end
+
+    subgraph "Infrastructure Layer: Resource Manager"
+        Resolver[Asset Resolver]
+        Index[Vault Index (SQLite)]
+    end
+
+    subgraph "File System"
+        direction TB
+        
+        subgraph "L2: Library (Read-Only)"
+            PatternA[Pattern A (v1.0)]
+            PatternB[Pattern B (v2.0)]
+        end
+
+        subgraph "L3: User Data (Read-Write)"
+            SessionDB[session.db (SQLite)]
+            SessionAssets[session_assets/]
+        end
+
+        subgraph "The Vault (Global Cache)"
+            BlobStore[blobs/]
+            CacheIndex[index.db]
+        end
+    end
+
+    UI --&gt;|Request asset://| Resolver
+    L3Session --&gt;|Refers| PatternA
+    
+    Resolver --&gt;|1. Check| PatternA
+    Resolver --&gt;|2. Check| SessionAssets
+    Resolver --&gt;|3. Check| BlobStore
+    
+    BlobStore -.-&gt;|Dedup| PatternA
+    BlobStore -.-&gt;|Dedup| PatternB
+```
+
+---
+
+## 2. 统一引用协议 (URI Scheme)
+
+为了实现物理分离但逻辑透明，系统内部（数据库、内存状态）统一使用 `asset://` 协议引用资源。UI 层无需关心资源实际在何处。
+
+**格式**: `asset://{scope}/{identifier}/{path}`
+
+| Scope | Identifier | Path | 说明 | 物理路径映射示例 |
+| :--- | :--- | :--- | :--- | :--- |
+| **pattern** | `{uuid}` / `current` | `assets/bgm.mp3` | 引用 L2 织谱包内的资源 | `library/{uuid}/assets/bgm.mp3` |
+| **session** | `{uuid}` / `current` | `uploads/img1.png` | 引用 L3 会话私有的资源 | `userdata/sessions/{uuid}/assets/uploads/img1.png` |
+| **vault** | `N/A` | `{hash}` | 引用全局去重库的资源 | `cache/vault/blobs/{hash}` |
+| **remote** | `N/A` | `{base64_url}` | 引用远程资源 (自动缓存到 Vault) | `cache/vault/blobs/{hash_of_url}` |
+| **system** | `N/A` | `icons/user.png` | 引用 App 内置资源 | `FlutterAsset('assets/icons/user.png')` |
+
+---
+
+## 3. L2: 织谱库设计 (Library Structure)
+
+L2 层的资源被封装为 **Pattern (织谱)**。它是 Mnemosyne 的基本分发单位。
+
+### 3.1 目录结构
+建议路径: `app_data/library/`
+
+```text
+/app_data/library/
+  └── {pattern_uuid}/         # 织谱根目录
+      ├── manifest.yaml       # [元数据] 名称, 版本, 作者, 依赖
+      ├── pattern.yaml        # [核心定义] Initial State, Prompts, Scripts
+      ├── assets/             # [多媒体] 随包分发的资源
+      │   ├── default_avatar.png
+      │   └── theme.mp3
+      ├── lorebook/           # [世界书] 静态源文件
+      │   └── main_world.yaml
+      └── schemas/            # [可选] 复杂的独立 Schema 定义
+```
+
+### 3.2 关键文件职责
+*   **`manifest.yaml`**: 定义包的身份。如果资源太大（如 100MB 的背景音乐包），可以在此声明引用远程资源，安装时由管理器下载到 Vault。
+*   **`pattern.yaml`**: 定义 `initial_state`。引用的资源通常使用相对路径（解析为 `asset://pattern/current/...`）。
+
+---
+
+## 4. The Vault: 全局资源缓存 (Global Asset Cache)
+
+为了解决多媒体资源在不同织谱和会话之间的高频复用问题，以及网络下载的不确定性，引入 "藏宝阁 (The Vault)"。
+
+### 4.1 设计原则
+1.  **只存一份 (Single Instance Storage)**: 无论多少个角色卡引用同一张图，磁盘上只存一份。
+2.  **惰性加载 (Lazy Loading)**: 仅在渲染时下载/加载。
+3.  **内容寻址**: 文件名即内容的 SHA-256 哈希。
+
+### 4.2 物理结构
+建议路径: `app_data/cache/vault/`
+
+*   `blobs/`: 存放实际文件，无扩展名（或作为前缀）。
+    *   例如: `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`
+*   `index.db`: SQLite 索引，维护 URL -&gt; Hash 的映射。
+
+### 4.3 索引 Schema (`asset_index.db`)
+
+```sql
+CREATE TABLE assets (
+    url_hash TEXT PRIMARY KEY,      -- 原始 URL 的 Hash
+    original_url TEXT,              -- 原始 URL (用于重新下载)
+    content_hash TEXT,              -- 文件内容的 SHA-256 (指向 blobs/)
+    mime_type TEXT,
+    size_bytes INTEGER,
+    last_accessed INTEGER,          -- 用于手动清理分析
+    etag TEXT                       -- HTTP 缓存校验
+);
+```
+
+### 4.4 垃圾回收策略 (Garbage Collection)
+由于 Vault 存储的是全局共享资源，数据量相对可控。为了避免误删仍在使用中的资源（例如某个极少打开的历史会话引用了该资源），系统 **不自动执行** 基于 LRU 的自动删除。
+
+*   **策略**: **手动清理 (Manual GC)**。
+*   **机制**: 用户可以在设置中点击“清理缓存”，此时系统会：
+    1.  扫描所有本地 Sessions 和 Library Patterns。
+    2.  构建“活跃 Hash 集合” (Active Hash Set)。
+    3.  对比 Vault 索引，删除不在集合中的 Blobs。
+
+### 4.5 解析流程 (Resolve Flow)
+当 UI 请求 `asset://remote/{base64_url}` 或普通 HTTP URL 时：
+1.  **Check**: 查询 `index.db`。
+2.  **Hit**: 如果存在且文件完整 -&gt; 返回 `blobs/{content_hash}` 流。
+3.  **Miss**:
+    *   下载文件到临时区。
+    *   计算 SHA-256。
+    *   移动到 `blobs/` (如果同名文件已存在则直接删除临时文件)。
+    *   更新 `index.db`。
+    *   返回流。
+
+---
+
+## 5. L3: 会话数据存储 (Session Storage)
+
+L3 层专注于存储“差异”和“状态”。
+
+### 5.1 物理结构
+建议路径: `app_data/userdata/sessions/`
+
+```text
+/app_data/userdata/sessions/
+  └── {session_uuid}/
+      ├── session.db          # [核心] SQLite 数据库
+      └── assets/             # [私有资源] 用户上传的图片等
+          └── 20260110_upload.png
+```
+
+### 5.2 数据库与资源的关系
+*   **严禁**将图片、音频存入 `session.db` 的 BLOB 字段。
+*   数据库中仅存储 URI，例如: `asset://session/current/assets/20260110_upload.png`。
+
+### 5.3 引用 L2
+L3 会话不包含 L2 数据，而是包含一个 **引用指针** (在 `session.db` 的元数据表中)。
+*   `pattern_ref`: `{uuid}`
+*   `pattern_version`: `1.0.0`
+
+当加载会话时，系统根据指针去 `app_data/library/` 寻找对应的 L2 包。
+
+### 5.4 资源丢失处理 (Dangling References)
+如果用户删除了 L2 Pattern，或者 L2 更新后移除了某些资源，导致 `asset://pattern/...` 解析失败：
+1.  **UI 表现**: 显示标准占位符（如 "Broken Image" 图标），点击可查看原始 URI。
+2.  **修复机制**: 提供 "Asset Repair Wizard"，允许用户重新指定 Pattern 路径，或从 Vault 中查找历史缓存（如果曾经缓存过）。
+
+### 5.5 导出与导入策略 (Export/Import)
+为了平衡便携性和完整性，系统支持两种导出模式：
+
+1.  **轻量导出 (Reference Only)**:
+    *   **格式**: `.ctp` (Clotho Tapestry Protocol) - 仅包含 `session.db` 和 `session_assets/`。
+    *   **场景**: 在同一设备备份，或对方已安装相同 L2 Pattern。
+    *   **大小**: 小 (KB ~ MB 级)。
+
+2.  **完整导出 (Self-Contained Bundle)**:
+    *   **格式**: `.ctpb` (Clotho Tapestry Bundle) - ZIP 压缩包。
+    *   **结构**: 包含 `.ctp` + `dependencies/` (L2 Pattern 的精简副本)。
+    *   **场景**: 跨设备分享，确保“开箱即用”。
+    *   **导入逻辑**: 导入时，如果本地缺失该 L2 Pattern，则自动将 `dependencies/` 下的内容安装到临时 Library 或提示用户安装。
+
+---
+
+## 6. 总结 (Summary)
+
+| 场景 | 推荐存储位置 | 推荐 URI 协议 | 物理生命周期 |
+| :--- | :--- | :--- | :--- |
+| **角色立绘 (开发者提供)** | L2 Library (`assets/`) | `asset://pattern/...` | 随 Pattern 安装/卸载 |
+| **背景音乐 (大文件/通用)** | The Vault | `asset://vault/...` 或 HTTP | 手动 GC 清理 |
+| **用户发送的图片** | L3 Session (`assets/`) | `asset://session/...` | 随会话删除 |
+| **App 内置图标** | App Binary | `asset://system/...` | 随 App 更新 |
+
+本规范确保了 Mnemosyne 的存储结构既能灵活应对复杂的多对多引用（如群聊），又能保持数据的整洁和安全。
+
+        ]]>
+      </content>
+    </document>
+
+  </category>
+
+  <category name="presentation">
+    <document path="presentation\README.md">
+      <title>第四章：表现层与交互体系 (Presentation Layer)</title>
+      <content>
+        <![CDATA[
+# 第四章：表现层与交互体系 (Presentation Layer)
+
+**版本**: 1.0.0
+**日期**: 2025-12-23
+**状态**: Draft
+**作者**: 资深系统架构师 (Architect Mode)
+**源文档**: `ui_layout_design.md`, `ui_subsystem_design.md`
+
+---
+
+## 1. 表现层概览 (Presentation Overview)
+
+表现层负责将底层数据流转化为可视化的像素。我们基于 **Flutter** 构建了高性能的跨平台渲染体系，采用 **"Hybrid SDUI (混合服务端驱动 UI)"** 架构，旨在实现：
+
+1.  **多端一致性**: 确保 Windows 桌面端与 Android 移动端拥有统一的视觉语言与交互逻辑。
+2.  **高性能原生体验**: 利用 Flutter 的 Skia/Impeller 引擎实现 60fps+ 的流畅渲染。
+3.  **兼容性**: 通过 Webview 容器兼顾海量第三方 Web 生态内容。
+
+### 1.1 核心设计理念
+
+1. **Stage &amp; Control**: 布局哲学，区分沉浸区与控制区。
+2. **Hybrid Rendering**: 原生 RFW 与 Webview 双轨并行。
+3. **Unidirectional Control**: 单向受控，UI 不直接修改数据，通过 Intent 通信。
+
+---
+
+## 2. 布局哲学与响应式设计
+
+### 2.1 Stage &amp; Control (舞台与控制台)
+
+* **Stage (舞台)**: 核心对话区域，应最大化展示空间，减少视觉干扰。
+* **Control (控制台)**: 参数配置与辅助信息（如 Lorebook, Status），应在需要时触手可及。
+
+### 2.2 响应式三栏架构 (Responsive 3-Pane)
+
+基于 `AdaptiveScaffold`，系统根据屏幕宽度自动适配：
+
+| 模式 | 宽度 (dp) | 布局策略 |
+| :--- | :--- | :--- |
+| **Desktop** | &gt; 1200 | **三栏全开**: Nav (左) - Stage (中) - Inspector (右) |
+| **Tablet** | 600 - 1200 | **双栏/抽屉**: Nav 收起为 Rail，Inspector 默认隐藏 |
+| **Mobile** | &lt;= 600 | **单栏流式**: 仅显示 Stage，其他功能通过 Drawer/Sheet 呼出 |
+
+---
+
+## 3. Hybrid SDUI 引擎 (混合驱动 UI)
+
+为了兼顾官方高性能组件与社区多样化内容，我们设计了双轨渲染引擎。
+
+### 3.1 渲染路由机制
+
+当系统需要渲染动态内容（如角色状态栏）时，**路由调度器** 按以下优先级执行：
+
+1. **Extension Check**: 查询 UI 扩展包注册表。
+2. **Native Track (优先)**: 若存在匹配的 `.rfw` (Remote Flutter Widgets) 包，加载并注入数据，执行原生渲染。
+3. **Web Track (兜底)**: 若无匹配包，降级使用 WebView 渲染 HTML/JS，确保兼容性。
+
+### 3.2 架构拓扑
+
+```mermaid
+graph TD
+    classDef native fill:#e8f5e9,stroke:#1b5e20,stroke-width:2px;
+    classDef web fill:#fff3e0,stroke:#e65100,stroke-width:2px;
+    
+    Content((动态内容)) --&gt; Dispatcher[路由调度器]
+    Dispatcher -- "Hit Extension" --&gt; Native[RFW 原生引擎]:::native
+    Dispatcher -- "Miss" --&gt; Web[WebView 引擎]:::web
+    
+    Native --&gt; Render
+    Web --&gt; Render
+```
+
+---
+
+## 4. 关键组件体系
+
+### 4.1 MessageStatusSlot (消息状态槽)
+
+* **定位**: 嵌入在 `ChatMessageItem` 底部的动态容器。
+* **生命周期**: 随消息创建而初始化。
+* **职责**: 作为“防火墙”隔离外部内容，管理渲染器的尺寸约束与异常处理。
+
+### 4.2 Inspector (数据检视器 - 新增)
+*   **定位**: `Control` 区域的核心组件，通常在桌面模式下的右侧边栏。
+*   **职责**: 提供对 `Mnemosyne` 状态树的 **只读** 可视化界面，方便用户调试和理解当前世界状态。
+*   **Schema 驱动渲染**:
+    *   当用户在 Inspector 中选择查看某个状态节点时（如 `character.inventory`）。
+    *   系统会检查该节点及其父节点中的 `$meta.ui_schema` 属性。
+    *   **如果找到 Schema**: 
+        * UI 层检查 `$meta.ui_schema` 定义（例如表格列宽、排序规则、图标）。
+        * 使用 `Hybrid SDUI` 的 Web 轨道，加载一个通用的、由 Schema 定义的 "Table Renderer" 或 "Card Renderer" 组件。
+    *   **如果未找到**: 回退到默认的、格式化的 JSON Tree 视图。
+*   **价值**: 复刻 ACU Visualizer 的灵活性，让用户/创作者可以自定义数据的展示方式，而无需修改客户端代码。
+
+### 4.3 InputDraftController (输入草稿控制器)
+UI 子系统与用户输入之间的**唯一写通道**。
+
+
+* **安全约束**: 状态栏严禁直接发送消息。
+* **工作流**:
+    1. 用户点击状态栏的“攻击”按钮。
+    2. UI 捕捉意图，生成 Draft ("尝试攻击哥布林")。
+    3. 填入输入框，供用户二次编辑。
+
+---
+
+## 5. 交互法则
+
+### 5.1 单向数据流
+
+* **UI 是消费者**: 监听 Jacquard 的 Filament 流，渲染 `&lt;reply&gt;` 和 `&lt;thought&gt;`。
+* **UI 是触发者**: 将点击事件转化为 Intent，但不直接操作 `World State`。
+
+### 5.2 状态同步
+
+UI 不维护权威状态。当 `Mnemosyne` 更新状态后，通过 Stream 广播新快照，UI 接收后触发 `build` 重绘。这种机制确保了在回溯历史时，UI 状态能自动且正确地回滚。
+
+        ]]>
+      </content>
+    </document>
+
+  </category>
+
+  <category name="muse">
+    <document path="muse\README.md">
+      <title>缪斯智能服务架构 (The Muse Intelligence Service)</title>
+      <content>
+        <![CDATA[
+# 缪斯智能服务架构 (The Muse Intelligence Service)
+
+**版本**: 3.0.0
+**日期**: 2026-01-10
+**状态**: Draft
+**作者**: Clotho 架构团队
+**关联**: `architecture-principles.md`, `jacquard-orchestration.md`, `infrastructure-layer.md`
+
+---
+
+## 1. 核心理念：智能中枢 (Intelligence Hub)
+
+MuseService 是 Clotho 系统的**中央智能调度中枢**。它摒弃了将“主模型”与“辅助模型”在基础设施层面割裂的做法，转而采用分层治理（Layered Governance）模型。
+
+&gt; **"凯撒掌管律法 (Code)，上帝掌管灵魂 (Jacquard)，而缪斯掌管肉体与连接 (MuseService)。"**
+
+### 1.1 双重职责
+MuseService 同时承担着两种角色：
+1.  **对于上帝 (Jacquard)**: 它是一个**透明网关 (Raw Gateway)**。Jacquard 拥有绝对的控制权，直接通过 MuseService 访问底层 LLM 资源，不经过任何中间处理。
+2.  **对于凡人 (Other Clients)**: 它是一个**Agent 宿主 (Agent Host)**。Import Wizard、UI 组件等只需提供 Prompt（灵魂），MuseService 负责提供对话管理、技能调用等基础设施（肉体）。
+
+---
+
+## 2. 系统架构 (System Architecture)
+
+### 2.1 架构分层图
+
+```mermaid
+graph TD
+    subgraph "Clients (Consumers)"
+        Jacquard[Jacquard (Roleplay Loop)]
+        Import[Import Wizard]
+        UI[Frontend UI]
+    end
+
+    subgraph "Muse Intelligence Service (Core)"
+        Gateway[Raw Intelligence Gateway]
+        AgentHost[Muse Agent Host]
+        
+        subgraph "Infrastructure"
+            Router[Model Router]
+            Billing[Billing &amp; Rate Limit]
+        end
+    end
+
+    subgraph "External World"
+        OpenAI
+        Anthropic
+        LocalLLM
+    end
+
+    %% Jacquard 走 Raw 通道
+    Jacquard --&gt;|1. Raw Request (RP Prompt)| Gateway
+    Gateway --&gt;|2. Route &amp; Bill| Router
+    
+    %% 普通 Client 走 Agent 通道
+    Import --&gt;|3. Create Agent| AgentHost
+    UI --&gt;|3. Create Agent| AgentHost
+    
+    AgentHost --&gt;|4. Managed Request| Gateway
+    Router --&gt;|5. Connect| OpenAI &amp; Anthropic &amp; LocalLLM
+```
+
+---
+
+## 3. 层级 1: 透明网关 (The Raw Gateway)
+
+这是 MuseService 的底座，为系统内所有 LLM 调用提供统一的入口。
+
+### 3.1 职责
+*   **连接性 (Connectivity)**: 适配 OpenAI, Anthropic, Google, Local (Ollama) 等多种 API 协议。
+*   **路由 (Routing)**: 根据配置将请求分发给指定的 Provider。
+*   **治理 (Governance)**: 统一的 Token 计费、速率限制、鉴权、日志记录。
+*   **无感知 (Agnostic)**: **绝不**修改 Prompt，**绝不**维护会话状态。
+
+### 3.2 接口定义
+
+```dart
+/// 原始智能网关接口
+abstract class IntelligenceGateway {
+  /// 执行一次性生成
+  Future&lt;LLMResponse&gt; executeRaw({
+    required ModelConfig config,
+    required List&lt;RawMessage&gt; messages,
+    GenerationOptions? options,
+  });
+
+  /// 执行流式生成
+  Stream&lt;LLMChunk&gt; streamRaw({
+    required ModelConfig config,
+    required List&lt;RawMessage&gt; messages,
+    GenerationOptions? options,
+  });
+}
+```
+
+---
+
+## 4. 层级 2: Agent 宿主 (The Agent Host)
+
+建立在 Gateway 之上的应用层服务，为非 Jacquard 模块提供开箱即用的 Agent 能力。
+
+### 4.1 核心概念：MuseAgent
+一个 `MuseAgent` 是一个轻量级的智能体实例。
+*   **Client 提供**: System Prompt (Persona/Instruction)。
+*   **Host 提供**: 
+    *   **Context Management**: 自动维护 `List&lt;Message&gt;` 历史，处理滑窗。
+    *   **Skill System**: 自动挂载并调度注册的工具（如搜索、代码转换）。
+    *   **Orchestration**: 处理 Chain-of-Thought, ReAct 循环等。
+
+### 4.2 接口定义
+
+```dart
+/// Agent 宿主服务
+abstract class MuseAgentHost {
+  /// 创建一个新的 Agent 实例
+  MuseAgent createAgent({
+    required String agentId,
+    required AgentConfig config, // 包含 System Prompt, Model Preference
+    List&lt;String&gt; skills = const [], // 挂载的技能 ID
+  });
+}
+
+/// 运行中的 Agent 实例
+abstract class MuseAgent {
+  /// 发送消息并获取回复
+  Future&lt;AgentReply&gt; chat(String userMessage);
+  
+  /// 获取当前上下文摘要
+  Future&lt;String&gt; summarizeContext();
+  
+  /// 销毁实例
+  void dispose();
+}
+```
+
+---
+
+## 5. 技能系统 (The Skill System)
+
+Agent Host 允许通过 ID 挂载标准化的技能。
+
+### 5.1 技能注册表 (Skill Registry)
+MuseService 维护一个全局的技能注册表，模块可以注册自定义技能。
+
+```dart
+class MuseSkillDefinition {
+  final String id; // e.g., 'std.code_transmuter'
+  final String description;
+  final Schema inputSchema;
+  final Schema outputSchema;
+  final Future&lt;Map&lt;String, dynamic&gt;&gt; Function(Map&lt;String, dynamic&gt;) handler;
+}
+```
+
+### 5.2 标准技能库
+
+| 技能 ID | 描述 | 典型场景 |
+| :--- | :--- | :--- |
+| `std.summarizer` | 文本摘要 | PostFlash, 记忆压缩 |
+| `std.translator` | 多语言翻译 | UI 本地化, 聊天翻译 |
+| `std.code_transmuter` | 代码/格式转换 | Import Wizard (EJS -&gt; Jinja2) |
+| `std.web_search` | 联网搜索 | 知识问答 Agent |
+
+---
+
+## 6. 案例研究：导入向导 (Import Wizard Integration)
+
+### 6.1 场景：交互式代码转换
+用户在导入角色卡时，遇到复杂的正则脚本，不知道如何处理。
+
+1.  **Initialization**: 
+    Import Wizard 请求 MuseService 创建一个专用 Agent。
+    ```dart
+    final agent = museHost.createAgent(
+      agentId: 'import_helper_${uuid}',
+      config: AgentConfig(
+        systemPrompt: "你是一个资深的代码迁移专家，精通 JavaScript 和 Jinja2...",
+        modelPreference: ModelPreference.smart, // 使用 Claude 3.5 Sonnet
+      ),
+      skills: ['std.code_transmuter'] // 挂载代码转换技能
+    );
+    ```
+
+2.  **Interaction**:
+    用户在 UI 中提问：“这个脚本是干嘛的？”
+    Import Wizard 调用 `agent.chat("这个脚本是干嘛的？\n\n${scriptContent}")`。
+
+3.  **Execution**:
+    *   MuseAgent 自动将用户输入加入历史。
+    *   MuseAgent 调用 Gateway 发送请求。
+    *   LLM 回复：“这是一个 UI 注入脚本... 我可以使用 `std.code_transmuter` 帮你转换。”
+    *   MuseAgent 识别 Tool Call，执行 `std.code_transmuter`。
+    *   MuseAgent 将转换结果反馈给用户。
+
+4.  **Completion**:
+    用户满意后，Import Wizard 调用 `agent.dispose()` 释放资源。
+
+---
+
+## 7. 与 Jacquard 的协作 (Pre/PostFlash)
+
+PreFlash (预处理) 和 PostFlash (后处理) 是 Jacquard 编排流程中的关键环节。由于这些任务通常涉及对 Context 的深度理解和极其复杂的 Prompt 工程（如无损压缩、知识图谱提取），**Jacquard 将直接使用 Raw Gateway 来执行这些任务**，而不是委托给通用的 MuseAgent。
+
+*   **PreFlash (e.g., Summarization)**:
+    *   **Jacquard**: 自主构建压缩 Prompt，精确控制保留哪些关键信息。
+    *   **MuseService**: 仅作为 Raw Gateway 提供 LLM 推理能力。
+    
+*   **PostFlash (e.g., Extraction)**:
+    *   **Jacquard**: 自主构建提取 Prompt，定义复杂的输出 Schema。
+    *   **MuseService**: 仅作为 Raw Gateway 提供 LLM 推理能力。
+
+这种设计确保了 Jacquard 对核心编排逻辑的绝对控制，避免了 MuseAgent 通用逻辑对高精度任务的干扰。
+
+---
+
+## 8. 总结
+
+通过 **“Raw Gateway + Agent Host”** 的双层架构，MuseService 成功解决了“上帝与缪斯”的矛盾：
+*   **Gateway** 统一了基础设施，确保了计费和连接的单一来源。
+*   **Agent Host** 封装了复杂性，让普通模块能轻易获得智能能力。
+*   **Jacquard** 保持了独立性，不受限于通用的 Agent 逻辑，可以自由地进行深度编排。
+
+        ]]>
+      </content>
+    </document>
+
+  </category>
+
+  <category name="protocols">
+    <document path="protocols\README.md">
+      <title>协议与格式文档目录</title>
+      <content>
+        <![CDATA[
+# 协议与格式文档目录
+
+**定位**: 系统间通信的标准化协议  
+**目标读者**: 协议开发者、集成工程师  
+**文档状态**: 已重组 (2025-12-30)
+
+---
+
+## 📖 目录简介
+
+本目录包含 Clotho 系统的通信协议和数据格式规范。核心是 **Filament 统一交互协议**，它贯穿于系统的所有交互环节，从提示词构建、逻辑控制到界面渲染，实现了统一的语义表达和确定性通信。
+
+## 📚 文档列表
+
+### 1. Filament 协议概述
+
+- **文件**: [`filament-protocol-overview.md`](filament-protocol-overview.md)
+- **简介**: Filament 协议的整体介绍，包括设计哲学、应用范畴和核心概念。
+- **核心内容**: 非对称交互 (XML+YAML IN, XML+JSON OUT)、混合扩展策略、协议定位
+- **阅读建议**: 理解协议的整体设计理念和基本原则
+- **关联文档**: 输入格式 [`filament-input-format.md`](filament-input-format.md)，输出格式 [`filament-output-format.md`](filament-output-format.md)
+
+### 2. 输入格式 (XML+YAML)
+
+- **文件**: [`filament-input-format.md`](filament-input-format.md)
+- **简介**: Filament 协议的输入端规范，包括结构化提示词构建和 YAML 数据格式。
+- **核心内容**: 基础数据块格式、世界书条目格式、标签语义体系、Jinja2 宏系统集成
+- **阅读建议**: 了解如何为 LLM 构建结构化的输入 Prompt
+- **关联文档**: Jinja2 宏系统 [`jinja2-macro-system.md`](jinja2-macro-system.md)，输出格式 [`filament-output-format.md`](filament-output-format.md)
+
+### 3. Schema 库规范 (Schema Library)
+
+- **文件**: [`schema-library.md`](schema-library.md)
+- **简介**: 协议库的存储、引用和注入机制，旨在解决 Prompt 复用和维护问题。
+- **核心内容**: L1/L2 分层架构、Schema YAML 存储格式、静态与动态引用机制
+- **阅读建议**: 了解如何标准化管理和注入复杂的逻辑规则（如变量更新、直播间格式）
+- **关联文档**: Jacquard 编排层 [`../core/jacquard-orchestration.md`](../core/jacquard-orchestration.md)
+
+### 4. Jinja2 宏系统
+
+- **文件**: [`jinja2-macro-system.md`](jinja2-macro-system.md)
+- **简介**: Clotho 的模板引擎系统，用于动态提示词构建和安全的逻辑控制。
+- **核心内容**: 凯撒原则下的模板渲染、宏分类与规范、安全沙箱、迁移映射表
+- **阅读建议**: 了解如何将 SillyTavern 的 EJS 逻辑迁移到 Jinja2 模板
+- **关联文档**: 输入格式 [`filament-input-format.md`](filament-input-format.md)，工作流目录 [`../workflows/`](../workflows/)
+
+### 5. 输出格式 (XML+JSON)
+
+- **文件**: [`filament-output-format.md`](filament-output-format.md)
+- **简介**: Filament 协议的输出端规范，包括 LLM 输出标签体系和状态更新格式。
+- **核心内容**: 认知与表达标签 (`&lt;thought&gt;`, `&lt;content&gt;`)、逻辑与状态标签 (`&lt;variable_update&gt;`)、表现与交互标签 (`&lt;status_bar&gt;`, `&lt;choice&gt;`)
+- **阅读建议**: 了解 LLM 应如何格式化输出，以及系统如何解析这些输出
+- **关联文档**: 解析流程 [`filament-parsing-workflow.md`](filament-parsing-workflow.md)，核心架构 [`../core/`](../core/)
+
+### 6. 解析流程
+
+- **文件**: [`filament-parsing-workflow.md`](filament-parsing-workflow.md)
+- **简介**: Filament 协议的实时流式解析机制，包括路由分发和错误处理。
+- **核心内容**: 流式解析架构、路由分发表、输出结构鲁棒性、容错降级
+- **阅读建议**: 了解系统如何实时解析 LLM 的流式输出并分发到相应处理器
+- **关联文档**: 输出格式 [`filament-output-format.md`](filament-output-format.md)，核心架构 [`../core/`](../core/)
+
+## 🔗 协议架构关系
+
+```mermaid
+graph LR
+    Input[用户输入/状态] --&gt; |XML+YAML| Assembler[Prompt 组装]
+    Assembler --&gt; |含Jinja2模板| LLM[LLM 生成]
+    LLM --&gt; |XML+JSON输出| Parser[Filament 解析器]
+    Parser --&gt; |路由分发| Thought[思维处理器]
+    Parser --&gt; |路由分发| Content[内容处理器]
+    Parser --&gt; |路由分发| State[状态更新器]
+    Parser --&gt; |路由分发| UI[UI 渲染器]
+```
+
+## 🧭 导航指南
+
+### 从哪里开始？
+
+如果您是**协议开发者**：
+
+1. 按顺序阅读本目录的所有文档：概述 → 输入格式 → Jinja2 宏系统 → 输出格式 → 解析流程
+2. 重点关注协议版本演进和兼容性要求
+
+如果您是**集成工程师**：
+
+1. 阅读 [`filament-protocol-overview.md`](filament-protocol-overview.md) 了解整体设计
+2. 根据需要查阅输入格式或输出格式的具体规范
+
+如果您是**迁移工程师**：
+
+1. 重点阅读 [`jinja2-macro-system.md`](jinja2-macro-system.md) 了解模板迁移
+2. 查阅工作流目录 [`../workflows/`](../workflows/) 中的迁移指南
+
+### 相邻目录
+
+- **核心架构** ([`../core/`](../core/)): 协议在系统中的应用实现
+- **工作流与处理** ([`../workflows/`](../workflows/)): 使用协议的具体业务流程
+- **运行时环境** ([`../runtime/`](../runtime/)): 协议在运行时环境中的应用
+- **参考文档** ([`../reference/`](../reference/)): 协议相关的技术参考
+
+## 📝 文档更新记录
+
+| 日期 | 版本 | 变更说明 |
+|------|------|----------|
+| 2025-12-30 | 2.0.0 | 文档重组，将原始 Filament 协议文档拆分为 5 个专题文件 |
+| 2025-12-28 | 2.3.0 | Filament 协议 v2.3 版本，增强 Jinja2 宏系统支持 |
+| 2025-12-23 | 1.0.0 | 原始文档创建 |
+
+---
+
+**最后更新**: 2025-12-30  
+**维护者**: Clotho 协议团队
+
+        ]]>
+      </content>
+    </document>
+
+    <document path="protocols\filament-input-format.md">
+      <title>输入格式：XML+YAML (Input Format: XML+YAML)</title>
+      <content>
+        <![CDATA[
+# 输入格式：XML+YAML (Input Format: XML+YAML)
+
+**版本**: 2.3.0  
+**日期**: 2025-12-28  
+**状态**: Draft  
+**作者**: 资深系统架构师 (Architect Mode)  
+**关联文档**:
+
+- 概述 [`filament-protocol-overview.md`](filament-protocol-overview.md)
+- Jinja2 宏系统 [`jinja2-macro-system.md`](jinja2-macro-system.md)
+- 输出格式 [`filament-output-format.md`](filament-output-format.md)
+- 解析流程 [`filament-parsing-workflow.md`](filament-parsing-workflow.md)
+
+---
+
+## 概述 (Introduction)
+
+Filament 协议的输入端采用 **XML + YAML** 格式构建结构化提示词。XML 标签提供骨架和语义边界，YAML 则用于描述数据内容。这种设计既保证了 LLM 对内容层级的清晰理解，又通过 YAML 的低 Token 消耗提高了效率。
+
+## 基础数据块格式 (Basic Block Format)
+
+Jacquard 使用 Filament 格式组装最终的 Prompt，确保 LLM 清晰感知不同信息的语义边界。
+
+### 示例 (Example)
+
+```xml
+&lt;system_instruction&gt;
+role: Dungeon Master
+tone: Dark Fantasy
+rules:
+  - strict_physics
+  - permadeath
+&lt;/system_instruction&gt;
+
+&lt;character_card&gt;
+name: Seraphina
+class: Mage
+attributes:
+  int: 18
+  str: 4
+&lt;/character_card&gt;
+
+&lt;world_state&gt;
+location: Ancient Ruins
+time: Midnight
+weather: Stormy
+&lt;/world_state&gt;
+```
+
+## 世界书条目格式 (Lorebook Entry Format)
+
+世界书条目在导入时会经过**格式规范化**处理，统一转换为 **"XML 包裹 YAML"** 格式：
+
+```xml
+&lt;location_forest&gt;
+  name: Dark Forest
+  atmosphere: Eerie, misty
+  creatures:
+    - Shadow Wolves
+    - Forest Spirits
+  loot:
+    - Ancient Bark
+    - Moon Petals
+&lt;/location_forest&gt;
+```
+
+### 格式转换规则 (Format Conversion Rules)
+
+| 原始格式 | 检测特征 | 转换目标 | 备注 |
+|----------|----------|----------|------|
+| **JSON** | `{...}`, `[...]` | **保留 XML 标签，内部 JSON 转为 2 空格缩进的 YAML** | 保留 `&lt;Soyo&gt;` 等语义标签 |
+| **YAML** | `key: value` | **保留 XML 标签，统一内部缩进为 2 空格** | 保证缩进一致性 |
+| **Markdown** | `-`, `*`, `#` 等 | **尽力将列表、标题等结构转换为 YAML 格式** | 转换失败时保留原始文本 |
+
+## 标签语义体系 (Tag Semantics)
+
+### 顶层结构标签 (Top-Level Structure Tags)
+
+| 标签 | 用途 | 示例 |
+|------|------|------|
+| `&lt;system_instruction&gt;` | 系统级指令和规则 | 角色扮演规则、输出格式要求 |
+| `&lt;character_card&gt;` | **织谱 (Pattern) 定义** | 姓名、性格、外貌、背景 (对应 L2 Pattern) |
+| `&lt;world_state&gt;` | 当前世界状态 | 位置、时间、环境 |
+| `&lt;lorebook_entry&gt;` | 世界书条目 | 设定、规则、背景知识 |
+| `&lt;conversation_history&gt;` | 对话历史 | 历史消息列表 |
+| `&lt;use_protocol&gt;` | **引用协议 Schema** (v2.1) | 动态加载 Schema 库中的定义。详见 [Schema 库规范](schema-library.md) |
+
+### 元数据标签 (Metadata Tags)
+
+| 标签 | 用途 | 示例 |
+|------|------|------|
+| `&lt;block&gt;` | 标记文本块边界 | `&lt;block role="system"&gt;...&lt;/block&gt;` |
+| `&lt;format&gt;` | 格式化指令 | `&lt;format type="yaml"&gt;...&lt;/format&gt;` |
+| `&lt;priority&gt;` | 优先级标记 | `&lt;priority level="high"&gt;...&lt;/priority&gt;` |
+
+## 与 Jinja2 宏系统的集成
+
+Filament 协议与 Clotho 的 **Jinja2 宏系统** 紧密集成，实现了动态提示词构建和安全的模板渲染。关于宏系统的完整规范，请参阅 **[Jinja2 宏系统文档](jinja2-macro-system.md)**。
+
+### 分工原则 (Division of Responsibilities)
+
+- **Filament XML (`&lt;thought&gt;`, `&lt;content&gt;`, `&lt;variable_update&gt;`)**: 作为 LLM 输出的结构骨架，用于解析意图和边界
+- **Jinja2 逻辑 (`{% if %}`, `{{ var }}`)**: 完全接管输入端的逻辑控制，在发送给 LLM 前被渲染为纯文本
+
+### 核心差异：模板渲染 vs 脚本执行
+
+| 特性 | SillyTavern | Clotho (Jinja2) |
+|------|-------------|----------------|
+| 执行方式 | 正则替换 + JS `eval` | TemplateRenderer (模板渲染) |
+| 逻辑控制 | 分散且不安全 | 由 Jinja2 接管 |
+| 结构支撑 | 混合 | XML 作为结构骨架，Jinja2 处理逻辑 |
+| 输出纯净度 | 可能残留标签 | 完全渲染为纯文本 |
+
+## 格式规范化流程 (Normalization Workflow)
+
+```mermaid
+graph TD
+    Content[Lorebook Content] --&gt; Analyzer[格式分析器]
+    Analyzer --&gt; Detect{检测内容格式}
+    
+    Detect -- JSON --&gt; ParseJSON[解析 JSON]
+    Detect -- YAML --&gt; ParseYAML[解析 YAML]
+    Detect -- Markdown --&gt; ParseMD[解析 Markdown]
+    Detect -- Text --&gt; KeepText[保留纯文本]
+    
+    ParseJSON --&gt; Normalize[转为 2 空格缩进 YAML]
+    ParseYAML --&gt; Normalize
+    ParseMD --&gt; Normalize
+    
+    Normalize --&gt; Final[规范化后的内容]
+    
+    KeepText --&gt; Final
+```
+
+## 最佳实践 (Best Practices)
+
+1. **保持 YAML 简洁**: YAML 应专注于描述数据，避免复杂的嵌套结构。
+2. **使用 Schema Library**: 避免将复杂的逻辑规则（如 `&lt;UpdateVariable&gt;` 的具体格式）直接写在 System Prompt 中，应使用 [Schema 库规范](schema-library.md) 进行管理，通过 Character Card 的 `protocols` 字段引用。
+3. **善用 `&lt;use_protocol&gt;`**: 仅在运行时动态需要某种模式时使用此标签。
+4. **标签语义化**: 使用有意义的标签名称，如 `&lt;location_forest&gt;` 而非 `&lt;entry&gt;`。
+5. **缩进一致**: 统一使用 2 空格缩进，确保 YAML 的可读性。
+
+## 相关阅读
+
+- **[Jinja2 宏系统](jinja2-macro-system.md)**: 深入了解模板引擎和宏映射
+- **[输出格式](filament-output-format.md)**: 了解 LLM 输出的标签体系
+- **[工作流与处理](../workflows/README.md)**: 查看实际应用中如何使用这些格式
+
+---
+
+**最后更新**: 2025-12-28  
+**维护者**: Clotho 协议团队
+
+        ]]>
+      </content>
+    </document>
+
+    <document path="protocols\filament-output-format.md">
+      <title>输出格式：XML+JSON (Output Format: XML+JSON)</title>
+      <content>
+        <![CDATA[
+# 输出格式：XML+JSON (Output Format: XML+JSON)
+
+**版本**: 2.3.0  
+**日期**: 2025-12-28  
+**状态**: Draft  
+**作者**: 资深系统架构师 (Architect Mode)  
+**关联文档**:
+
+- 概述 [`filament-protocol-overview.md`](filament-protocol-overview.md)
+- 输入格式 [`filament-input-format.md`](filament-input-format.md)
+- 解析流程 [`filament-parsing-workflow.md`](filament-parsing-workflow.md)
+
+---
+
+## 概述 (Introduction)
+
+LLM 的所有输出必须包裹在特定的 Filament 标签中，确保机器可解析。v2.1 版本引入了更多语义化标签以支持复杂交互。输出端遵循 **"XML + JSON"** 格式：XML 标签定义意图，JSON 描述具体参数。
+
+## 认知与表达标签 (Cognition &amp; Expression)
+
+### `&lt;thought&gt;` - 思维链
+
+用于推理、规划与自我反思。
+
+```xml
+&lt;thought&gt;
+用户询问了关于森林的危险性。我需要：
+1. 回忆森林中的主要威胁
+2. 根据当前时间（午夜）调整危险程度
+3. 考虑用户的装备水平
+4. 提供建议而非直接命令
+&lt;/thought&gt;
+```
+
+**特性**:
+- 此内容默认对用户隐藏，或折叠显示
+- 可通过用户设置切换为完全隐藏或完全显示
+- 不计入最终输出 Token
+
+### `&lt;content&gt;` - 最终回复
+
+直接展示给用户的对话内容。
+
+```xml
+&lt;content&gt;
+　　「在这片黑暗森林中，你要特别小心。」
+&lt;!-- consider: (角色对白模拟插入) --&gt;
+&lt;!--
+1. 「a」
+2. 「aa」
+--&gt;
+&lt;/content&gt;
+```
+
+**特性 (v2.1 更新)**:
+- 直接展示在聊天界面
+- 支持 Markdown 格式
+- **支持 HTML 注释**: 允许嵌入 `&lt;!-- ... --&gt;` 格式的注释，用于内部模拟、标记或辅助逻辑，Parser 会将其路由到特定处理器（如隐藏或记录），而不直接展示给用户。
+- **支持受限的行内 HTML**: 为满足富文本表现需求（如自定义颜色、字体样式），允许使用特定的行内 HTML 标签。系统会执行严格的白名单过滤。
+
+### 受限 HTML 白名单 (HTML Sanitization Whitelist)
+
+为了安全起见，Clotho 仅允许以下 HTML 标签和属性：
+
+| 标签 | 允许属性 | 用途 |
+|------|----------|------|
+| `&lt;span&gt;` | `style` (仅限 color, background-color, font-weight 等安全样式) | 文本高亮、改色 |
+| `&lt;br&gt;` | 无 | 换行 |
+| `&lt;b&gt;`, `&lt;strong&gt;`, `&lt;i&gt;`, `&lt;em&gt;`, `&lt;u&gt;`, `&lt;s&gt;` | 无 | 基础排版 |
+| `&lt;ruby&gt;` | 无 | 注音 |
+
+**安全机制**:
+- 前端渲染器（Flutter `HtmlWidget` 或 WebView）必须集成 Sanitize 模块（如 `DOMPurify`）。
+- 任何不在白名单中的标签（如 `&lt;script&gt;`, `&lt;iframe&gt;`, `onclick`）将被剥离或转义。
+
+## 逻辑与状态标签 (Logic &amp; State)
+
+### `&lt;variable_update&gt;` - 变量更新 (v2.1 推荐)
+
+`&lt;variable_update&gt;` 是 `&lt;state_update&gt;` 的升级版，增加了 `&lt;analysis&gt;` 子标签用于记录变更原因，增强了可解释性。它兼容 v2.0 的 JSON OpCode 格式，并支持 v2.4 的简化格式。
+
+```xml
+&lt;variable_update&gt;
+  &lt;analysis&gt;
+    - 角色对白模拟插入
+    - 嫉妒乐奈受到的"特别待遇"，对源的执念更深
+  &lt;/analysis&gt;
+  [
+    [SET, 纯田真奈.好感度, 2],       &lt;!-- v2.4 简化格式 (Bare Word) --&gt;
+    [ADD, mood.value, 1],
+    [SET, desc, "She is angry"]     &lt;!-- 含空格字符串仍需引号 --&gt;
+  ]
+&lt;/variable_update&gt;
+```
+
+**结构**:
+
+1. `&lt;analysis&gt;` (可选): 文本形式的分析，解释为何进行这些状态变更。
+2. `JSON Array` (必填): 执行状态变更的操作码列表。支持 **Bare Word OpCode** (省略不必要的引号)。
+
+**操作码 (OpCode) 定义**:
+
+| OpCode | 含义 | 参数示例 | 说明 |
+|--------|------|----------|------|
+| `SET` | 设置值 | `[SET, path, value]` | 覆盖指定路径的值 |
+| `ADD` | 加法 | `[ADD, path, number]` | 数值相加 |
+| `SUB` | 减法 | `[SUB, path, number]` | 数值相减 |
+| `MUL` | 乘法 | `[MUL, path, number]` | 数值相乘 |
+| `DIV` | 除法 | `[DIV, path, number]` | 数值相除 |
+| `PUSH` | 追加到数组 | `[PUSH, array_path, value]` | 向数组末尾添加元素 |
+| `POP` | 弹出数组 | `[POP, array_path]` | 移除数组末尾元素 |
+| `DELETE` | 删除字段 | `[DELETE, path]` | 删除指定路径的字段 |
+
+### 语义化操作标签 (Semantic Operation Tags) - v2.3
+
+引入 ERA 风格的语义化标签作为 OpCode 的高级封装，提供更直观的意图表达。
+
+- **`&lt;variable_insert&gt;`**: 非破坏性插入，支持模板应用。
+
+    ```xml
+    &lt;variable_insert&gt;
+      &lt;path&gt;player.inventory.potion&lt;/path&gt;
+      &lt;value&gt;{ name: "Potion", count: 1 }&lt;/value&gt;
+    &lt;/variable_insert&gt;
+    ```
+
+- **`&lt;variable_edit&gt;`**: 破坏性更新，支持权限校验与表达式。
+
+    ```xml
+    &lt;variable_edit&gt;
+      &lt;path&gt;player.hp&lt;/path&gt;
+      &lt;value&gt;-= 20&lt;/value&gt; &lt;!-- 支持数学表达式 --&gt;
+    &lt;/variable_edit&gt;
+    ```
+
+- **`&lt;variable_delete&gt;`**: 删除节点，支持删除保护。
+
+    ```xml
+    &lt;variable_delete&gt;
+      &lt;path&gt;player.inventory.empty_bottle&lt;/path&gt;
+    &lt;/variable_delete&gt;
+    ```
+
+### `&lt;tool_call&gt;` - 工具调用
+
+请求执行特定的工具或函数。
+
+```xml
+&lt;tool_call name="weather_forecast"&gt;
+{
+  "location": "Ancient Ruins",
+  "days": 3,
+  "units": "celsius"
+}
+&lt;/tool_call&gt;
+```
+
+## 表现与交互标签 (Presentation &amp; Interaction)
+
+### `&lt;status_bar&gt;` - 自定义状态栏 (v2.1 新增)
+
+用于显示轻量级的、非标准化的状态信息。这体现了"边缘灵活性"哲学。
+
+```xml
+&lt;status_bar&gt;
+  &lt;SFW&gt;safe&lt;/SFW&gt;
+  &lt;mood&gt;anxious&lt;/mood&gt;
+  &lt;location&gt;Dark Forest&lt;/location&gt;
+&lt;/status_bar&gt;
+```
+
+**特性**:
+- **自由结构**: 内部标签名不限，由 UI 层动态解析并渲染。
+- **用途**: 适用于 Character Script 自定义的显示需求，无需预先定义 Schema。
+
+### `&lt;details&gt;` - 折叠摘要 (v2.1 新增)
+
+兼容 HTML `&lt;details&gt;` 标签，用于输出折叠的辅助信息或摘要。
+
+```xml
+&lt;details&gt;
+  &lt;summary&gt;摘要&lt;/summary&gt;
+  用户询问了森林的危险性，我提供了关于暗影狼群和森林精灵的信息。
+&lt;/details&gt;
+```
+
+### `&lt;choice&gt;` - 选择菜单 (v2.1 新增)
+
+用于向用户提供明确的行动选项，替代不规范的 `&lt;xx&gt;` 标签。
+
+```xml
+&lt;choice&gt;
+  &lt;prompt&gt;请选择源的下一步行动：&lt;/prompt&gt;
+  &lt;options&gt;
+    &lt;option id="investigate"&gt;调查废墟&lt;/option&gt;
+    &lt;option id="rest"&gt;休息恢复&lt;/option&gt;
+    &lt;option id="leave"&gt;离开此地&lt;/option&gt;
+  &lt;/options&gt;
+&lt;/choice&gt;
+```
+
+### `&lt;ui_component&gt;` - 嵌入式前端
+
+允许 LLM 请求渲染复杂的、原生的嵌入式 UI 组件。
+
+```xml
+&lt;ui_component view="widget.inventory_grid"&gt;
+{
+  "filter": "magical_items",
+  "columns": 3,
+  "max_items": 12
+}
+&lt;/ui_component&gt;
+```
+
+### `&lt;media&gt;` - 媒体资源
+
+请求插入图片、音频、视频等媒体资源。
+
+```xml
+&lt;media type="image" src="assets/forest_night.jpg" alt="黑暗森林的夜景" /&gt;
+```
+
+## 标签使用规范
+
+### 标签闭合要求
+
+- **严格闭合**: 所有标签必须严格闭合，禁止自闭合标签（`&lt;media&gt;` 除外，如果 Parser 支持）。
+- **JSON 格式**: `&lt;variable_update&gt;` 和 `&lt;ui_component&gt;` 内部的 JSON 必须严格符合标准（双引号、无尾随逗号）。
+- **注释规范**: 在 `&lt;content&gt;` 中使用 `&lt;!-- --&gt;` 进行内部标记，不要将用户不可见的内容裸露在正文中。
+
+### 迁移指南
+
+对于从 SillyTavern 或旧系统迁移的内容：
+
+- **变量更新**: 将 `&lt;UpdateVariable&gt;` 映射为 `&lt;variable_update&gt;`。
+- **选择菜单**: 将 `&lt;xx&gt;` 或纯文本选项映射为 `&lt;choice&gt;`。
+- **状态栏**: 将 HTML 状态栏映射为 `&lt;status_bar&gt;` 或 `&lt;ui_component&gt;`。
+
+### UI 组件设计规范
+
+1. **view 命名**: 使用 `namespace.component` 格式。
+2. **降级策略**: 关键交互组件应提供文本降级方案，以防 UI 渲染失败。
+
+## 相关阅读
+
+- **[解析流程](filament-parsing-workflow.md)**: 了解这些标签如何被实时解析和分发
+- **[输入格式](filament-input-format.md)**: 回顾输入端的 XML+YAML 结构
+- **[架构核心](../core/README.md)**: 查看标签在系统核心架构中的应用
+
+---
+
+**最后更新**: 2025-12-28  
+**维护者**: Clotho 协议团队
+
+        ]]>
+      </content>
+    </document>
+
+    <document path="protocols\filament-parsing-workflow.md">
+      <title>解析流程 (Parsing Workflow)</title>
+      <content>
+        <![CDATA[
+# 解析流程 (Parsing Workflow)
+
+**版本**: 2.3.0  
+**日期**: 2025-12-28  
+**状态**: Draft  
+**作者**: 资深系统架构师 (Architect Mode)  
+**关联文档**:
+
+- 概述 [`filament-protocol-overview.md`](filament-protocol-overview.md)
+- 输出格式 [`filament-output-format.md`](filament-output-format.md)
+- 核心架构 [`../core/`](../core/)
+
+---
+
+## 概述 (Introduction)
+
+Filament 协议的解析是实时流式进行的，v2.1 增加了对扩展标签的路由支持。解析器需要处理 LLM 输出的不确定性（如标签缺失、未闭合、顺序混乱），同时确保系统的稳定性和响应速度。
+
+## 流式解析架构 (Streaming Parsing Architecture)
+
+```mermaid
+graph TD
+    LLM[LLM 流式输出] --&gt; Stream[流式文本流]
+    Stream --&gt; Parser[Filament Parser]
+    
+    Parser --&gt; Monitor[标签监控器]
+    Monitor --&gt;|检测到 &lt;tag&gt;| Buffer[缓冲区]
+    
+    Buffer --&gt;|标签完整| Router[路由分发器]
+    
+    Router -- thought --&gt; ThoughtHandler[思维处理器]
+    Router -- content --&gt; ContentHandler[内容处理器]
+    
+    Router -- variable_update --&gt; VariableParser[变量解析器]
+    VariableParser --&gt; AnalysisHandler[分析记录]
+    VariableParser --&gt; StateParser[JSON 解析器]
+    StateParser --&gt; Mnemosyne[Mnemosyne 更新]
+    
+    Router -- status_bar --&gt; StatusBarRenderer[状态栏渲染器]
+    Router -- details --&gt; DetailsRenderer[折叠组件渲染器]
+    Router -- choice --&gt; ChoiceRenderer[选择菜单渲染器]
+    
+    Router -- ui_component --&gt; UIJSONParser[UI JSON 解析器]
+    UIJSONParser --&gt; UIEventBus[UI 事件总线]
+    
+    Router -- media --&gt; MediaLoader[媒体加载器]
+```
+
+## 路由分发表 (Routing Table) - v2.1
+
+| 标签类型 | 目标处理器 | 处理动作 | 备注 |
+|----------|------------|----------|------|
+| `&lt;thought&gt;` | ThoughtHandler | 存储思维日志 | 默认折叠 |
+| `&lt;content&gt;` | ContentHandler | 推送正文 | 支持 HTML 注释过滤 |
+| `&lt;variable_update&gt;` | VariableParser | 记录分析 + 更新状态 | 替代 `&lt;state_update&gt;` |
+| `&lt;status_bar&gt;` | StatusBarRenderer | 动态渲染状态标签 | 灵活结构 |
+| `&lt;details&gt;` | DetailsRenderer | 渲染折叠块 | 标准 HTML 行为 |
+| `&lt;choice&gt;` | ChoiceRenderer | 渲染交互按钮 | 替代 `&lt;xx&gt;` |
+| `&lt;ui_component&gt;` | UIJSONParser | 渲染复杂原生组件 | |
+| `&lt;tool_call&gt;` | ToolExecutor | 执行外部工具 | |
+
+## 输出结构鲁棒性 (Output Structure Robustness)
+
+### 设计挑战
+
+在复杂的 RPG 场景中，Prompt 可能会启用多种协议功能（如思维链、状态更新、状态栏），且其顺序可能因 System Prompt 的微调或随机因素而波动。传统的严格解析器在面对 LLM 的"幻觉"（如遗漏标签、标签未闭合）时往往会失败。Clotho 引入 **"期望结构注册表"** 与 **"流式模糊修正器"** 来解决这一问题。
+
+### 期望结构注册表 (Expected Structure Registry)
+
+Jacquard 在组装 Prompt 时，会根据启用的模块动态生成一个 **"期望结构表"**。这个表定义了当前回复中 *可能* 出现的标签及其 *推荐* 顺序，作为解析器的指导（Hint）。
+
+```dart
+// 伪代码定义
+class ExpectedStructure {
+  final List&lt;String&gt; mandatoryTags; // 必须出现的标签 (e.g., content)
+  final List&lt;String&gt; optionalTags;  // 可能出现的标签 (e.g., thought, status_bar)
+  final Map&lt;String, String&gt; dependency; // 依赖关系 (e.g., variable_update 必须在 content 之后)
+}
+```
+
+- **自动生成**: Jacquard 根据 `&lt;use_protocol&gt;` 自动填充。
+- **手动调整**: 高级用户可以在 System Instruction 中微调。
+
+### 流式模糊修正器 (Streaming Fuzzy Corrector)
+
+解析器不再是简单的正则匹配，而是一个 **容错状态机 (Fault-Tolerant State Machine)**。
+
+#### 核心修正策略
+
+1. **首部缺失自动补全**:
+    - *场景*: 期望 `&lt;think&gt;` 开头，但 LLM 直接输出了文本。
+    - *动作*: 如果首个非空字符不是 `&lt;`，且期望表中包含 `&lt;think&gt;`，则自动插入 `&lt;think&gt;` 标签头，并标记状态为 `InThought`。
+
+2. **尾部闭合预测**:
+    - *场景*: 检测到 `&lt;tag&gt;` 开始，但在遇到下一个 `&lt;tag2&gt;` 时仍未闭合。
+    - *动作*: 如果 `&lt;tag2&gt;` 是期望表中的顶层标签，则推断 `&lt;tag&gt;` 已结束，自动插入 `&lt;/tag&gt;`。
+
+3. **相邻冗余修正**:
+    - *场景*: `&lt;/content&gt;&lt;content&gt;` (LLM 意外分段)。
+    - *动作*: 自动合并为单一流，忽略中间的闭合与开启标签。
+
+#### 状态机流程图
+
+```mermaid
+graph TD
+    Start((Start)) --&gt;|非 &lt; 字符| AutoInsert{需自动补全?}
+    Start --&gt;|&lt;| DetectTag[检测标签]
+    
+    AutoInsert --&gt;|Yes (Exp: think)| InsertThink[插入 &lt;think&gt;] --&gt; InThink
+    AutoInsert --&gt;|No| InContent[默认进入 Content]
+    
+    DetectTag --&gt;|Known Tag| EnterState[进入特定标签状态]
+    DetectTag --&gt;|Next Top-Level Tag| AutoClose{上个标签未闭合?}
+    
+    AutoClose --&gt;|Yes| InsertClose[插入 &lt;/prev_tag&gt;] --&gt; EnterState
+    
+    InThink --&gt;|&lt;/think&gt;| EndThink[结束 Think]
+    InContent --&gt;|&lt;/content&gt;| EndContent[结束 Content]
+```
+
+### 容错降级
+
+如果修正器无法确定结构（如 JSON 语法严重错误），系统将执行降级策略：
+
+1. **Raw Text Fallback**: 将所有无法解析的内容视为 `&lt;content&gt;` 的一部分展示给用户。
+2. **Error Toast**: 在 UI 侧轻量级提示"部分状态更新失败"，但不阻断对话流程。
+
+## 协议版本演进 (Protocol Evolution)
+
+### v1.0 - 初始版本
+
+* 使用重复的 XML 标签表示状态更新。
+- Token 效率低。
+
+### v2.0 - 结构化版本
+
+* 引入 `&lt;state_update&gt;` 和 JSON 数组三元组。
+- Token 效率提升，解析简化。
+
+### v2.1 - 混合扩展版本 (当前)
+
+* **标签重命名与增强**: `&lt;UpdateVariable&gt;` (遗留) -&gt; `&lt;variable_update&gt;`，增加了分析字段。
+- **交互标准化**: `&lt;xx&gt;` (遗留) -&gt; `&lt;choice&gt;`。
+- **UI 灵活性**: 引入 `&lt;status_bar&gt;` 和 `&lt;details&gt;`，允许更灵活的非结构化展示。
+- **混合策略**: 核心逻辑保持严格 JSON Schema，展示层允许 XML 自由结构。
+
+## 最佳实践与约束 (Best Practices &amp; Constraints)
+
+### LLM 输出约束
+
+1. **标签闭合**: 所有标签必须严格闭合，禁止自闭合标签（`&lt;media&gt;` 除外，如果 Parser 支持）。
+2. **JSON 格式**: `&lt;variable_update&gt;` 和 `&lt;ui_component&gt;` 内部的 JSON 必须严格符合标准（双引号、无尾随逗号）。
+3. **注释规范**: 在 `&lt;content&gt;` 中使用 `&lt;!-- --&gt;` 进行内部标记，不要将用户不可见的内容裸露在正文中。
+
+### 迁移指南
+
+对于从 SillyTavern 或旧系统迁移的内容：
+
+- **变量更新**: 将 `&lt;UpdateVariable&gt;` 映射为 `&lt;variable_update&gt;`。
+- **选择菜单**: 将 `&lt;xx&gt;` 或纯文本选项映射为 `&lt;choice&gt;`。
+- **状态栏**: 将 HTML 状态栏映射为 `&lt;status_bar&gt;` 或 `&lt;ui_component&gt;`。
+
+### UI 组件设计规范
+
+1. **view 命名**: 使用 `namespace.component` 格式。
+2. **降级策略**: 关键交互组件应提供文本降级方案，以防 UI 渲染失败。
+
+## 性能优化 (Performance Optimization)
+
+### 流式处理优化
+
+- **缓冲区管理**: 使用滑动窗口缓冲区，避免内存无限增长。
+- **并行解析**: 对于不同标签类型，可并行启动多个处理器。
+- **懒加载**: UI 组件和媒体资源按需加载，不阻塞主解析流程。
+
+### 错误恢复
+
+- **增量重试**: JSON 解析失败时，尝试修复常见错误（如缺失引号、尾随逗号）。
+- **上下文感知**: 利用期望结构表预测缺失标签，提高修正准确率。
+
+## 相关阅读
+
+- **[输出格式](filament-output-format.md)**: 了解被解析的标签格式
+- **[核心架构](../core/README.md)**: 查看解析器在系统核心架构中的位置
+- **[工作流与处理](../workflows/README.md)**: 了解解析流程在整体工作流中的作用
+
+---
+
+**最后更新**: 2025-12-28  
+**维护者**: Clotho 解析器团队
+
+        ]]>
+      </content>
+    </document>
+
+    <document path="protocols\filament-protocol-overview.md">
+      <title>Filament 协议概述 (Filament Protocol Overview)</title>
+      <content>
+        <![CDATA[
+# Filament 协议概述 (Filament Protocol Overview)
+
+**版本**: 2.3.0  
+**日期**: 2025-12-28  
+**状态**: Draft  
+**作者**: 资深系统架构师 (Architect Mode)  
+**关联文档**:
+
+- 输入格式 [`filament-input-format.md`](filament-input-format.md)
+- 输出格式 [`filament-output-format.md`](filament-output-format.md)
+- Jinja2 宏系统 [`jinja2-macro-system.md`](jinja2-macro-system.md)
+- 解析流程 [`filament-parsing-workflow.md`](filament-parsing-workflow.md)
+- 核心架构 [`../core/`](../core/)
+
+---
+
+## 协议定位 (Protocol Positioning)
+
+**Filament 协议**是 Clotho 系统的通用交互语言，旨在消除“自然语言”与“机器指令”之间的模糊地带。它贯穿于系统的所有交互环节，从提示词构建、逻辑控制到界面渲染，实现了统一的语义表达和确定性通信。
+
+&gt; **适用范围声明**:
+&gt; Filament 协议的**强制规范性仅限于 LLM 的输入与输出 (IO)** 环节。对于系统内部组件之间的通信、数据库存储或其他非 LLM 相关的交互场景，Filament 仅作为**推荐性参考**，并非强制约束。
+
+## 核心设计哲学 (Core Design Philosophy)
+
+Filament 遵循以下两大设计哲学：
+
+### 1. 非对称交互 (Asymmetric Interaction)
+
+- **输入端 (Context Ingestion): XML + YAML**
+  - **结构 (XML)**: 使用 XML 标签构建 Prompt 的骨架 (Skein Blocks)，确保 LLM 理解内容的层级与边界。
+  - **数据 (YAML)**: 在标签内部使用 YAML 描述属性与状态。YAML 相比 JSON 更符合人类阅读习惯，且 Token 消耗更低，适合作为大量的上下文输入。
+- **输出端 (Instruction Generation): XML + JSON**
+  - **意图 (XML)**: 使用 XML 标签明确标识 LLM 的意图类型 (如思考、说话、操作)。
+  - **参数 (JSON)**: 在标签内部使用 JSON 描述具体的参数。JSON 的严格语法更易于机器解析，确保工具调用与状态变更的确定性。
+
+### 2. 混合扩展策略 (Mixed Extension Strategy) - v2.1 新增
+
+- **核心严格性 (Core Strictness)**: 对于影响系统逻辑的关键指令（如变量更新、工具调用），采用严格的 Schema 验证和标准格式。
+- **边缘灵活性 (Edge Flexibility)**: 对于展示层和辅助信息（如自定义状态栏、摘要），允许更灵活的自定义标签结构，以适应多变的业务需求。
+
+## 协议在系统中的应用范畴
+
+Filament 不仅是 LLM 的输出协议，更是系统的通用语言，统一管理：
+
+1. **提示词格式 (Prompt Engineering)**: 所有的 Character Card、World Info 均通过 Filament 结构化注入。
+2. **标签类型 (Tag System)**: 定义一套标准化的 XML 标签集，用于控制流程。
+3. **嵌入式前端 (Embedded UI)**: 允许 LLM 通过协议直接请求渲染原生的嵌入式网页组件（Mini-Apps），实现交互维度的升维。
+4. **状态管理 (State Management)**: 统一的状态更新指令格式。
+
+## 文档导航
+
+本目录包含 Filament 协议的完整规范，建议按以下顺序阅读：
+
+1. **本文档 (概述)** → 了解协议的整体设计理念和基本原则
+2. **[输入格式](filament-input-format.md)** → 了解如何为 LLM 构建结构化的输入 Prompt
+3. **[Jinja2 宏系统](jinja2-macro-system.md)** → 了解动态提示词构建和安全模板渲染
+4. **[输出格式](filament-output-format.md)** → 了解 LLM 应如何格式化输出，以及系统如何解析这些输出
+5. **[解析流程](filament-parsing-workflow.md)** → 了解协议在系统中的实时解析和分发机制
+
+## 协议版本演进 (Protocol Evolution)
+
+| 版本 | 代号 | 核心特性 | 状态 |
+|------|------|----------|------|
+| v1.0 | 初始版本 | 使用重复的 XML 标签表示状态更新 | 已废弃 |
+| v2.0 | 结构化版本 | 引入 `&lt;state_update&gt;` 和 JSON 数组三元组 | 兼容 |
+| v2.1 | 混合扩展版本 | 标签重命名、交互标准化、UI 灵活性 | **当前版本** |
+| v2.3 | 宏系统增强 | 增强 Jinja2 宏系统支持，完善 HTML 安全过滤 | 草案 |
+
+**注意**: 本系列文档基于 v2.3 草案撰写，但大部分内容兼容 v2.1。
+
+## 协议架构关系
+
+```mermaid
+graph LR
+    Input[用户输入/状态] --&gt; |XML+YAML| Assembler[Prompt 组装]
+    Assembler --&gt; |含Jinja2模板| LLM[LLM 生成]
+    LLM --&gt; |XML+JSON输出| Parser[Filament 解析器]
+    Parser --&gt; |路由分发| Thought[思维处理器]
+    Parser --&gt; |路由分发| Content[内容处理器]
+    Parser --&gt; |路由分发| State[状态更新器]
+    Parser --&gt; |路由分发| UI[UI 渲染器]
+```
+
+## 相关阅读
+
+- **[架构核心](../core/README.md)**: 协议在系统核心架构中的应用
+- **[工作流与处理](../workflows/README.md)**: 使用协议的具体业务流程
+- **[迁移指南](../migration/README.md)**: 从遗留系统迁移到 Filament 协议的实践指导
+
+---
+
+**最后更新**: 2026-01-15
+**维护者**: Clotho 协议团队
+
+        ]]>
+      </content>
+    </document>
+
+    <document path="protocols\jinja2-macro-system.md">
+      <title>Jinja2 宏系统 (Jinja2 Macro System)</title>
+      <content>
+        <![CDATA[
+# Jinja2 宏系统 (Jinja2 Macro System)
+
+**版本**: 2.3.0  
+**日期**: 2025-12-28  
+**状态**: Draft  
+**作者**: 资深系统架构师 (Architect Mode)  
+**关联文档**:
+
+- 输入格式 [`filament-input-format.md`](filament-input-format.md)
+- 输出格式 [`filament-output-format.md`](filament-output-format.md)
+- 解析流程 [`filament-parsing-workflow.md`](filament-parsing-workflow.md)
+- 宏系统规范 [`../../EvaluationDoc/macro_system_spec.md`](../../EvaluationDoc/macro_system_spec.md)
+
+---
+
+## 设计哲学：凯撒原则 (Design Philosophy: The Caesar Principle)
+
+Clotho 的宏系统严格遵循 **凯撒原则 (The Caesar Principle)**，采用 **Jinja2 (Dart Port)** 作为标准模板引擎。
+
+**核心差异：模板渲染 vs 脚本执行**
+
+| 特性 | SillyTavern | Clotho (Jinja2) |
+|------|-------------|----------------|
+| 执行方式 | 正则替换 + JS `eval` | TemplateRenderer (模板渲染) |
+| 逻辑控制 | 分散且不安全 | 由 Jinja2 接管 |
+| 结构支撑 | 混合 | XML 作为结构骨架，Jinja2 处理逻辑 |
+| 输出纯净度 | 可能残留标签 | 完全渲染为纯文本 |
+
+### Filament 结构与 Jinja2 的分工
+
+- **Filament XML (`&lt;thought&gt;`, `&lt;content&gt;`, `&lt;variable_update&gt;`)**: 作为 LLM 输出的结构骨架，用于解析意图和边界
+- **Jinja2 逻辑 (`{% if %}`, `{{ var }}`)**: 完全接管输入端的逻辑控制，在发送给 LLM 前被渲染为纯文本
+
+## 宏分类与规范 (Macro Categories &amp; Specifications)
+
+### 身份与上下文宏 (Context Variables)
+
+直接作为 Jinja2 模板的上下文变量传入。
+
+| 宏 (Clotho) | ST 对应 | 描述 |
+|-------------|---------|------|
+| `{{ user }}` | `{{user}}` | 当前用户名 |
+| `{{ char }}` | `{{char}}` | 当前角色名 |
+
+### 状态与记忆宏 (State Variables)
+
+Mnemosyne 的状态树以只读字典形式注入 Jinja2 上下文。
+
+**语法**: `{{ state.path }}`
+
+| 宏示例 | ST 对应 | 描述 |
+|---------|---------|------|
+| `{{ state.hp }}` | `{{getvar::hp}}` | 获取数值 |
+| `{{ state.inventory[0].name }}` | - | 列表访问 |
+| `{{ state_desc.hp }}` | - | 获取语义描述 |
+
+### 逻辑控制与结构化拼装 (Logic &amp; Assembly)
+
+使用标准的 Jinja2 控制流标签。
+
+| 语法 (Jinja2) | ST 对应 | 描述 | 实现方式 |
+|---------------|---------|------|----------|
+| `{% if condition %}...{% endif %}` | `&lt;if&gt;` | 条件渲染 | Jinja2 Native |
+| `{{ random([a, b]) }}` | `{{random}}` | 随机选择 | Custom Filter / Function |
+| `{% set var = "..." %}` | `{{setvar}}` | **定义临时变量** | Jinja2 Scoped Context |
+| `{{ var }}` | `{{var}}` | **注入变量内容** | Jinja2 Variable Interpolation |
+
+### 解决 Prompt 动态内容注入案例
+
+**ST 写法**:
+
+```
+{{setvar::灰魂4::\n- 灰魂会在...}}
+...
+{{灰魂4}}
+```
+
+**Clotho (Jinja2) 写法**:
+
+```jinja
+{# 1. 定义复杂内容块 (Block Assignment) #}
+{% set grey_soul_fragment %}
+- 灰魂会在任何用户需要的情况下合理的出现在用户所处场景，但不一定会帮助用户
+{% endset %}
+
+{# ... 在后续文档位置 ... #}
+
+{# 2. 注入内容 #}
+{{ grey_soul_fragment }}
+```
+
+**优势**:
+
+1. **Block Set**: `{% set var %}...{% endset %}` 语法原生支持多行文本和复杂结构
+2. **Scope Safety**: 变量仅存在于模板渲染上下文中，**绝对不会** 写入 Mnemosyne 数据库
+
+## 安全沙箱 (Security Sandbox)
+
+为了维护安全性，Jinja2 环境受到严格限制：
+
+1. **只读状态**: `state` 对象是不可变的 (Immutable) 或只读代理，模板无法执行 `state.hp = 0`
+2. **禁用系统调用**: 无法访问文件系统 (`import 'io'`) 或网络
+3. **函数白名单**: 仅暴露安全的辅助函数（如 `random`, `time`, `format`）
+
+## 迁移映射表 (Migration Map)
+
+### 基础宏映射
+
+| SillyTavern Macro | Clotho (Jinja2) | 说明 |
+|-------------------|-----------------|------|
+| `{{user}}` / `&lt;USER&gt;` | `{{ user }}` | 当前用户名 |
+| `{{char}}` / `&lt;BOT&gt;` / `&lt;CHAR&gt;` | `{{ char }}` | 当前角色名 |
+| `{{getvar::x}}` | `{{ state.x }}` | 获取状态变量 |
+| `{{setvar::x::y}}` (Temp) | `{% set x = y %}` | 定义临时变量 |
+| `{{#if x}}...{{/if}}` | `{% if x %}...{% endif %}` | 条件渲染 |
+| `{{random:a,b}}` | `{{ random(['a', 'b']) }}` | 随机选择 |
+| `{{// comment}}` | `{# comment #}` | 注释 |
+
+### 核心/身份宏 (Core/Identity)
+
+| SillyTavern Macro | Clotho (Jinja2) | 说明 |
+|-------------------|-----------------|------|
+| `{{group}}` | `{{ group }}` | 群组成员列表 |
+| `{{groupNotMuted}}` | `{{ group | filter_not_muted }}` | 排除静音成员 |
+| `{{notChar}}` | `{{ not_char }}` | 除当前说话者外的参与者 |
+| `{{description}}` | `{{ char.description }}` | 角色描述 |
+| `{{personality}}` | `{{ char.personality }}` | 角色个性 |
+| `{{persona}}` | `{{ user.persona }}` | 用户角色设定 |
+| `{{scenario}}` | `{{ char.scenario }}` | 场景描述 |
+| `{{charVersion}}` | `{{ char.version }}` | 角色版本号 |
+| `{{charPrompt}}` | `{{ char.main_prompt }}` | 主提示词覆盖 |
+| `{{charJailbreak}}` | `{{ char.jailbreak }}` | 越狱指令覆盖 |
+| `{{charDepthPrompt}}` | `{{ char.depth_prompt }}` | 深度提示词 |
+| `{{creatorNotes}}` | `{{ char.creator_notes }}` | 作者注释 |
+| `{{model}}` | `{{ config.model }}` | 当前模型名称 |
+| `{{mesExamples}}` | `{{ char.examples | format_examples }}` | 对话示例（已格式化） |
+| `{{mesExamplesRaw}}` | `{{ char.examples_raw }}` | 对话示例（原始） |
+
+### 消息/对话宏 (Message/Conversation)
+
+| SillyTavern Macro | Clotho (Jinja2) | 说明 |
+|-------------------|-----------------|------|
+| `{{lastMessage}}` | `{{ history[-1].content }}` | 上一条消息内容 |
+| `{{lastMessageId}}` | `{{ history[-1].id }}` | 上一条消息 ID |
+| `{{lastUserMessage}}` | `{{ history | select('role', 'user') | last }}` | 上一条用户消息 |
+| `{{lastCharMessage}}` | `{{ history | select('role', 'assistant') | last }}` | 上一条角色消息 |
+| `{{firstIncludedMessageId}}` | `{{ context[0].id }}` | 上下文首条消息 ID |
+| `{{firstDisplayedMessageId}}` | `{{ display_context[0].id }}` | 显示首条消息 ID |
+| `{{lastSwipeId}}` | `{{ history[-1].swipe_count }}` | Swipe 数量 |
+| `{{currentSwipeId}}` | `{{ history[-1].current_swipe }}` | 当前 Swipe ID |
+| `{{lastGenerationType}}` | `{{ last_generation.type }}` | 上次生成类型 |
+| `{{input}}` | `{{ user_input }}` | 用户输入内容 |
+
+### 时间/日期宏 (Time/Date)
+
+| SillyTavern Macro | Clotho (Jinja2) | 说明 |
+|-------------------|-----------------|------|
+| `{{time}}` | `{{ now | time_format('LT') }}` | 当前时间 |
+| `{{date}}` | `{{ now | date_format('LL') }}` | 当前日期 |
+| `{{weekday}}` | `{{ now | date_format('dddd') }}` | 当前星期 |
+| `{{isotime}}` | `{{ now | time_format('HH:mm') }}` | ISO 时间 |
+| `{{isodate}}` | `{{ now | date_format('YYYY-MM-DD') }}` | ISO 日期 |
+| `{{datetimeformat format}}` | `{{ now | date_format(format) }}` | 自定义格式 |
+| `{{time_UTC±X}}` | `{{ now | utc_offset(X) | time_format }}` | UTC 偏移时间 |
+| `{{idle_duration}}` | `{{ idle_duration }}` | 空闲时长 |
+| `{{timeDiff::time1::time2}}` | `{{ time_diff(time1, time2) }}` | 时间差计算 |
+
+### 变量/逻辑宏 (Variables/Logic)
+
+| SillyTavern Macro | Clotho (Jinja2) | 说明 |
+|-------------------|-----------------|------|
+| `{{getvar::name}}` | `{{ state.name }}` | 获取局部变量 |
+| `{{setvar::name::value}}` | `{% set name = value %}` | 设置局部变量 |
+| `{{addvar::name::value}}` | `{% set name = state.name + value %}` | 变量加法 |
+| `{{incvar::name}}` | `{% set name = state.name + 1 %}` | 变量自增 |
+| `{{decvar::name}}` | `{% set name = state.name - 1 %}` | 变量自减 |
+| `{{getglobalvar::name}}` | `{{ global_state.name }}` | 获取全局变量 |
+| `{{setglobalvar::name::value}}` | `{% set_global name = value %}` | 设置全局变量 |
+| `{{addglobalvar::name::value}}` | `{% set_global name = global_state.name + value %}` | 全局变量加法 |
+| `{{incglobalvar::name}}` | `{% set_global name = global_state.name + 1 %}` | 全局变量自增 |
+| `{{decglobalvar::name}}` | `{% set_global name = global_state.name - 1 %}` | 全局变量自减 |
+| `{{var_name}}` | `{{ state.var_name }}` | 动态变量访问 |
+
+### 格式化/实用工具宏 (Formatting/Utility)
+
+| SillyTavern Macro | Clotho (Jinja2) | 说明 |
+|-------------------|-----------------|------|
+| `{{newline}}` | `{{ '\n' }}` | 插入换行符 |
+| `{{trim}}` | `{{ content | trim }}` | 移除空白 |
+| `{{noop}}` | `{# no-op #}` | 无操作 |
+| `{{random:arg1,arg2,...}}` | `{{ random(['arg1', 'arg2']) }}` | 随机选择（逗号分隔） |
+| `{{random::arg1::arg2...}}` | `{{ random(['arg1', 'arg2']) }}` | 随机选择（双冒号分隔） |
+| `{{pick::arg1::arg2...}}` | `{{ pick(['arg1', 'arg2']) }}` | 一致选择（基于 hash） |
+| `{{roll:formula}}` | `{{ roll('formula') }}` | 掷骰子 |
+| `{{reverse:content}}` | `{{ content | reverse }}` | 反转字符串 |
+| `{{banned "word"}}` | `{# 安全过滤 #}` | 词汇过滤（安全机制） |
+| `{{isMobile}}` | `{{ is_mobile }}` | 是否移动设备 |
+
+### 扩展/系统宏 (Extension/System)
+
+| SillyTavern Macro | Clotho (Jinja2) | 说明 |
+|-------------------|-----------------|------|
+| `{{outlet::name}}` | `{{ outlet(name) }}` | World Info Outlet |
+| `{{maxPrompt}}` | `{{ config.max_context }}` | 最大 Context Size |
+| `{{pipe}}` | `{{ pipe_result }}` | Slash Command 管道 |
+| `{{anchorBefore}}` | `{{ anchor_before }}` | WI 插入锚点（前） |
+| `{{anchorAfter}}` | `{{ anchor_after }}` | WI 插入锚点（后） |
+| `{{wiBefore}}` / `{{loreBefore}}` | `{{ lore_before }}` | WI 插入位置（前） |
+| `{{wiAfter}}` / `{{loreAfter}}` | `{{ lore_after }}` | WI 插入位置（后） |
+
+### 指令/上下文模板宏 (Instruct/Context Template)
+
+| SillyTavern Macro | Clotho (Jinja2) | 说明 |
+|-------------------|-----------------|------|
+| `{{system}}` | `{{ system_prompt }}` | 系统提示词位置 |
+| `{{instructSystemPrompt}}` | `{{ instruct.system_prompt }}` | 指令模式系统提示词 |
+| `{{instructUserPrefix}}` | `{{ instruct.user_prefix }}` | 用户指令前缀 |
+| `{{instructUserSuffix}}` | `{{ instruct.user_suffix }}` | 用户指令后缀 |
+| `{{instructAssistantPrefix}}` | `{{ instruct.assistant_prefix }}` | 助手回复前缀 |
+| `{{instructAssistantSuffix}}` | `{{ instruct.assistant_suffix }}` | 助手回复后缀 |
+
+### 酒馆助手扩展宏 (Tavern-Helper Extension Macros)
+
+| SillyTavern Macro | Clotho (Jinja2) | 说明 |
+|-------------------|-----------------|------|
+| `{{get_message_variable::path}}` | `{{ state.message.path }}` | 获取消息变量 |
+| `{{get_chat_variable::path}}` | `{{ state.chat.path }}` | 获取聊天变量 |
+| `{{get_character_variable::path}}` | `{{ state.character.path }}` | 获取角色变量 |
+| `{{get_preset_variable::path}}` | `{{ state.preset.path }}` | 获取预设变量 |
+| `{{get_global_variable::path}}` | `{{ state.global.path }}` | 获取全局变量 |
+| `{{format_message_variable::path}}` | `{{ state.message.path | to_yaml }}` | 格式化为 YAML |
+| `{{format_chat_variable::path}}` | `{{ state.chat.path | to_yaml }}` | 格式化为 YAML |
+| `{{format_character_variable::path}}` | `{{ state.character.path | to_yaml }}` | 格式化为 YAML |
+| `{{format_preset_variable::path}}` | `{{ state.preset.path | to_yaml }}` | 格式化为 YAML |
+| `{{format_global_variable::path}}` | `{{ state.global.path | to_yaml }}` | 格式化为 YAML |
+| `{{userAvatar}}` | `{{ user.avatar_path }}` | 用户头像路径 |
+
+**注意**：部分宏（如 `banned`、`pipe`、`outlet`）需要 Clotho 提供特定的安全机制或替代方案实现。
+
+## 实现架构 (Architectural Integration)
+
+**组件重命名**: `PromptASTExecutor` → **`TemplateRenderer`**
+
+**Pipeline 流程**:
+
+1. **Input**: `Skein` (包含 `systemPrompt`, `lore` 等原始文本，可能包含 Jinja2 标签)
+2. **Context Build**: 将 `Skein.metadata`, `Mnemosyne.state` 包装为 `Map&lt;String, dynamic&gt;` 上下文
+3. **Render**: 调用 `jinja.render(template, context)`
+4. **Output**: 纯净字符串，送往 LLM
+
+```mermaid
+graph LR
+    subgraph Input
+        Skein[Skein 原始文本]
+    end
+    
+    subgraph Context
+        Metadata[Metadata]
+        State[Mnemosyne State]
+    end
+    
+    subgraph Renderer
+        Jinja[Jinja2 Engine]
+    end
+    
+    subgraph Output
+        Clean[纯净文本]
+    end
+    
+    Skein --&gt; Jinja
+    Metadata --&gt; Jinja
+    State --&gt;|只读代理| Jinja
+    Jinja --&gt; Clean
+    Clean --&gt; LLM[LLM API]
+```
+
+## 迁移指南 (Migration Guide)
+
+### 从 SillyTavern 迁移
+
+1. **识别宏**: 使用分析引擎扫描 EJS 代码，识别宏使用模式
+2. **分类映射**: 根据上表将宏映射到 Jinja2 语法
+3. **测试验证**: 在 Clotho 沙箱中测试渲染结果，确保逻辑一致性
+4. **性能优化**: 利用 Jinja2 的缓存机制优化高频模板
+
+### 常见陷阱
+
+- **变量作用域**: Jinja2 的 `{% set %}` 是局部变量，不会写入全局状态
+- **数据类型**: 确保数值类型正确，避免字符串与数字的隐式转换问题
+- **安全限制**: 某些宏（如文件访问）在沙箱中被禁用，需要寻找替代方案
+
+## 相关阅读
+
+- **[输入格式](filament-input-format.md)**: 了解 Filament 输入端的 XML+YAML 结构
+- **[工作流与处理](../workflows/README.md)**: 查看模板渲染在整体工作流中的位置
+- **[迁移指南](../migration/README.md)**: 获取从 SillyTavern 迁移的完整流程
+
+---
+
+**最后更新**: 2025-12-28  
+**维护者**: Clotho 宏系统团队
+
+        ]]>
+      </content>
+    </document>
+
+    <document path="protocols\schema-library.md">
+      <title>Schema 库规范 (Schema Library Specification)</title>
+      <content>
+        <![CDATA[
+# Schema 库规范 (Schema Library Specification)
+
+**版本**: 1.0.0
+**日期**: 2025-12-30
+**状态**: Draft
+**作者**: 资深系统架构师 (Architect Mode)
+**关联文档**:
+
+- Filament 协议概述 [`filament-protocol-overview.md`](filament-protocol-overview.md)
+- Jacquard 编排层 [`../core/jacquard-orchestration.md`](../core/jacquard-orchestration.md)
+- 输入格式 [`filament-input-format.md`](filament-input-format.md)
+
+---
+
+## 1. 背景与目标 (Context &amp; Objectives)
+
+在角色扮演（RP）和复杂交互场景中，用户经常需要定义复杂的输出格式或逻辑规则（如“好感度计算规则”、“直播间格式”）。这些规则如果直接写死在 Character Card 的 Prompt 中，会导致**复用困难**、**维护成本高**和**解析困难**。
+
+本规范定义了一套 **Schema Library (协议库)** 机制，将这些规则从角色卡中剥离，标准化存储，并在运行时按需注入。
+
+## 2. 核心概念：分层 Schema 架构 (Layered Schema Architecture)
+
+为了响应“数据与规则分离”的需求，我们将 Schema 设计分为两层：
+
+### L1: State Manipulation Protocol (状态操作层)
+
+定义**“如何修改数据”**的基础机制。这层不包含具体业务逻辑，只定义操作指令（OpCodes）和数据结构。
+
+*   **职责**: 提供标准化的数据变更指令集。采用 Filament v2.1/v2.4 定义的 `&lt;variable_update&gt;` 风格。
+*   **示例**: `&lt;variable_update&gt;` 标签定义，支持 `[SET, path, value]`, `[ADD, path, number]` 等 Bare Word 指令。
+*   **复用性**: 极高，全系统通用。
+
+### L2: Business Rule Schema (业务规则层)
+
+定义**“何时修改数据”**以及**“修改的限制”**。
+
+*   **职责**: 定义具体的游戏规则、数值范围、触发条件。
+*   **示例**: “好感度每次最多增加 5 点”，“战斗中受到攻击扣除 HP”。
+*   **复用性**: 按场景或游戏系统复用 (e.g., "Galgame 恋爱规则", "D&amp;D 战斗规则")。
+
+### 层级关系
+
+```mermaid
+graph TD
+    L2[L2: 业务规则 (Business Rules)] --&gt;|生成| L1[L1: 状态操作 (State Manipulation)]
+    L1 --&gt;|执行| State[Mnemosyne State]
+    
+    subgraph "L2 Example: Love System"
+        Rule1["规则: 赞美 +1~3 好感度"]
+        Rule2["规则: 每日上限 10 点"]
+    end
+    
+    subgraph "L1 Example: Variable Update"
+        Op1["[ADD, 'favorability', 3]"]
+    end
+```
+
+## 3. 存储设计 (Storage Design)
+
+### 3.1 目录结构
+
+建议在项目根目录下建立 `data/schemas` (或 `protocols`) 目录：
+
+```text
+e:/Code/MyST/design/
+├── data/
+│   ├── schemas/              # Schema 库根目录
+│   │   ├── core/             # 系统内置核心协议
+│   │   │   ├── filament_v2.yaml    # Filament 标准协议
+│   │   │   └── chain_of_thought.yaml
+│   │   ├── extensions/       # 扩展功能
+│   │   │   ├── variable_update.yaml # 变量更新规则
+│   │   │   └── rpg_combat.yaml
+│   │   └── modes/            # 全局模式覆盖
+│   │       ├── live_stream.yaml     # 直播模式
+│   │       └── text_adventure.yaml
+│   └── ...
+```
+
+### 3.2 文件格式规范 (YAML)
+
+使用 YAML 作为存储格式，利用其多行字符串处理能力（Block Scalars `|`）。
+
+#### 3.2.1 Schema 定义模板
+
+```yaml
+# data/schemas/extensions/variable_update.yaml
+
+meta:
+  id: "variable_update_v1"
+  name: "通用变量更新规则"
+  version: "1.0.0"
+  author: "System"
+  description: "定义了基于 &lt;UpdateVariable&gt; 的状态变更逻辑"
+  type: "augmentation" # 枚举: augmentation (增强), override (覆盖)
+
+# 注入配置：定义这段 Prompt 应该插入到 System Prompt 的哪个位置
+injection:
+  target: "system_instruction" # system_instruction, post_history, etc.
+  priority: 100 # 优先级，越高越靠后（越接近末尾）
+
+# 核心指令 (Prompt)
+instruction: |
+  &lt;rule&gt;
+    &lt;description&gt;
+      - 在回复末尾，必须检查并更新相关变量。
+      - 使用 &lt;UpdateVariable&gt; 标签包裹指令。
+    &lt;/description&gt;
+    &lt;format&gt;
+      &lt;UpdateVariable&gt;
+        &lt;Analysis&gt;...&lt;/Analysis&gt;
+        _.add('path', value);
+      &lt;/UpdateVariable&gt;
+    &lt;/format&gt;
+  &lt;/rule&gt;
+
+# 少样本示例 (Few-shot Examples)
+# Jacquard 会将其格式化后追加到 Prompt 的示例区
+examples:
+  - input: "我送给你一朵花。"
+    output: |
+      谢谢你！这花真漂亮。
+      &lt;UpdateVariable&gt;
+        &lt;Analysis&gt;- 用户送礼，好感度上升。&lt;/Analysis&gt;
+        _.add('favorability', 5);
+      &lt;/UpdateVariable&gt;
+
+# 解析器提示 (Parser Hints) - 可选
+# 告诉 Filament Parser 如何处理这个新引入的标签
+parser_hints:
+  root_tag: "UpdateVariable"
+  behavior: "execute_script" # ignore, display, execute_script
+```
+
+## 4. 引用机制 (Reference Mechanism)
+
+### 4.1 角色卡静态引用 (Character Card Static Reference)
+
+在角色卡元数据中增加 `enabled_schemas` 或 `protocols` 字段。
+
+```yaml
+# Character Card YAML
+name: "高松灯"
+description: "..."
+configuration:
+  protocols:
+    - "variable_update_v1" # 引用 Schema ID
+    - "live_stream_mode"   # 可以同时激活多个，但 Override 类型通常互斥
+```
+
+### 4.2 运行时动态引用 (Runtime Dynamic Reference)
+
+支持通过 Filament 协议标签动态加载 Schema。这允许“临时进入”某种模式（例如进入战斗）。
+
+**语法**: `&lt;use_protocol&gt;schema_id&lt;/use_protocol&gt;`
+
+**示例**:
+```xml
+User: 进入直播模式！
+```
+
+当 Jacquard 检测到此关键词（或通过意图识别）时，会在对话构建 Prompt 时注入对应的 Schema。
+
+## 5. 注入与处理流程 (Injection Workflow)
+
+### 5.1 Jacquard 组装流程
+
+1.  **扫描**: Jacquard 扫描当前角色卡配置 + 活跃的动态协议列表。
+2.  **加载**: 从 `data/schemas` 读取对应的 YAML 文件。
+3.  **合并**:
+    *   将 `instruction` 内容按优先级合并到 System Prompt 的 `Extension Block` 区域。
+    *   将 `examples` 合并到 Few-shot Examples 区域。
+4.  **注册**: 将 `parser_hints` 注册到 Filament Parser 的配置中，确保流式解析器知道如何处理新出现的标签（例如 `&lt;live&gt;`）。
+
+### 5.2 冲突解决
+
+*   如果多个 Schema 定义了相同的 `parser_hints.root_tag`，优先级高的覆盖优先级低的。
+*   如果同时激活了多个 `type: override` 的 Schema，系统应发出警告或仅使用优先级最高的一个。
+
+## 6. 核心库定义 (Standard Library Definitions)
+
+以下是系统建议内置的核心 Schema：
+
+| ID | 类型 | 描述 | 适用场景 |
+|----|------|------|----------|
+| `filament_v2` | Core | 基础的 Filament 协议定义 | 默认启用 |
+| `variable_update` | Extension | 状态变更规则 (L1) | 需要 RPG 系统的角色 |
+| `chain_of_thought` | Extension | 强制思维链 `&lt;thought&gt;` | 需要复杂逻辑推理的场景 |
+| `live_stream` | Mode | 直播间格式输出 | 模拟主播 |
+| `text_adventure` | Mode | 文字冒险游戏格式 | 跑团、D&amp;D |
+
+## 7. 下一步行动
+
+1.  在项目根目录下创建 `data/schemas` 目录结构。
+2.  将常用 Prompt 模式迁移为 Schema 文件。
+3.  更新 Jacquard 插件以支持 `SchemaLoader`。
+
+        ]]>
+      </content>
+    </document>
+
+  </category>
+
+  <category name="workflows">
+    <document path="workflows\README.md">
+      <title>工作流与处理文档目录</title>
+      <content>
+        <![CDATA[
+# 工作流与处理文档目录
+
+**定位**: 系统核心业务流程和数据处理流程  
+**目标读者**: 业务分析师、流程工程师、集成开发者  
+**文档状态**: 已重组 (2025-12-30)
+
+---
+
+## 📖 目录简介
+
+本目录包含 Clotho 系统的核心工作流和数据处理流程。这些文档描述了系统如何将用户输入转化为 LLM 请求，如何处理角色卡导入，以及如何管理复杂的迁移任务。
+
+## 📚 文档列表
+
+### 1. 提示词处理工作流
+
+- **文件**: [`prompt-processing.md`](prompt-processing.md)
+- **简介**: 描述 Clotho 的提示词处理流程，这是一个高度结构化、确定性的流水线。
+- **核心内容**: 五阶段处理流程 (Planner → Skein Builder → Template Renderer → Assembler → LLM Invoker)、Late Binding 原则、Zero Side-Effect 原则
+- **阅读建议**: 了解系统如何构建和发送 Prompt 给 LLM
+- **关联文档**: 核心架构 [`../core/`](../core/)，协议目录 [`../protocols/`](../protocols/)
+
+### 2. 角色卡导入与迁移指南
+
+- **文件**: [`character-import-migration.md`](character-import-migration.md)
+- **简介**: 完整的角色卡导入与迁移系统设计，采用“深度分析 → 双重分诊 → 专用通道”的半自动处理范式。
+- **核心内容**: 核心分析引擎、世界书分诊策略、正则脚本分诊策略、交互流程设计、Prompt 格式规范化
+- **阅读建议**: 了解如何将 SillyTavern 角色卡迁移到 Clotho 架构
+- **关联文档**: 迁移策略 [`migration-strategy.md`](migration-strategy.md)，协议目录 [`../protocols/`](../protocols/)
+
+### 3. 遗留生态迁移策略
+
+- **文件**: [`migration-strategy.md`](migration-strategy.md)
+- **简介**: 专注于 ST-Prompt-Template (EJS) 的迁移策略与流程设计。
+- **核心内容**: 遗留系统分析、迁移流程设计 (扫描-建议-交互)、集成与实施计划
+- **阅读建议**: 了解如何将 SillyTavern 的 EJS 脚本迁移到 Clotho 的 Jinja2 模板
+- **关联文档**: 角色卡导入 [`character-import-migration.md`](character-import-migration.md)，协议目录 [`../protocols/jinja2-macro-system.md`](../protocols/jinja2-macro-system.md)
+
+### 4. 运行时环境切换流程
+
+- **文件**: [`runtime-environment-switching.md`](runtime-environment-switching.md)
+- **简介**: 描述系统如何在不同的运行时环境（角色、预设、场景）之间切换。
+- **核心内容**: Freeze-Unload-Hydrate-Resume 四阶段流程、状态保存与恢复、UI 组件重建
+- **阅读建议**: 了解系统如何管理多角色会话和平行宇宙
+- **关联文档**: 运行时环境 [`../runtime/`](../runtime/)，核心架构 [`../core/`](../core/)
+
+## 🔗 工作流关系图
+
+```mermaid
+graph TD
+    User[用户输入] --&gt; PromptWorkflow[提示词处理工作流]
+    Import[角色卡导入] --&gt; MigrationWorkflow[迁移工作流]
+    MigrationWorkflow --&gt; PromptWorkflow
+    PromptWorkflow --&gt; LLM[LLM 生成]
+    LLM --&gt; Runtime[运行时环境]
+    Runtime --&gt;|切换角色| Switching[环境切换流程]
+```
+
+## 🧭 导航指南
+
+### 从哪里开始？
+
+如果您是**业务分析师**：
+
+1. 从 [`prompt-processing.md`](prompt-processing.md) 开始，了解核心处理流程
+2. 阅读 [`character-import-migration.md`](character-import-migration.md) 了解数据迁移过程
+
+如果您是**流程工程师**：
+
+1. 按顺序阅读所有文档，重点关注流程间的依赖关系
+2. 使用流程图理解各阶段的数据转换
+
+如果您是**集成开发者**：
+
+1. 关注 [`migration-strategy.md`](migration-strategy.md) 了解与遗留系统的集成点
+2. 查看 [`runtime-environment-switching.md`](runtime-environment-switching.md) 了解状态管理机制
+
+### 相邻目录
+
+- **核心架构** ([`../core/`](../core/)): 工作流的架构支撑
+- **协议与格式** ([`../protocols/`](../protocols/)): 工作流中使用的数据格式
+- **运行时环境** ([`../runtime/`](../runtime/)): 工作流的执行环境
+- **参考文档** ([`../reference/`](../reference/)): 工作流中使用的技术参考
+
+## 📝 文档更新记录
+
+| 日期 | 版本 | 变更说明 |
+|------|------|----------|
+| 2025-12-30 | 2.0.0 | 文档重组，创建统一的工作流目录 |
+| 2025-12-27 | 1.0.0 | 提示词处理工作流创建 |
+| 2025-12-27 | 2.0.0 | 角色卡导入与迁移系统 v2.0 |
+| 2025-12-23 | 1.0.0 | 遗留生态迁移策略创建 |
+
+---
+
+**最后更新**: 2025-12-30  
+**维护者**: Clotho 工作流团队
+
+        ]]>
+      </content>
+    </document>
+
+    <document path="workflows\character-import-migration.md">
+      <title>织谱导入与迁移系统 (Pattern Import &amp; Migration)</title>
+      <content>
+        <![CDATA[
+# 织谱导入与迁移系统 (Pattern Import &amp; Migration)
+
+**版本**: 2.1.0 (Metaphor Update)
+**日期**: 2026-01-10
+**状态**: Active
+**作者**: 资深系统架构师 (Architect Mode)
+**源文档**: `plans/character-card-import-migration-design.md`
+
+---
+
+## 1. 核心设计理念
+
+本系统旨在解决从 SillyTavern (ST) 生态向 Clotho 架构迁移时的复杂性问题。在 Clotho 的隐喻体系中，传统的 **"Character Card (角色卡)"** 被重新定义为 **"The Pattern (织谱)"** —— 即定义了命运如何编织的静态蓝图。
+
+鉴于 ST 生态极其灵活（甚至混乱），我们摒弃"一键全自动"的幻想，转而采用 **"深度分析 -&gt; 双重分诊 -&gt; 专用通道"** 的半自动处理范式，将旧时代的卡片转化为新时代的织谱。
+
+### 1.1 处理范式：分诊 (Triage)
+
+系统不尝试直接转换所有内容，而是首先通过 **核心分析引擎** 对复杂组件（世界书、正则脚本）进行**特征识别**，然后生成预分类标签，交由用户在**分诊界面**确认，最后根据分类进入不同的处理流水线，最终生成标准的 **Pattern (L2 蓝图)**。
+
+---
+
+## 2. 系统架构全景
+
+```mermaid
+graph TD
+    Input[ST Character Card] --&gt; Phase1[Phase 1: 分析与分诊]
+    
+    subgraph Phase1 [Phase 1: 分析与分诊]
+        Parser[基础解析器] --&gt; Fields[基础字段]
+        Parser --&gt; Analyzer[核心分析引擎]
+        
+        Analyzer --&gt; LB_Triage[世界书分诊]
+        Analyzer --&gt; RS_Triage[正则脚本分诊]
+        Analyzer --&gt; State_Ext[状态提取]
+    end
+    
+    LB_Triage --&gt; LB_Static[基础设定 📘]
+    LB_Triage --&gt; LB_Instruct[指令型 ⚡]
+    LB_Triage --&gt; LB_Code[代码型 🧩]
+    
+    RS_Triage --&gt; RS_Replace[文本替换 📝]
+    RS_Triage --&gt; RS_Cleanup[数据清洗 🧹]
+    RS_Triage --&gt; RS_UI[UI 注入 🎨]
+    
+    subgraph Phase2 [Phase 2: 转换与迁移]
+        LB_Code --&gt; EJS_Converter[EJS -&gt; Jinja2]
+        RS_UI --&gt; UI_Decision{UI 策略决策}
+        UI_Decision --&gt;|原生| Native_Widget[Flutter 组件]
+        UI_Decision --&gt;|兼容| WebView_Sandbox[WebView 容器]
+    end
+    
+    subgraph Phase3 [Phase 3: 整合]
+        Fields &amp; LB_Static &amp; LB_Instruct &amp; EJS_Converter &amp; Native_Widget &amp; WebView_Sandbox --&gt; Mnemosyne[Pattern (L2) 数据存储]
+    end
+```
+
+---
+
+## 3. 核心分析引擎 (Core Analysis Engine)
+
+### 3.1 职责
+
+负责扫描文本内容，识别潜在的代码、HTML 结构、特殊指令模式，为分诊提供依据。
+
+### 3.2 插件化分析器
+
+* **HTML Analyzer**: 检测 `&lt;iframe&gt;`, `&lt;script&gt;`, `onclick`, `style` 等。
+  * *Case A 命中*: `开局选项` 脚本包含 `&lt;iframe&gt;` 和复杂 `&lt;script&gt;` 逻辑。
+* **EJS Analyzer**: 检测 `&lt;%`, `getvar`, `getwi`, `{{random}}`。
+  * *Case A 命中*: 世界书条目 `[Controller]高松灯_Persona` 包含 `&lt;% if (getvar... %&gt;`。
+* **Instruction Analyzer**: 检测 `&lt;format&gt;`, `always output`, `instruction` 等关键词。
+  * *Case A 命中*: 世界书 Entry 28 包含 `&lt;options_format&gt;` 标签。
+* **State Analyzer**: 检测 `&lt;!--&lt;|state|&gt;--&gt;` 或类似隐藏数据结构。
+  * *Case B 命中*: `first_mes` 中包含隐藏的状态 JSON。
+
+---
+
+## 4. 世界书分诊策略 (Lorebook Triage)
+
+系统将世界书条目分为三类。用户在导入向导中确认分类。
+
+| 分类 | 定义 | 典型特征 | 案例引用 (Case A) | 处理策略 |
+|---|---|---|---|---|
+| **基础设定** 📘 | 纯文本描述，无动态逻辑。 | 无代码标签。 | 条目 `TakamatsuTomori_Unwavering` | **直接导入** |
+| **指令型** ⚡ | 控制 LLM 输出格式的系统指令。 | 含 `format`, `rule`, `options`。 | 条目 `28` (`&lt;options_format&gt;`) | **建议迁移** 至 System Prompt 或 Post History Instructions |
+| **代码型** 🧩 | 含动态逻辑或变量操作。 | 含 EJS, 宏。 | 条目 `[Controller]高松灯_Persona` | **进入 Phase 2** (EJS转Jinja2) |
+
+### 4.1 特殊逻辑处理
+
+* **`getwi` 映射**: `[Controller]高松灯_Persona` 使用了 `getwi` 动态加载其他条目。
+  * *策略*: 转换为 Jinja2 的 `{% include %}` (如果 Clotho 支持) 或通过 Mnemosyne 的 **Linked Entries** 机制实现条件激活。
+
+---
+
+## 5. 正则脚本分诊策略 (Regex Script Triage)
+
+正则脚本 (`regex_scripts`) 用途差异巨大，需分类处理。
+
+| 分类 | 定义 | 典型特征 | 案例引用 (Case A) | 处理策略 |
+|---|---|---|---|---|
+| **文本替换型** 📝 | 传统的文本修正或注入。 | 普通文本替换，无 HTML。 | 脚本 `点击选项` (替换为特定文本) | **导入为 Regex Entry** |
+| **数据清洗型** 🧹 | 移除思维链或元数据标签。 | 替换为空字符串 `""`。 | 脚本 `开局选项（移除）`, `歌曲隐藏` | **迁移至 Output Filter** |
+| **UI 注入型** 🎨 | 在界面渲染自定义 UI。 | 含 `&lt;div&gt;`, `iframe`, `script`。 | 脚本 `开局选项` (音乐播放器) | **进入 Phase 2** (UI 决策) |
+
+### 5.1 UI 注入处理决策
+
+针对 **UI 注入型** 脚本，提供两种路径：
+
+1. **WebView 兜底 (推荐)**: 针对 Case A 中的 `开局选项` (音乐播放器)，由于其包含复杂的 DOM 操作 (`document.getElementById`, `addEventListener`)，无法自动转换为原生组件。必须将其封装在沙箱化的 WebView 中运行。
+2. **原生重构**: 针对简单的 HTML/CSS (如状态栏)，LLM 可尝试将其转换为 Flutter 的 `Row/Column` 布局代码。
+
+---
+
+## 6. 内嵌状态提取 (State Extraction)
+
+针对 Case B (`观星者`) 中隐藏在 `first_mes` 的状态数据：
+
+1. **识别**: 正则匹配 `&lt;!--&lt;|state|&gt;(.*?)&lt;/\|state\|&gt;--&gt;`。
+2. **提取**: 解析 JSON 内容。
+3. **迁移**: 将变量合并入 `Mnemosyne` 的初始状态表 (`initial_state`)。
+4. **清理**: 在导入后的首条消息中移除该注释块，防止污染上下文。
+
+---
+
+## 7. 交互流程设计 (UI Workflow)
+
+### Step 1: 概览与分诊
+
+展示“世界书分诊”和“正则脚本分诊”两个面板。系统根据分析引擎给出预分类建议（例如：将 Case A 的 Entry 28 标记为⚡指令型，将音乐播放器脚本标记为🎨UI型）。用户可批量确认或修改。
+
+### Step 2: 复杂内容处理
+
+* **代码转换**: 对标记为🧩代码型的条目，展示 LLM 生成的 Jinja2 代码建议（例如将 `getvar` 转为 `state.get`）。
+* **UI 决策**: 对标记为🎨UI型的脚本，询问用户是“保留为 WebView”还是“尝试转原生”。
+
+### Step 3: 最终确认
+
+展示最终的数据结构预览，包括 Mnemosyne 变量表、Lorebook 结构和特殊的 UI 挂载点。
+
+---
+
+## 8. 数据结构定义
+
+### 8.1 核心分析结果
+
+```dart
+class AnalysisResult {
+  final List&lt;LorebookTriageItem&gt; lorebookItems;
+  final List&lt;RegexScriptTriageItem&gt; scriptItems;
+  final Map&lt;String, dynamic&gt; extractedState;
+  // ...
+}
+
+enum TriageCategory {
+  static, instructional, dynamic, // Lorebook
+  replacement, cleanup, uiInjection // Regex
+}
+```
+
+### 8.2 UI 注入定义
+
+```dart
+class UIInjectionConfig {
+  final String id;
+  final String triggerRegex;
+  final UIInjectionMode mode; // webview, native
+  final String? rawHtml; // for webview
+  final String? nativeLayoutId; // for native
+}
+```
+
+---
+
+## 9. 协议 Schema 提取与标识 (Protocol Schema Recognition &amp; Extraction)
+
+### 9.1 设计背景
+
+在 ST 生态中，复杂的输出规则（如 `&lt;SFW&gt;` JSON 格式、好感度更新逻辑）常被硬编码在 First Message 或 Description 中。这种方式占用 Token 且难以维护。Clotho 引入 **"Schema Library"** 机制，在导入时自动识别这些规则模式，将其提取为系统预设的 Schema 引用，从而实现 Prompt 的"瘦身"与逻辑的"标准化"。
+
+### 9.2 提取逻辑
+
+分析引擎会扫描文本中的规则定义块，尝试匹配已知的 Schema 模式：
+
+| 模式名称 | 匹配特征 | 提取动作 | 替换结果 |
+|---|---|---|---|
+| **SFW Output** | 含 `&lt;SFW&gt;`, `JSON`, `Avatar_Map` 等关键词。 | 1. 提取 Map 数据 (Avatar/Portrait) 存入 Metadata。&lt;br&gt;2. 识别为 `protocol: sfw_json_output`。 | `&lt;use_protocol&gt;sfw_json_output&lt;/use_protocol&gt;` |
+| **Variable Update** | 含 `&lt;UpdateVariable&gt;`, `&lt;Analysis&gt;`, `_.add()`。 | 1. 提取变量定义 (如 `好感度`) 存入 Initial State。&lt;br&gt;2. 识别为 `protocol: variable_update_v2`。 | `&lt;use_protocol&gt;variable_update_v2&lt;/use_protocol&gt;` |
+| **Custom Colors** | 含 `&lt;自定义颜色&gt;`, `&lt;span style="..."&gt;`。 | 1. 提取颜色规则。&lt;br&gt;2. 识别为 `protocol: semantic_color`。 | `&lt;use_protocol&gt;semantic_color&lt;/use_protocol&gt;` |
+
+### 9.3 交互式确认流程
+
+在迁移向导的 **"Phase 2: 复杂内容处理"** 中，新增 **Schema 确认** 步骤：
+
+1. **展示发现**: "检测到该织谱 (Pattern) 包含复杂的'SFW 输出格式'定义 (约 500 Tokens)。"
+2. **提供选项**:
+    * ✅ **提取并引用 (推荐)**: 移除原文中的定义，替换为 `&lt;use_protocol&gt;` 标签。Jacquard 将在运行时自动注入标准化的、经过优化的规则。
+    * ❌ **保留原样**: 保持原始文本不变（适用于非标准或极其特殊的规则）。
+3. **参数配置**: 对于提取的 Schema，允许用户微调提取出的参数（如修正提取出的 Avatar Map）。
+
+### 9.4 运行时注入机制
+
+当 Jacquard 在 **Pattern (织谱)** 中遇到 `&lt;use_protocol&gt;ID&lt;/use_protocol&gt;` 标签时：
+
+1. **查询**: 从 Clotho 内置的 Schema Library 中查找对应 ID 的 Schema 定义。
+2. **注入**: 将 Schema 定义中的 System Instruction 注入到 Prompt 的 System 区域。
+3. **参数化**: 如果 Schema 支持参数（如 SFW 的 Avatar Map），将卡片中存储的 Metadata 填充到模板中。
+
+---
+
+## 10. 附录 A: 案例结构解析 (Case Study: 观星者)
+
+以下展示系统如何处理 `doc/EvaluationDoc/观星者（自设）.json` 中的复杂结构。
+
+### A.1 正则脚本分诊 (Regex Scripts)
+
+| 脚本名称 | 原始正则 / 替换内容 | 系统分析特征 | 分诊结果 | 处理策略 |
+|---|---|---|---|---|
+| **Remove &lt;state&gt; json** | `/&lt;!--&lt;\|state\|&gt;.../` -&gt; `""` | `match_xml_tag`, `replace_empty` | **数据清洗型** 🧹 | 忽略脚本逻辑，但利用其模式在 Phase 1 提取 State 数据。 |
+| **Hide** | `/.*/s` -&gt; `""` | `match_all`, `replace_empty` | **数据清洗型** 🧹 | 标记为 Output Filter，需人工确认是否保留隐藏逻辑。 |
+| **UI** | `$` -&gt; `&lt;ui_sys&gt;...html...` | `inject_html`, `ui_sys_tag` | **UI 注入型** 🎨 | 强制进入 UI 决策流程，建议使用 WebView 渲染。 |
+
+### A.2 扩展插件分诊 (TavernHelper)
+
+* **检测对象**: `extensions.tavern_helper` &amp; `TavernHelper_scripts`
+* **内容**: 包含 `sam_state_manager.js` 引用和复杂 JS 逻辑。
+* **分诊**: 标记为 **"外部 JS 插件"**。
+* **策略**: Clotho 不支持直接运行外部 JS。
+  * *Option A*: 引导用户使用 Mnemosyne 的 Rules System 重构状态机逻辑。
+  * *Option B*: 保留源代码作为参考，但禁用运行。
+
+### A.3 内嵌状态提取
+
+* **位置**: `first_mes`
+* **内容**: `&lt;!--&lt;|state|&gt;复杂的json&lt;/|state|&gt;--&gt;`
+* **动作**:
+    1. 解析器提取 JSON。
+    2. 将其展平并合并到 `Mnemosyne` 的 `initial_state`。
+    3. 在转换后的 `first_mes` 中自动移除该 XML 标签（模拟原脚本行为）。
+
+### A.4 案例解析：Flash (小少女乐队时代)
+
+针对 `doc/EvaluationDoc/flash.json`，展示系统对“伪复杂”结构和指令型数据的处理。
+
+| 条目/特征 | 内容摘要 | 系统分析特征 | 分诊/处理策略 |
+|---|---|---|---|
+| **Entry 0 (青森峰)** | `keys=["青森峰"]`, `use_regex=true` | `regex_is_literal` (正则无特殊字符) | **优化建议** 💡: 检测到正则是纯文本，建议降级为普通关键词匹配以提升性能。 |
+| **Entry 5 (状态栏)** | `&lt;block&gt;...Output Format...&lt;/block&gt;` | `pattern_output_format`, `xml_structure` | **指令型 Lore** 📜: 识别为格式说明，建议迁移到 System Prompt 或作为高优先级 Lore 保留。 |
+| **Entry 7 (时间线)** | `**在{{User}}没有...**` | `macro_legacy_case` (`{{User}}`) | **宏转换** 🔄: 自动识别大小写不敏感的宏，映射为 Clotho 的 `{{ user.name }}`。 |
+| **Entry 10 (素世)** | `&lt;Soyo&gt;...YAML Data...&lt;/Soyo&gt;` | `xml_semantic` (语义标签), `yaml_structure` | **静态 Lore** 📄: 识别为结构化数据。保留 XML 标签（有助于 LLM 理解），不视为 UI 注入。 |
+| **depth_prompt** | `{"depth": 4, "prompt": "..."}` | `extension_depth_prompt` | **结构迁移** 🏗️: 提取并转换为 Clotho 的 System Instruction 模块，保留深度配置。 |
+
+---
+
+## 11. Prompt 格式规范化 (Prompt Normalization)
+
+### 11.1 设计目标
+
+为了最大化 LLM 的注意力效率并减少解析错误，Clotho 对所有输入给 LLM 的结构化数据采用 **"XML 包裹 YAML"** 的统一格式。
+
+* **输入端**: XML + YAML
+* **输出端**: XML + JSON (Filament 协议 V3)
+
+### 11.2 织谱条目 (Lorebook) 格式转换
+
+在导入过程中，系统会对 Lorebook 条目中的 `content` 进行格式规范化。
+
+#### 11.2.1 转换规则 (最终版)
+
+| 原始格式 | 检测特征 | 转换目标 | 备注 |
+|---|---|---|---|
+| **JSON** | `{...}`, `[...]` | **保留 XML + 转为 YAML** | 保留 `&lt;Soyo&gt;` 等标签，将内部 JSON 转为 2 空格缩进的 YAML。 |
+| **YAML** | `key: value` | **保留 XML + 统一缩进** | 保留标签，将内部 YAML 统一为 2 空格缩进。 |
+| **Markdown** | `-`, `*`, `#` 等 | **保留 XML + 转为 YAML** (尽力而为) | 将 Markdown 列表、标题等结构尝试转换为 YAML 结构。 |
+
+**转换示例**:
+
+| 原始格式 | 转换后 |
+|---|---|
+| `&lt;Soyo&gt;{"name": "Soyo", "age": 16}&lt;/Soyo&gt;` | `&lt;Soyo&gt;\n  name: Soyo\n  age: 16\n&lt;/Soyo&gt;` |
+| `&lt;Aomori&gt;\n  - Point A\n  - Point B\n&lt;/Aomori&gt;` (Markdown) | `&lt;Aomori&gt;\n  - Point A\n  - Point B\n&lt;/Aomori&gt;` (YAML 数组) |
+
+#### 11.2.2 转换流程
+
+```mermaid
+graph TD
+    Content[Lorebook Content] --&gt; Analyzer[格式分析器]
+    Analyzer --&gt; Detect{检测内容格式}
+    
+    Detect -- JSON --&gt; ParseJSON[解析 JSON]
+    Detect -- YAML --&gt; ParseYAML[解析 YAML]
+    Detect -- Markdown --&gt; ParseMD[解析 Markdown]
+    Detect -- Text --&gt; KeepText[保留纯文本]
+    
+    ParseJSON --&gt; Normalize[转为 2 空格缩进 YAML]
+    ParseYAML --&gt; Normalize
+    ParseMD --&gt; Normalize
+    
+    Normalize --&gt; Final[规范化后的内容]
+    
+    KeepText --&gt; Final
+```
+
+---
+
+## 12. 相关文档
+
+* **[迁移策略](../core/migration-strategy.md)**: 了解 ST 生态迁移的整体策略
+* **[Filament 协议](../protocols/filament-protocol-overview.md)**: 了解输入/输出格式规范
+* **[Jinja2 宏系统](../protocols/jinja2-macro-system.md)**: 了解 EJS 到 Jinja2 的转换规则
+* **[运行时环境](../runtime/layered-runtime-architecture.md)**: 了解导入后角色卡在运行时环境中的分层管理
+
+---
+
+**最后更新**: 2025-12-27  
+**维护者**: Clotho 导入迁移团队
+
+        ]]>
+      </content>
+    </document>
+
+    <document path="workflows\migration-strategy.md">
+      <title>遗留生态迁移与扩展 (Migration &amp; Ecosystem)</title>
+      <content>
+        <![CDATA[
+# 遗留生态迁移与扩展 (Migration &amp; Ecosystem)
+
+**版本**: 1.0.0  
+**日期**: 2025-12-23  
+**状态**: Draft  
+**作者**: 资深系统架构师 (Architect Mode)  
+**源文档**: `st_prompt_template_analysis.md`, `st_prompt_template_migration_design.md`, `st_prompt_template_integration_plan.md`
+
+---
+
+## 1. 迁移战略综述 (Strategy Overview)
+
+本模块关注如何将 SillyTavern (ST) 庞大的生态资产，特别是 `ST-Prompt-Template` (EJS) 脚本，迁移到 Clotho 架构中。
+
+### 1.1 根本矛盾
+
+* **ST (Legacy)**: 依赖 JS `eval` 任意代码执行，逻辑与数据混杂，不易维护。
+* **Clotho (Modern)**: 强调数据与逻辑分离，采用 **Jinja2 模板引擎** 进行确定性编排，禁止不受控的代码执行。
+
+### 1.2 解决方案：交互式迁移向导 (Interactive Migration Wizard)
+
+我们**不追求全自动黑盒转译**，而是提供一套工具链，引导用户将老旧的 EJS 逻辑解构、提取并映射到 Clotho 的现代架构组件（Mnemosyne 状态、Jinja2 宏、Jacquard 触发器）中。
+
+---
+
+## 2. 遗留系统深度分析 (Legacy Analysis)
+
+`ST-Prompt-Template` 是 ST 生态中实现复杂逻辑的核心扩展，其核心机制如下：
+
+### 2.1 核心模块
+
+1. **模板引擎 (EJS)**: 在消息、World Info 中嵌入 `&lt;% ... %&gt;` 脚本。
+2. **变量管理**: 分层级的变量存储 (Global, Local, Message)。
+3. **Prompt 注入**: 基于正则 (`regex`) 或位置 (`pos`) 的动态消息插入 (`@INJECT`)。
+
+### 2.2 数据流向痛点
+
+ST 的数据流向是隐式的，模板执行的副作用（如 `setvar`）可能发生在渲染的任何阶段，导致状态难以追踪和调试。
+
+---
+
+## 3. 迁移流程设计 (Migration Workflow)
+
+迁移过程包含四个阶段：**扫描 (Scan) -&gt; 建议 (Suggest) -&gt; 交互 (Interact) -&gt; 执行 (Action)**。
+
+```mermaid
+graph TD
+    Input[Legacy ST Card] --&gt; Scanner[代码模式扫描器]
+    Scanner --&gt; Analyzer[语义分析器]
+    
+    Analyzer -- "识别变量" --&gt; Wizard_Var[状态配置面板]
+    Analyzer -- "识别展示" --&gt; Wizard_UI[UI 配置面板]
+    Analyzer -- "识别逻辑" --&gt; Wizard_Logic[事件配置面板]
+    
+    Wizard_Var &amp; Wizard_UI &amp; Wizard_Logic --&gt; Reconstructor[重构器]
+    Reconstructor --&gt; Output[Clotho Native Card]
+```
+
+### 3.1 模式识别与映射规则
+
+| EJS 模式 | 特征代码 | Clotho (Jinja2) 映射 | 迁移策略 |
+| :--- | :--- | :--- | :--- |
+| **状态定义** | `getvar('hp')` | `{{ state.hp }}` | 提取变量名，映射为 Mnemosyne 路径 |
+| **临时变量** | `setvar('x', 'y')` | `{% set x = 'y' %}` | 转换为 Jinja2 局部变量 |
+| **状态展示** | `HP: &lt;%- hp %&gt;` | `HP: {{ state.hp }}` | 转换为 Jinja2 插值 |
+| **条件逻辑** | `&lt;% if (hp&lt;10) %&gt;` | `{% if state.hp &lt; 10 %}` | 转换为 Jinja2 控制流 |
+| **复杂逻辑** | `while/for` | **Script Plugin** | 标记为 Legacy，建议封装入 Lua/JS 插件 |
+
+---
+
+## 4. 集成与实施计划 (Implementation Plan)
+
+### Phase 1: 核心逻辑移植 (Foundation)
+
+1. **Variable Manager**: 在 Dart 端复刻分层变量存储逻辑。
+2. **Template Engine**: 集成 `jinja` 包，替换原有 XML 解析器。
+
+### Phase 2: 注入服务实现 (Injection Service)
+
+1. **PromptInjectionService**: 实现基于正则和位置的 Prompt 插入逻辑。
+2. **Strategies**: 实现 Absolute, Relative, Regex 三种注入策略。
+
+### Phase 3: 编排层集成 (Orchestration)
+
+1. **Wiring**: 将 `PromptInjectionService` 注入到 `Jacquard` 流水线中。
+2. **Pipeline**: 在 `Skein Builder` 阶段调用注入服务，修改上下文结构。
+
+## 5. 角色卡导入与迁移系统 (Character Card Import &amp; Migration)
+
+**详细架构**: 角色卡导入与迁移系统的完整设计与实现细节请参阅 **[角色卡导入与迁移指南](character-import-migration.md)**。
+
+### 5.1 本模块定位
+
+本模块专注于 **ST-Prompt-Template (EJS)** 的迁移策略与流程设计。对于完整的角色卡解析、导入、分诊、转换等实现，请参考角色卡导入指南的详细文档。
+
+### 5.2 相关章节索引
+
+* **核心分析引擎**: 参见角色卡导入指南第3节
+* **世界书分诊策略**: 参见角色卡导入指南第4节
+* **正则脚本分诊策略**: 参见角色卡导入指南第5节
+* **内嵌状态提取**: 参见角色卡导入指南第6节
+* **交互流程设计**: 参见角色卡导入指南第7节
+* **Prompt 格式规范化**: 参见角色卡导入指南第11节
+
+---
+
+## 6. 相关文档
+
+* **[角色卡导入与迁移指南](character-import-migration.md)**: 完整的角色卡导入系统设计
+* **[Jinja2 宏系统](../protocols/jinja2-macro-system.md)**: EJS 到 Jinja2 的转换规则和宏映射
+* **[Filament 协议](../protocols/filament-protocol-overview.md)**: 输入/输出格式规范
+* **[核心架构](../core/README.md)**: 迁移策略在系统架构中的位置
+
+---
+
+**最后更新**: 2025-12-23  
+**维护者**: Clotho 迁移团队
+
+        ]]>
+      </content>
+    </document>
+
+    <document path="workflows\prompt-processing.md">
+      <title>提示词处理工作流 (Prompt Processing Workflow)</title>
+      <content>
+        <![CDATA[
+# 提示词处理工作流 (Prompt Processing Workflow)
+
+**版本**: 1.0.0  
+**日期**: 2025-12-27  
+**状态**: Draft  
+**关联文档**:
+
+- 核心架构 [`../core/jacquard-orchestration.md`](../core/jacquard-orchestration.md)
+- 核心架构 [`../core/mnemosyne-data-engine.md`](../core/mnemosyne-data-engine.md)
+- 协议目录 [`../protocols/jinja2-macro-system.md`](../protocols/jinja2-macro-system.md)
+
+---
+
+## 1. 工作流概览 (Workflow Overview)
+
+Clotho 的提示词处理流程是一个高度结构化、确定性的流水线（Pipeline）。它遵循 **“晚期绑定 (Late Binding)”** 和 **“无副作用 (Zero Side-Effect)”** 原则，确保 LLM 接收到的始终是基于最新状态的纯净文本。
+
+整个流程由 **Jacquard** 编排层驱动，核心数据载体是 **Skein (绞纱)**。
+
+### 1.1 核心流程图
+
+```mermaid
+graph TD
+    UserInput((用户输入)) --&gt; PreFlash[1. Pre-Flash (Planner): 意图分流]
+    PreFlash --&gt; SkeinBuilder[2. Skein Builder: 原始构建]
+    
+    subgraph DataFetch [数据获取]
+        Mnemosyne[(Mnemosyne State)] -.-&gt;|快照 (Snapshot)| SkeinBuilder
+        Lorebook[(Lorebook)] -.-&gt;|词条 (Entries)| SkeinBuilder
+    end
+    
+    SkeinBuilder --&gt; RawSkein[Raw Skein (含 Jinja2 模板)]
+    
+    subgraph Rendering [3. 模板渲染层 (Template Rendering)]
+        RawSkein --&gt; Renderer[Template Renderer]
+        JinjaEng[Jinja2 Engine] -.-&gt;|解析与执行| Renderer
+        Renderer --&gt;|逻辑控制 {% if %}| ProcSkein[中间态 Skein]
+        Renderer --&gt;|变量替换 {{ val }}| FinalSkein[Final Skein (纯文本)]
+    end
+    
+    FinalSkein --&gt; Assembler[4. Assembler: 最终拼接]
+    Assembler --&gt; String[Prompt String]
+    String --&gt; Invoker[5. LLM Invoker]
+    Invoker --&gt; Parser[6. Filament Parser]
+    Parser --&gt; Updater[7. State Updater]
+    Updater --&gt; PostFlash[8. Post-Flash: 记忆整合 (异步)]
+```
+
+---
+
+## 2. 详细处理阶段 (Detailed Stages)
+
+### 2.1 第一阶段：Pre-Flash (Planner)
+
+- **输入**: 用户发送的消息文本、当前会话 ID。
+- **职责**:
+  - **意图分流 (Triage)**: 区分“数值化交互”（如摸头）与“事件化交互”（如剧情对话）。
+  - **意图规划**:
+      - 分析用户意图（正常对话、指令执行、重试等）。
+      - 决定使用哪个 **Prompt Template**（例如：默认对话模板、冒险模式模板）。
+      - 路由到相应的 Pipeline 分支。
+- **产出**: `PlanContext` (包含模板 ID 和初始指令)。
+
+### 2.2 第二阶段：Skein 构建 (Skein Builder)
+
+- **输入**: `PlanContext`
+- **职责**: 初始化 `Skein` 容器，并填充**原始数据**。
+  - **快照获取**: 向 `Mnemosyne` 请求当前时间点 (`TimePointer`) 的状态快照 (`Punchcards`)。这是一个**只读的深拷贝**。
+  - **上下文检索**: 根据语义检索相关的 Lorebook 条目。
+  - **装填**:
+    - 将 System Template 填入 `System Chain`。
+    - 将历史对话填入 `History Chain`。
+    - 将检索到的 World Info 和 Author's Note 封装为带 `InjectionConfig` 的 PromptBlock，填入 `Floating Chain`。
+- **关键点**: 此时 Block 中的内容包含 **未处理的 Jinja2 标签**。
+- **产出**: `Raw Skein`。
+
+### 2.3 第三阶段：模板渲染 (Template Renderer)
+
+这是流程的核心，负责将动态逻辑转化为静态文本。
+
+- **输入**: `Raw Skein`, `Mnemosyne Snapshot` (作为 Context)。
+- **引擎**: **Jinja2 (Dart)**。
+- **职责**:
+    1. **编译**: 解析所有 Block 中的 Jinja2 语法。
+    2. **逻辑执行**: 运行控制流。
+        - *示例*: `{% if is_night %}` -&gt; 检查 Context 中的 `is_night` 变量，决定是否保留夜间描述。
+    3. **动态拼装**: 处理 `{% set frag %}...{% endset %}`，将复杂文本块存入临时变量并注入。
+    4. **变量替换**: 将 `{{ char }}` 替换为 "Seraphina"，将 `{{ state.gold }}` 替换为 "100"。
+- **安全沙箱**:
+  - 渲染过程**严禁**修改 Mnemosyne 数据库。
+  - 禁止文件/网络访问。
+  - 所有变量仅在渲染周期内有效。
+
+### 2.4 第四阶段：最终拼接 (Assembler)
+
+- **输入**: `Final Skein`。
+- **职责**: 将分散的 Block 链编织并转换为 LLM 请求体。
+- **操作流程 (OpenAI Mode)**:
+    1. **Weaving (编织)**: 将 `Floating Chain` 中的块，根据其 `depth` (如倒数第2条) 插入到 `History Chain` 的对应索引中。
+    2. **Format**: 将 `System Chain` 和编织后的 `History Chain` 转换为 JSON 列表 `[{role: "system", ...}, {role: "user", ...}]`。
+    3. **Truncate**: (可选) 如果超长，根据优先级丢弃旧的 History Block。
+- **产出**: `JSON Object` (发送给 API 的 Body)。
+
+### 2.5 第五阶段：LLM 调用 (Invoker)
+
+- **输入**: `String`。
+- **职责**: 调用底层 API (OpenAI, Anthropic, Local) 发送请求并接收流式响应。
+
+### 2.6 第八阶段：Post-Flash (Consolidation) - 异步
+
+&gt; 注：Parser 和 State Updater 阶段在标准流程中，而 Post-Flash 是异步触发的。
+
+- **触发**: 当 Active Context 达到阈值或会话结束。
+- **职责**:
+  - **日志压缩**: 将近期对话生成摘要。
+  - **事件提取**: 提取关键剧情点存入 Event Chain。
+  - **归档**: 将原始日志移入冷存储。
+
+---
+
+## 3. 数据流变迁 (Data Transformation)
+
+| 阶段 | 数据对象 | 状态描述 | 示例内容 |
+| :--- | :--- | :--- | :--- |
+| **Input** | `UserMessage` | 原始输入 | "你好，你是谁？" |
+| **Build** | `Raw Skein` | **含模版** | `Hello, I am {{ char }}. {% if mood=='angry' %}Go away!{% endif %}` |
+| **Render** | `Final Skein` | **纯文本** | "Hello, I am Seraphina. Go away!" (假设 mood=='angry') |
+| **Assemble** | `Prompt String` | **含格式** | `&lt;|im_start|&gt;assistant\nHello, I am Seraphina...&lt;|im_end|&gt;` |
+
+---
+
+## 4. 设计原则总结
+
+1. **Late Binding (晚期绑定)**:
+    - 变量替换发生在发送给 LLM 的**最后一刻**。这确保了如果用户在生成前一秒修改了状态（如修改了名字），Prompt 会立即反映最新值，无需重启会话。
+
+2. **Zero Side-Effect (无副作用)**:
+    - 渲染层 (`TemplateRenderer`) 是**纯函数**：`f(Template, State) -&gt; Text`。
+    - 它绝对不会因为渲染了 `{% if %}` 而改变 `state.hp`。状态变更只能通过 LLM 输出后的 `Parser` 阶段进行。
+
+3. **Structured Container (结构化容器)**:
+    - 使用 `Skein` 而非长字符串传递数据，允许我们在 Pipeline 的任何阶段对特定部分（如 System Prompt）进行独立修改、替换或调试。
+
+## 相关阅读
+
+- **[核心架构](../core/README.md)**: 了解工作流的架构支撑
+- **[协议目录](../protocols/README.md)**: 了解工作流中使用的数据格式
+- **[运行时环境](../runtime/README.md)**: 了解工作流的执行环境
+
+---
+
+**最后更新**: 2025-12-27  
+**维护者**: Clotho 工作流团队
+
+        ]]>
+      </content>
+    </document>
+
+  </category>
+
+  <category name="runtime">
+    <document path="runtime\README.md">
+      <title>运行时环境导读 (Runtime Environment Guide)</title>
+      <content>
+        <![CDATA[
+# 运行时环境导读 (Runtime Environment Guide)
+
+**版本**: 1.0.0
+**日期**: 2025-12-30
+
+本目录包含 Clotho 系统的动态运行时架构文档。不同于 `core/` 目录下的静态组件设计，本目录关注系统在运行过程中的状态变化、数据流转和生命周期管理。
+
+## 文档索引
+
+### 1. [分层运行时环境架构 (Layered Runtime Architecture)](layered-runtime-architecture.md)
+**核心文档 (SSOT)**。详细定义了系统的四层叠加模型（L0-L3），解释了角色卡蓝图与会话实例如何分离。
+* **关键词**: Layered Sandwich, Blueprint vs Instance, Copy-on-Write
+* **包含内容**:
+    * 四层模型定义 (Infrastructure, Global, Character, Session)
+    * **Patching 机制与 Deep Merge 算法** (原 Mnemosyne 文档内容)
+    * 运行时数据流 (Freeze, Unload, Hydrate, Resume)
+
+## 核心概念
+
+*   **L3 Session State**: 用户当前的对话状态，包括历史记录、变量变更和对世界设定的动态修改。
+*   **Patching**: 一种非破坏性的修改机制，允许在不修改原始角色卡 (L2) 的前提下，记录角色的成长和变化。
+
+## 关联阅读
+
+*   **数据引擎**: [Mnemosyne Data Engine](../core/mnemosyne-data-engine.md) - 负责执行 Patching 和快照生成的组件。
+*   **编排层**: [Jacquard Orchestration](../core/jacquard-orchestration.md) - 负责驱动运行时状态流转的调度器。
+
+        ]]>
+      </content>
+    </document>
+
+    <document path="runtime\layered-runtime-architecture.md">
+      <title>分层运行时环境架构 (Layered Runtime Architecture)</title>
+      <content>
+        <![CDATA[
+# 分层运行时环境架构 (Layered Runtime Architecture)
+
+**版本**: 1.1.0
+**日期**: 2025-12-30
+**状态**: Draft
+**作者**: 资深系统架构师 (Architect Mode)
+**源文档**: `doc/architecture/00_architecture_panorama.md`
+
+---
+
+## 1. 核心设计哲学 (Core Philosophy)
+
+为了解决传统 AI RPG 客户端（如 SillyTavern）中存在的状态混乱、设定成长与原始数据冲突、以及环境配置耦合严重的问题，Clotho 引入了 **"分层运行时环境 (Layered Runtime Architecture)"**。
+
+这一架构借鉴了游戏引擎的 **"蓝图 (Blueprint) vs 实例 (Instance)"** 以及 Git 的 **"写时复制 (Copy-on-Write)"** 思想，将一个运行中的角色会话解构为四个物理隔离但逻辑叠加的层次。
+
+在 Clotho 的隐喻体系中，我们将这种运行时结构描述为 **"织卷 (The Tapestry)"** 的编织过程。
+
+**核心价值**:
+
+* **动静分离**: 原始 **织谱 (The Pattern / L2)** 永远保持只读，作为编织的基准纹样。
+* **成长性**: **织卷 (The Tapestry)** 可以在编织过程中通过 **丝络 (The Threads / L3)** 的变化经历性格突变，而不会污染原始织谱。
+* **模版独立**: Prompt 结构（如 ChatML/Alpaca）与角色内容彻底解耦。
+* **平行宇宙**: 支持基于同一角色的无限分支存档。
+
+---
+
+## 2. 四层叠加模型 (The Layered Sandwich)
+
+Clotho 的 **织卷 (The Tapestry)** 是由以下四层数据在内存中动态 **"编织 (Weaving)"** 而成的：
+
+```mermaid
+graph TD
+    subgraph "Top Level: The Tapestry (织卷 / 运行时实例)"
+        direction TB
+        
+        subgraph "L0: Infrastructure (骨架)"
+            Preset[Prompt Template]
+        end
+
+        subgraph "L1: Global Context (环境)"
+            GlobalLore[通用纹理 / Lore]
+            Persona[观察者 / Persona]
+        end
+
+        subgraph "L2: The Pattern (织谱 / 蓝图)"
+            CardMeta[静态设定 (Name, Desc)]
+            CharLore[固有纹理 (Base Lore)]
+            CharAssets[视觉图样 (Assets)]
+            Note2[Read-Only: 静态基因，决定织物底色]
+        end
+
+        subgraph "L3: The Threads (丝络 / 状态)"
+            History[历史经纬 (History Chain)]
+            StateTree[状态变量 (VWD)]
+            Patches[动态修补 (Patches)]
+            Note3[Read-Write: 动态生长，随时间演进]
+        end
+        
+        Preset &amp; GlobalLore --&gt; TapestryNode((Tapestry Instance))
+        CardMeta --&gt;|Instantiated as| TapestryNode
+        Patches -.-&gt;|Override| CardMeta
+        History --&gt;|Woven into| TapestryNode
+    end
+```
+
+### 2.1 层级详解
+
+| 层级 | 隐喻名称 (Metaphor) | 功能名称 | 职责 (Responsibility) | 读写权限 | 典型数据内容 |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **L0** | **Infrastructure** | **骨架** | 定义与 LLM 的通信协议和 Prompt 结构。 | Read-Only | Prompt Template, API Config |
+| **L1** | **Environment** | **环境** | 定义跨角色共享的世界规则与用户身份。 | Read-Only | User Persona, Global Lorebooks |
+| **L2** | **The Pattern (织谱)** | **蓝图** | 定义角色的初始设定、固有特质与潜在逻辑。**(原 Character Card)** | Read-Only | **Pattern Data** (Name, Desc, First Mes), Base Lorebooks, Regex Scripts |
+| **L3** | **The Threads (丝络)** | **状态** | 记录角色的成长、记忆与状态变更。 | **Read-Write** | **Patches**, History Chain, VWD State Tree |
+
+---
+
+## 3. Patching 机制 (The Patching Mechanism)
+
+Patching 是 L3 层的核心特性，它允许运行时状态对 L2 的静态定义进行 **非破坏性修改**。这是实现“角色成长”与“平行宇宙”的核心技术基础，遵循 **"写时复制 (Copy-on-Write)"** 原则。
+
+### 3.1 工作原理
+
+Mnemosyne 在 **上下文加载 (Context Load)** 阶段执行一次性的 **Deep Merge (深度合并)** 操作，构建运行时的 `Projected Entity`。为了优化启动性能，引入了 **Head State** 优先策略：
+
+1.  **Fast Path (Head State)**: 尝试从 `active_states` 表读取最新的完整状态树。如果命中，直接跳过 OpLog 重放过程，仅需将状态树中的 `patches` 应用于 L2 基底。
+2.  **Slow Path (Reconstruction)**: 如果 Head State 缺失，则回退到 "Snapshot + OpLog" 机制，重建出最新的状态树。
+3.  **Hydrate (注水)**: 将重建/加载的状态树（包含变量与 Patch）应用到 L2 静态基底上，生成最终的 `Projected State`。
+4.  **Runtime Modification (运行时修改)**: 此后所有的属性变更直接作用于内存对象，并同步触发 **Write-Back (回写)**，同时更新 `active_states` (热缓存) 和 `oplogs` (历史记录)。
+
+`patches` 字典采用 **"路径-值"** 结构，例如：
+
+```json
+{
+  "character.description": "A brave warrior who has seen many battles.",
+  "character.lorebooks.town.enabled": false
+}
+```
+
+### 3.2 Deep Merge 算法
+
+Mnemosyne 的 Deep Merge 遵循以下优先级顺序：
+
+1.  **L2 Base**: 加载 L2 的原始数据。
+2.  **L3 Patches**: 遍历 L3 中的 `patches` 对象。
+3.  **Merge**: 将 Patch 值覆盖到 Base 对象的对应路径上。
+4.  **Conflict Resolution**: 如果同一路径存在多个 Patch（理论上不应发生，但作为防御性编程），后应用的 Patch 覆盖先前的。
+
+```dart
+// 伪代码：展示 Deep Merge 逻辑
+Map&lt;String, dynamic&gt; applyPatches(Map&lt;String, dynamic&gt; base, Map&lt;String, dynamic&gt; patches) {
+  // 1. 从 Base 创建副本 (Copy-on-Write)
+  finalResult = Map&lt;String, dynamic&gt;.from(base);
+  
+  // 2. 遍历 Patches 并应用
+  patches.forEach((path, value) {
+    // 处理嵌套路径 "character.description"
+    applyPathValue(finalResult, path.split('.'), value);
+  });
+  
+  return finalResult;
+}
+
+void applyPathValue(Map target, List&lt;String&gt; pathSegments, dynamic value) {
+    // 递归查找或创建路径，直到最后一个 segment，然后赋值
+    // 此处省略具体递归实现细节
+}
+```
+
+### 3.3 应用场景
+
+*   **属性成长**: 角色从 level 1 升级到 level 99。L3 的 State Tree 更新，不影响 L2 的原始设定。
+*   **设定重写**: 剧情导致角色从“修女”黑化为“魔女”。L3 存储一个针对 `description` 字段的 Patch，覆盖 L2 的原始描述。
+*   **世界变迁**: 角色炸毁了“新手村”。L3 将 L2 中的“新手村”Lorebook 条目标记为 `enabled: false`，并新增一个 L3 独有的“废墟”条目。
+*   **平行宇宙**: 基于同一 L2 创建多个 L3 实例（分支存档），每个实例拥有独立的 Patch 和 History，互不干扰。
+
+---
+
+## 4. 运行时数据流 (Runtime Data Flow)
+
+当 Jacquard 发起推理请求时，数据流经各层并在 Mnemosyne 中聚合：
+
+```mermaid
+sequenceDiagram
+    participant J as Jacquard (Orchestrator)
+    participant M as Mnemosyne (Data Engine)
+    participant L3 as L3 Session
+    participant L2 as L2 Blueprint
+    participant L0 as L0 Preset
+
+    J-&gt;&gt;M: Request Context Snapshot
+    M-&gt;&gt;L3: Load Session State (History, Patches)
+    M-&gt;&gt;L2: Load Static Assets
+    M-&gt;&gt;M: Apply L3 Patches to L2 Assets (Projection)
+    M-&gt;&gt;L0: Load Prompt Structure
+    M-&gt;&gt;M: Weave (Structure + Projected Content + History)
+    M--&gt;&gt;J: Return Immutable Punchcard
+```
+
+---
+
+## 5. 聚合实体：Mnemosyne Context
+
+最终传递给编排层 (Jacquard) 的是一个聚合后的上下文对象，我们称之为 **Mnemosyne Context**。
+
+详细的数据结构定义请参阅 👉 **[Mnemosyne 抽象数据结构设计](../mnemosyne/abstract-data-structures.md#41-mnemosyne-context-聚合根)**。
+
+```text
+// 抽象结构示意 (Abstract Structure)
+MnemosyneContext {
+  // Layer 0: 策略与骨架
+  infrastructure: {
+    preset: PromptTemplate
+    apiConfig: ApiConfiguration
+  }
+  
+  // Layer 1 &amp; 2 (Projected): 静态引用的投影 (已应用 Patch)
+  world: {
+    activeCharacter: ProjectedCharacter // L2 + L3 Patch
+    globalLore: List&lt;LorebookEntry&gt;     // L1 + L3 Status
+    user: PersonaData                   // L1
+  }
+
+  // Layer 3: 纯动态状态
+  session: {
+    history: List&lt;Message&gt;
+    state: StateTree            // 完整的状态树视图
+    planner: PlannerContext     // 规划上下文 (v1.2)
+    patches: PatchMap           // 持久化变更集
+  }
+}
+```
+
+---
+
+## 6. 关联文档
+
+* **核心架构**: [`../core/mnemosyne-data-engine.md`](../core/mnemosyne-data-engine.md)
+* **工作流**: [`../workflows/character-import-migration.md`](../workflows/character-import-migration.md)
+
+        ]]>
+      </content>
+    </document>
+
+  </category>
+
+
+</clotho-specs>

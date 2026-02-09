@@ -10,7 +10,8 @@
 - 输出格式 [`filament-output-format.md`](filament-output-format.md)
 - Jinja2 宏系统 [`jinja2-macro-system.md`](jinja2-macro-system.md)
 - 解析流程 [`filament-parsing-workflow.md`](filament-parsing-workflow.md)
-- 核心架构 [`../core/`](../core/)
+- Jacquard 编排层 [`../jacquard/README.md`](../jacquard/README.md)
+- Mnemosyne 数据引擎 [`../mnemosyne/README.md`](../mnemosyne/README.md)
 
 ---
 
@@ -84,9 +85,10 @@ graph LR
 
 ## 相关阅读
 
-- **[架构核心](../core/README.md)**: 协议在系统核心架构中的应用
+- **[Jacquard 编排层](../jacquard/README.md)**: 协议在编排层中的应用
+- **[Mnemosyne 数据引擎](../mnemosyne/README.md)**: 协议在数据引擎中的应用
 - **[工作流与处理](../workflows/README.md)**: 使用协议的具体业务流程
-- **[迁移指南](../migration/README.md)**: 从遗留系统迁移到 Filament 协议的实践指导
+- **[角色卡导入与迁移](../workflows/character-import-migration.md)**: 从遗留系统迁移到 Filament 协议的实践指导
 
 ---
 

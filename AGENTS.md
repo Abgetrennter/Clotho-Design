@@ -20,7 +20,6 @@ Clotho 是一个面向下一代 AI 角色扮演（RPG）的高性能、确定性
 - `metaphor-glossary.md` - 术语表与隐喻体系
 
 ### 3.2 子系统
-- `infrastructure/` - 基础设施层
 - `jacquard/` - 编排层（The Loom）
 - `mnemosyne/` - 数据引擎
 - `presentation/` - 表现层（The Stage）
@@ -33,7 +32,7 @@ Clotho 是一个面向下一代 AI 角色扮演（RPG）的高性能、确定性
 - `workflows/` - 提示词处理、角色卡迁移
 
 ### 3.5 参考文档
-- `reference/documentation_standards.md` - 文档编写规范
+- `00_active_specs/reference/documentation_standards.md` - 文档编写规范
 
 ### 3.6 工作目录
 - `01_drafts/` - 设计草稿（工作进行中）
@@ -45,7 +44,7 @@ Clotho 是一个面向下一代 AI 角色扮演（RPG）的高性能、确定性
 
 ## 4. 文档标准
 
-所有文档必须遵循 `00_active_specs/documentation_standards.md` 中的规范。
+所有文档必须遵循 `00_active_specs/reference/documentation_standards.md` 中的规范。
 
 ### 4.1 语言
 - **默认语言**：简体中文 (zh-CN)

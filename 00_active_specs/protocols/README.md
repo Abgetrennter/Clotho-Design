@@ -34,7 +34,7 @@
 - **简介**: 协议库的存储、引用和注入机制，旨在解决 Prompt 复用和维护问题。
 - **核心内容**: L1/L2 分层架构、Schema YAML 存储格式、静态与动态引用机制
 - **阅读建议**: 了解如何标准化管理和注入复杂的逻辑规则（如变量更新、直播间格式）
-- **关联文档**: Jacquard 编排层 [`../core/jacquard-orchestration.md`](../core/jacquard-orchestration.md)
+- **关联文档**: Jacquard 编排层 [`../jacquard/README.md`](../jacquard/README.md)
 
 ### 4. Jinja2 宏系统
 
@@ -50,7 +50,7 @@
 - **简介**: Filament 协议的输出端规范，包括 LLM 输出标签体系和状态更新格式。
 - **核心内容**: 认知与表达标签 (`<thought>`, `<content>`)、逻辑与状态标签 (`<variable_update>`)、表现与交互标签 (`<status_bar>`, `<choice>`)
 - **阅读建议**: 了解 LLM 应如何格式化输出，以及系统如何解析这些输出
-- **关联文档**: 解析流程 [`filament-parsing-workflow.md`](filament-parsing-workflow.md)，核心架构 [`../core/`](../core/)
+- **关联文档**: 解析流程 [`filament-parsing-workflow.md`](filament-parsing-workflow.md)，Jacquard 编排层 [`../jacquard/README.md`](../jacquard/README.md)
 
 ### 6. 解析流程
 
@@ -58,7 +58,7 @@
 - **简介**: Filament 协议的实时流式解析机制，包括路由分发和错误处理。
 - **核心内容**: 流式解析架构、路由分发表、输出结构鲁棒性、容错降级
 - **阅读建议**: 了解系统如何实时解析 LLM 的流式输出并分发到相应处理器
-- **关联文档**: 输出格式 [`filament-output-format.md`](filament-output-format.md)，核心架构 [`../core/`](../core/)
+- **关联文档**: 输出格式 [`filament-output-format.md`](filament-output-format.md)，Jacquard 编排层 [`../jacquard/README.md`](../jacquard/README.md)
 
 ## 🔗 协议架构关系
 
@@ -94,7 +94,8 @@ graph LR
 
 ### 相邻目录
 
-- **核心架构** ([`../core/`](../core/)): 协议在系统中的应用实现
+- **Jacquard 编排层** ([`../jacquard/`](../jacquard/)): 协议在编排层中的应用
+- **Mnemosyne 数据引擎** ([`../mnemosyne/`](../mnemosyne/)): 协议在数据引擎中的应用
 - **工作流与处理** ([`../workflows/`](../workflows/)): 使用协议的具体业务流程
 - **运行时环境** ([`../runtime/`](../runtime/)): 协议在运行时环境中的应用
 - **参考文档** ([`../reference/`](../reference/)): 协议相关的技术参考

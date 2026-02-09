@@ -18,7 +18,7 @@
 - **简介**: 描述 Clotho 的提示词处理流程，这是一个高度结构化、确定性的流水线。
 - **核心内容**: 五阶段处理流程 (Planner → Skein Builder → Template Renderer → Assembler → LLM Invoker)、Late Binding 原则、Zero Side-Effect 原则
 - **阅读建议**: 了解系统如何构建和发送 Prompt 给 LLM
-- **关联文档**: 核心架构 [`../core/`](../core/)，协议目录 [`../protocols/`](../protocols/)
+- **关联文档**: Jacquard 编排层 [`../jacquard/`](../jacquard/)，协议目录 [`../protocols/`](../protocols/)
 
 ### 2. 角色卡导入与迁移指南
 
@@ -42,7 +42,7 @@
 - **简介**: 描述系统如何在不同的运行时环境（角色、预设、场景）之间切换。
 - **核心内容**: Freeze-Unload-Hydrate-Resume 四阶段流程、状态保存与恢复、UI 组件重建
 - **阅读建议**: 了解系统如何管理多角色会话和平行宇宙
-- **关联文档**: 运行时环境 [`../runtime/`](../runtime/)，核心架构 [`../core/`](../core/)
+- **关联文档**: 运行时环境 [`../runtime/`](../runtime/)，Jacquard 编排层 [`../jacquard/`](../jacquard/)
 
 ## 🔗 工作流关系图
 
@@ -77,7 +77,8 @@ graph TD
 
 ### 相邻目录
 
-- **核心架构** ([`../core/`](../core/)): 工作流的架构支撑
+- **Jacquard 编排层** ([`../jacquard/`](../jacquard/)): 工作流的编排支撑
+- **Mnemosyne 数据引擎** ([`../mnemosyne/`](../mnemosyne/)): 工作流的数据支撑
 - **协议与格式** ([`../protocols/`](../protocols/)): 工作流中使用的数据格式
 - **运行时环境** ([`../runtime/`](../runtime/)): 工作流的执行环境
 - **参考文档** ([`../reference/`](../reference/)): 工作流中使用的技术参考

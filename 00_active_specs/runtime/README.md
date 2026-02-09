@@ -3,7 +3,7 @@
 **版本**: 1.0.0
 **日期**: 2025-12-30
 
-本目录包含 Clotho 系统的动态运行时架构文档。不同于 `core/` 目录下的静态组件设计，本目录关注系统在运行过程中的状态变化、数据流转和生命周期管理。
+本目录包含 Clotho 系统的动态运行时架构文档。不同于子系统目录下的静态组件设计，本目录关注系统在运行过程中的状态变化、数据流转和生命周期管理。
 
 ## 文档索引
 
@@ -22,5 +22,5 @@
 
 ## 关联阅读
 
-*   **数据引擎**: [Mnemosyne Data Engine](../core/mnemosyne-data-engine.md) - 负责执行 Patching 和快照生成的组件。
-*   **编排层**: [Jacquard Orchestration](../core/jacquard-orchestration.md) - 负责驱动运行时状态流转的调度器。
+*   **数据引擎**: [Mnemosyne 数据引擎](../mnemosyne/README.md) - 负责执行 Patching 和快照生成的组件。
+*   **编排层**: [Jacquard 编排层](../jacquard/README.md) - 负责驱动运行时状态流转的调度器。

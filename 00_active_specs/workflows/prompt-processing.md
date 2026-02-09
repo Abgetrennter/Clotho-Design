@@ -5,8 +5,8 @@
 **状态**: Draft  
 **关联文档**:
 
-- 核心架构 [`../core/jacquard-orchestration.md`](../core/jacquard-orchestration.md)
-- 核心架构 [`../core/mnemosyne-data-engine.md`](../core/mnemosyne-data-engine.md)
+- Jacquard 编排层 [`../jacquard/README.md`](../jacquard/README.md)
+- Mnemosyne 数据引擎 [`../mnemosyne/README.md`](../mnemosyne/README.md)
 - 协议目录 [`../protocols/jinja2-macro-system.md`](../protocols/jinja2-macro-system.md)
 
 ---
@@ -143,7 +143,8 @@ graph TD
 
 ## 相关阅读
 
-- **[核心架构](../core/README.md)**: 了解工作流的架构支撑
+- **[Jacquard 编排层](../jacquard/README.md)**: 了解工作流的编排支撑
+- **[Mnemosyne 数据引擎](../mnemosyne/README.md)**: 了解工作流的数据支撑
 - **[协议目录](../protocols/README.md)**: 了解工作流中使用的数据格式
 - **[运行时环境](../runtime/README.md)**: 了解工作流的执行环境
 
