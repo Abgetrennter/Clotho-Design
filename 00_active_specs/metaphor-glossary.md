@@ -1,7 +1,7 @@
 # Clotho 隐喻体系与术语表 (Clotho Metaphor System & Glossary)
 
-**版本**: 1.0.0  
-**日期**: 2026-01-10  
+**版本**: 1.1.0  
+**日期**: 2026-02-13  
 **状态**: Active  
 **作者**: 资深系统架构师 (Architect Mode)  
 
@@ -45,6 +45,13 @@ Clotho 项目的命名源自希腊神话中的命运三女神之一 **克洛托 
 | **Skein** | **绞纱** | 纱束 | **Pipeline Obj** | **结构化容器 (Structured Container)**。Jacquard 处理过程中的临时数据载体，包裹了 Prompt 的各个部分（System, User, History），等待被编织（渲染）成最终文本。 |
 | **Filament** | **纤丝** | 纤维 | **Protocol** | **交互协议 (Interaction Protocol)**。连接各组件的标准化数据格式（XML+YAML/JSON），如同一根根强韧的纤维，贯穿系统始终。 |
 
+### 2.3 流程阶段 (Process Phases)
+
+| 术语 (EN) | 术语 (CN) | 旧术语 (Legacy) | 定义 |
+| :--- | :--- | :--- | :--- |
+| **Planning Phase** | **规划阶段** | Pre-Flash | **生成前 (Pre-Generation)** 的战术规划阶段。由 `Planner` 组件执行，负责分析用户意图、更新关注点 (Focus)、查询相关知识，并决定"本轮聊什么"。 |
+| **Consolidation Phase** | **整合阶段** | Post-Flash | **生成后 (Post-Generation)** 的记忆整合阶段。由后台 Worker 异步执行，负责对本轮产生的对话和事件进行摘要、提取、并存入长期记忆 (Vector DB)，实现从短期工作记忆到长期记忆的巩固。 |
+
 ---
 
 ## 3. 概念映射 (Concept Mapping)
@@ -67,3 +74,4 @@ Clotho 项目的命名源自希腊神话中的命运三女神之一 **克洛托 
 *   ✅ "Load the **Pattern** into memory." (将织谱加载到内存)
 *   ✅ "Save the current **Tapestry**." (保存当前织卷)
 *   ✅ "Apply a patch to the **Threads**." (对丝络应用补丁)
+*   ✅ "Execute the **Planning Phase** logic." (执行规划阶段逻辑)

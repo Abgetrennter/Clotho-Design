@@ -74,7 +74,11 @@ graph TD
 - **文件列表**:
   - **Jacquard 编排层**:
     - [`jacquard/README.md`](jacquard/README.md) - Jacquard 编排层总览
-    - [`jacquard/planner-component.md`](jacquard/planner-component.md) - Pre-Flash Planner 组件
+    - [`jacquard/planner-component.md`](jacquard/planner-component.md) - Planning Phase (Planner) 组件
+    - [`jacquard/preset-system.md`](jacquard/preset-system.md) - 预设与能力系统
+    - [`jacquard/capability-system-spec.md`](jacquard/capability-system-spec.md) - 能力系统详细规范
+    - [`jacquard/plugin-architecture.md`](jacquard/plugin-architecture.md) - 插件架构规范
+    - [`jacquard/scheduler-component.md`](jacquard/scheduler-component.md) - Scheduler 调度器组件
   - **Mnemosyne 数据引擎**:
     - [`mnemosyne/README.md`](mnemosyne/README.md) - Mnemosyne 数据引擎总览
     - [`mnemosyne/sqlite-architecture.md`](mnemosyne/sqlite-architecture.md) - SQLite 物理存储架构
