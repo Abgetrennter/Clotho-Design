@@ -56,10 +56,10 @@ graph TD
     end
     
     subgraph "Phase 4: 异步后处理 (Async)"
-        Transaction -->|Success| PostFlash[Post-Flash Worker]
-        PostFlash -->|Generate| Summary[Turn Summary]
-        PostFlash -->|Update| VectorDB[Vector Store]
-        PostFlash -->|Check| Scheduler[Scheduler Triggers]
+        Transaction -->|Success| Consolidation[Consolidation Phase (Worker)]
+        Consolidation -->|Generate| Summary[Turn Summary]
+        Consolidation -->|Update| VectorDB[Vector Store]
+        Consolidation -->|Check| Scheduler[Scheduler Triggers]
     end
 ```
 
@@ -135,9 +135,9 @@ graph TD
 
 ---
 
-## 5. 第四阶段：异步后处理 (Post-Flash Async)
+## 5. 第四阶段：整合阶段 (Consolidation Phase)
 
-**组件**: `Post-Flash Worker` (Jacquard)
+**组件**: `Consolidation Worker` (Jacquard)
 
 **触发时机**: 事务提交成功后。
 

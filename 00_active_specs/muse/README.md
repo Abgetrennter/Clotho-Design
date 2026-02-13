@@ -157,7 +157,7 @@ class MuseSkillDefinition {
 
 | 技能 ID | 描述 | 典型场景 |
 | :--- | :--- | :--- |
-| `std.summarizer` | 文本摘要 | PostFlash, 记忆压缩 |
+| `std.summarizer` | 文本摘要 | Consolidation Phase, 记忆压缩 |
 | `std.translator` | 多语言翻译 | UI 本地化, 聊天翻译 |
 | `std.code_transmuter` | 代码/格式转换 | Import Wizard (EJS -> Jinja2) |
 | `std.web_search` | 联网搜索 | 知识问答 Agent |
@@ -198,15 +198,15 @@ class MuseSkillDefinition {
 
 ---
 
-## 7. 与 Jacquard 的协作 (Pre/PostFlash)
+## 7. 与 Jacquard 的协作 (Planning/Consolidation)
 
-PreFlash (预处理) 和 PostFlash (后处理) 是 Jacquard 编排流程中的关键环节。由于这些任务通常涉及对 Context 的深度理解和极其复杂的 Prompt 工程（如无损压缩、知识图谱提取），**Jacquard 将直接使用 Raw Gateway 来执行这些任务**，而不是委托给通用的 MuseAgent。
+Planning Phase (预处理) 和 Consolidation Phase (后处理) 是 Jacquard 编排流程中的关键环节。由于这些任务通常涉及对 Context 的深度理解和极其复杂的 Prompt 工程（如无损压缩、知识图谱提取），**Jacquard 将直接使用 Raw Gateway 来执行这些任务**，而不是委托给通用的 MuseAgent。
 
-*   **PreFlash (e.g., Summarization)**:
+*   **Planning Phase (e.g., Summarization)**:
     *   **Jacquard**: 自主构建压缩 Prompt，精确控制保留哪些关键信息。
     *   **MuseService**: 仅作为 Raw Gateway 提供 LLM 推理能力。
     
-*   **PostFlash (e.g., Extraction)**:
+*   **Consolidation Phase (e.g., Extraction)**:
     *   **Jacquard**: 自主构建提取 Prompt，定义复杂的输出 Schema。
     *   **MuseService**: 仅作为 Raw Gateway 提供 LLM 推理能力。
 

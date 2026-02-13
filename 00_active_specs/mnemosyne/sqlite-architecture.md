@@ -131,7 +131,7 @@ CREATE TABLE turns (
     session_id TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
     turn_index INTEGER NOT NULL, -- 线性递增序号，用于排序和回溯
     created_at INTEGER NOT NULL,
-    summary TEXT, -- 回合摘要，由 Post-Flash LLM 生成，用于 RAG 检索
+    summary TEXT, -- 回合摘要，由 Consolidation Phase LLM 生成，用于 RAG 检索
     vector_id TEXT, -- 关联向量库 ID
     UNIQUE(session_id, turn_index)
 );
@@ -147,7 +147,7 @@ CREATE INDEX idx_turns_session_index ON turns(session_id, turn_index);
 CREATE TABLE messages (
     id TEXT PRIMARY KEY,
     turn_id TEXT NOT NULL REFERENCES turns(id) ON DELETE CASCADE,
-    role TEXT NOT NULL CHECK(role IN ('user', 'assistant', 'system', 'pre_flash', 'post_flash')),
+    role TEXT NOT NULL CHECK(role IN ('user', 'assistant', 'system', 'planning', 'consolidation')),
     content TEXT NOT NULL,
     
     -- 类型区分：普通文本、思维链、系统指令
@@ -453,4 +453,3 @@ LIMIT 3;
     1.  **Android**: 将编译好的 `libsqlite_vec.so` (arm64-v8a) 放入 `jniLibs` 目录。在 Dart 中通过 `DynamicLibrary.open('libsqlite_vec.so')` 加载，并调用 `sqlite3_vec_init`。
     2.  **Windows**: 将 `sqlite_vec.dll` (x64) 随应用分发。在 Dart 中通过 `DynamicLibrary.open('sqlite_vec.dll')` 加载。
     3.  **运行时绑定**: 使用 `sqlite3` Dart 包的 `loadExtension` 接口在数据库连接打开时注入扩展。
-

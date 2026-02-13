@@ -29,8 +29,8 @@ Scheduler Shuttle 作为 Jacquard 流水线的一环，与 Event Bus 和 Mnemosy
 ```mermaid
 graph TD
     subgraph "Jacquard Pipeline"
-        Input[User Input] --> PreFlash[Pre-Flash Planner]
-        PreFlash --> EventBus{Event Bus}
+        Input[User Input] --> Planner[Planning Phase Planner]
+        Planner --> EventBus{Event Bus}
         
         subgraph "Scheduler Shuttle"
             EventBus -- "OnMessageReceived" --> CounterUpdate[Update Counters]

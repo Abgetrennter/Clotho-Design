@@ -32,14 +32,14 @@ graph TB
     end
     
     subgraph "Jacquard 编排流水线"
-        PreFlash[1. Pre-Flash Planner]
+        Planning[1. Planning Phase (Planner)]
         SkeinBuilder[2. Skein Builder]
         Renderer[3. Template Renderer]
         Assembler[4. Assembler]
         Invoker[5. LLM Invoker]
         Parser[6. Filament Parser]
         Updater[7. State Updater]
-        PostFlash[8. Post-Flash 异步]
+        Consolidation[8. Consolidation Phase (Async)]
     end
     
     subgraph "Mnemosyne 数据引擎"
@@ -50,32 +50,32 @@ graph TB
         HeadState[Head State 缓存]
     end
     
-    UserInput --> PreFlash
+    UserInput --> Planning
     Pattern --> SkeinBuilder
     Preset --> Assembler
     GlobalLore --> SkeinBuilder
     
-    PreFlash --> SkeinBuilder
+    Planning --> SkeinBuilder
     SkeinBuilder --> Renderer
     Renderer --> Assembler
     Assembler --> Invoker
     Invoker --> Parser
     Parser --> Updater
-    Updater --> PostFlash
+    Updater --> Consolidation
     
     SkeinBuilder -.->|快照| StateTree
     SkeinBuilder -.->|历史| HistoryChain
     SkeinBuilder -.->|检索| RAGChain
     Updater -.->|更新| StateTree
-    PostFlash -.->|整合| EventChain
-    PostFlash -.->|回写| HeadState
+    Consolidation -.->|整合| EventChain
+    Consolidation -.->|回写| HeadState
 ```
 
 ---
 
 ## 2. 详细处理阶段 (Detailed Stages)
 
-### 2.1 第一阶段：Pre-Flash (Planner)
+### 2.1 第一阶段：Planning Phase (Planner)
 
 **定位**: Jacquard 编排流水线中的第一道关卡，系统的"副官 (Adjutant)"。
 
@@ -347,7 +347,7 @@ sequenceDiagram
 - **System Prompt**: 渲染完整的 `[Value, Description]`
 - **UI Display**: 仅渲染 `Value`
 
-### 2.8 第八阶段：Post-Flash（记忆整合）- 异步
+### 2.8 第八阶段：Consolidation Phase（记忆整合）- 异步
 
 **触发**: 当 Active Context 达到阈值或会话结束。
 
@@ -436,7 +436,7 @@ sequenceDiagram
 - **[协议目录](../protocols/README.md)**: 了解工作流中使用的数据格式
 - **[运行时环境](../runtime/README.md)**: 了解工作流的执行环境
 - **[Skein 编织系统](../jacquard/skein-and-weaving.md)**: 了解 Skein 数据结构与编织算法
-- **[规划器组件](../jacquard/planner-component.md)**: 了解 Pre-Flash Planner 的详细设计
+- **[规划器组件](../jacquard/planner-component.md)**: 了解 Planning Phase (Planner) 的详细设计
 
 ---
 
