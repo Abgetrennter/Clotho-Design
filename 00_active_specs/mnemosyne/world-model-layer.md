@@ -1,10 +1,11 @@
 # 完整世界模型层设计 (World Model Layer)
 
-**版本**: 1.0.0
+**版本**: 1.1.0
 **日期**: 2026-02-13
 **状态**: Draft
 **作者**: Clotho 架构团队
 **关联文档**: 
+- [Mnemosyne 概览](./README.md)
 - [抽象数据结构设计](./abstract-data-structures.md)
 - [SQLite 存储架构](./sqlite-architecture.md)
 - [分层运行时架构](../runtime/layered-runtime-architecture.md)
@@ -13,7 +14,7 @@
 
 ## 1. 概述
 
-**世界模型层 (World Model Layer)** 是 Mnemosyne 数据引擎的核心扩展，它将分散的 **Lorebook 条目** 整合为一个**有机的、可交互的、可演化**的世界实体。
+**世界模型层 (World Model Layer)** 是 State Chain 的 `/world/*` 子命名空间，它将分散的 **Lorebook 条目** 整合为**有机的、可交互的、可演化**的世界状态。
 
 ### 1.1 设计动机
 
@@ -23,13 +24,31 @@
 - 势力关系与经济系统分散在文本条目中
 - 社交动态与信息传播缺乏形式化模型
 
-世界模型层通过引入 **World State Graph**，将 RPG 设计理论中的核心概念（地理空间、时间线、势力关系、经济系统）映射为可操作的系统实体。
+世界模型层通过引入结构化的 `/world/*` 子树，将 RPG 设计理论中的核心概念（地理空间、时间线、势力关系、经济系统）映射为可操作的系统实体。
 
-### 1.2 核心隐喻
+### 1.2 核心定位
+
+**World Model 不是独立系统，而是 State Chain 的一级子命名空间。**
+
+```
+State Chain (L3 状态链)
+├── /world/*          ──► World Model Layer (本次定义)
+│   ├── /world/timeline
+│   ├── /world/locations
+│   ├── /world/agents
+│   ├── /world/factions
+│   └── /world/economy
+│
+├── /character/*      ──► 个人状态
+├── /quests/*         ──► 任务系统
+└── /planner/*        ──► 编排上下文
+```
+
+### 1.3 核心隐喻
 
 | 概念 | 隐喻映射 | 技术定位 |
 |------|----------|----------|
-| **The World (世界)** | 织卷展开的舞台 | L3 State Tree 中的 `/world` 节点 |
+| **The World (世界)** | 织卷展开的舞台 | State Tree 中的 `/world` 节点 |
 | **Timeline (时间线)** | 命运的编织节奏 | 回合索引 + 游戏内历法 + 叙事节拍 |
 | **Location Graph (地理图)** | 舞台的场景布局 | 空间节点与连通关系构成的图 |
 | **Faction Web (势力网)** | 舞台上的阵营博弈 | 势力实体与外交关系网络 |
@@ -39,47 +58,63 @@
 
 ## 2. 架构设计
 
-### 2.1 整体结构
+### 2.1 存储策略
+
+| 层级 | 内容 | 运行时 | 持久化 |
+|------|------|--------|--------|
+| **L2 Pattern** | 世界蓝图（地点模板、势力定义）| 不加载 | SQLite `patterns` 表 |
+| **L3 State Chain** | **完整世界当前状态** | **常驻内存** | `state_snapshots` + `oplogs` |
+
+**关键设计**：
+- **启动**：加载 Snapshot，包含**完整** `/world/*`（所有地点、角色、关系）
+- **运行**：内存中直接读写，变更写入 OpLog
+- **保存**：Snapshot 包含完整世界状态
+- **分支/回溯**：复制或回滚完整 State Tree
+
+### 2.2 状态规模评估
+
+| 数据项 | 数量 | 单条估算 | 总计 |
+|--------|------|----------|------|
+| 地点 | 100 个 | ~2KB | ~200KB |
+| 角色 | 50 个 | ~3KB | ~150KB |
+| 势力 | 10 个 | ~1KB | ~10KB |
+| 经济市场 | 50 个 | ~2KB | ~100KB |
+| 其他 | - | - | ~50KB |
+| **World 总计** | - | - | **~510KB** |
+| 完整 Snapshot | - | - | **< 1MB** |
+
+**结论**：中等规模世界 Snapshot < 1MB，现代设备完全可接受，**无需额外 Cache 或按需加载**。
+
+### 2.3 状态树路径约定
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                      World State Graph                          │
-│                    (世界状态统一图模型)                          │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│   ┌─────────────┐    ┌─────────────┐    ┌─────────────┐        │
-│   │   Timeline  │◄──►│   Location  │◄──►│    Agent    │        │
-│   │   (时间线)   │    │   (地理图)   │    │   (代理)     │        │
-│   └──────┬──────┘    └──────┬──────┘    └──────┬──────┘        │
-│          │                  │                  │               │
-│          ▼                  ▼                  ▼               │
-│   ┌─────────────────────────────────────────────────────────┐  │
-│   │              Core State Nodes (核心状态节点)             │  │
-│   │  • 节点: Agent, Location, Faction, Item, Event          │  │
-│   │  • 边: 空间关系、社交关系、经济关系、时间关系              │  │
-│   │  • 属性: VWD 格式的动态状态                               │  │
-│   └─────────────────────────────────────────────────────────┘  │
-│                              ▲                                  │
-│                              │                                  │
-│   ┌─────────────────────────────────────────────────────────┐  │
-│   │              Dynamic Systems (动态系统层)                │  │
-│   │  • Information Flow (信息传播)                           │  │
-│   │  • Social Dynamics (社交动态)                            │  │
-│   │  • Event Cascade (事件连锁)                              │  │
-│   └─────────────────────────────────────────────────────────┘  │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
+/world
+├── /world/timeline                    # 时间线系统
+│   ├── /world/timeline/turnIndex
+│   ├── /world/timeline/gameTime
+│   └── /world/timeline/narrative
+│
+├── /world/locations/{locationId}      # 地理图
+│   ├── /world/locations/{id}/state
+│   ├── /world/locations/{id}/connections
+│   └── /world/locations/{id}/occupancy
+│
+├── /world/agents/{agentId}            # 角色社交关系
+│   ├── /world/agents/{id}/locationId
+│   ├── /world/agents/{id}/socialGraph
+│   └── /world/agents/{id}/factionStanding
+│
+├── /world/factions/{factionId}        # 势力网络
+│   ├── /world/factions/{id}/attributes
+│   └── /world/factions/{id}/relationships
+│
+├── /world/economy/markets/{locationId} # 经济系统
+│   ├── /world/economy/markets/{id}/prices
+│   └── /world/economy/markets/{id}/stockpile
+│
+└── /world/information/{infoId}        # 信息传播
+    └── /world/information/{id}/knownBy
 ```
-
-### 2.2 与 L2/L3 的映射关系
-
-| 层级 | 对应概念 | 可变性 | 存储位置 |
-|------|----------|--------|----------|
-| **L2 (Pattern)** | World Blueprint | 只读 | `patterns` 表 |
-| **L3 (Threads)** | World Instance | 读写 | `state_snapshots` + `oplogs` |
-| **Runtime** | World Projection | 内存投影 | 运行时对象 |
-
-**状态树路径约定**: `/world/{subsystem}/{entityId}/{property}`
 
 ---
 
@@ -88,6 +123,8 @@
 ### 3.1 Timeline (时间线系统)
 
 时间线不仅是回合计数器，而是具有语义的多层时间结构。
+
+**State Tree 路径**: `/world/timeline/...`
 
 #### 3.1.1 结构定义
 
@@ -106,20 +143,17 @@
 
 支持定义具有不同效果的时段：
 
-```
-时段定义示例:
 - 黎明 (05:00-07:00): 潜行检定加成
 - 深夜 (00:00-04:00): 特定事件触发概率提升
 - 血月之夜: 特殊世界状态覆盖
-```
-
-**State Tree 路径**: `/world/timeline/...`
 
 ---
 
 ### 3.2 Location Graph (地理空间系统)
 
 地点不再是简单的字符串标签，而是空间图中的节点。
+
+**State Tree 路径**: `/world/locations/{locationId}/...`
 
 #### 3.2.1 节点结构
 
@@ -144,13 +178,13 @@
 - **可见范围**: 基于 Agent 感知属性的地点发现
 - **实体移动**: 更新位置并触发移动事件
 
-**State Tree 路径**: `/world/locations/{locationId}/...`
-
 ---
 
 ### 3.3 Faction Web (势力网络系统)
 
 形式化的势力实体与外交关系模型。
+
+**State Tree 路径**: `/world/factions/{factionId}/...`
 
 #### 3.3.1 势力实体
 
@@ -180,13 +214,13 @@
 - 同一势力成员: 基础好感度 +20
 - 敌对势力成员: 基础好感度 -20
 
-**State Tree 路径**: `/world/factions/{factionId}/...`
-
 ---
 
 ### 3.4 Economy System (经济系统)
 
 简化的市场与资源流动模型。
+
+**State Tree 路径**: `/world/economy/markets/{locationId}/...`
 
 #### 3.4.1 核心组件
 
@@ -200,14 +234,14 @@
 
 #### 3.4.2 Agent 经济属性
 
+Agent 的经济属性存储于 `/world/agents/{id}/assets/`：
+
 - **Assets**: 持有资产
   - `currencies`: 现金
   - `inventory`: 物品栏
   - `properties`: 拥有的地点
 - **Transactions**: 交易历史
 - **Trade Reputation**: 商业信誉 (VWD)
-
-**State Tree 路径**: `/world/economy/markets/{locationId}/...`
 
 ---
 
@@ -216,6 +250,8 @@
 ### 4.1 Information Flow (信息传播)
 
 形式化的谣言与新闻传播模型。
+
+**State Tree 路径**: `/world/information/{infoId}/...`
 
 #### 4.1.1 信息节点
 
@@ -231,8 +267,6 @@
 - **Spread**: 基于社交距离的传播概率
 - **Distortion**: 传话游戏效应 (多跳后内容变形)
 - **Credibility Decay**: 可信度随时间和距离衰减
-
-**State Tree 路径**: `/world/information/{infoId}/...`
 
 ---
 
@@ -282,7 +316,28 @@
 
 ## 5. 与现有系统的集成
 
-### 5.1 与 Lorebook 4-Quadrant 的重映射
+### 5.1 使用 State Chain 标准机制
+
+World Model 完全复用 State Chain 的现有能力：
+
+| 机制 | 在 World Model 中的应用 |
+|------|------------------------|
+| **VWD 模型** | 所有世界状态值支持 `[Value, Description]` |
+| **$meta 元数据** | 定义地点/角色的模板、权限、UI 渲染 |
+| **OpLog** | 记录世界变更（如地点状态变化、关系更新） |
+| **Snapshot** | 定期保存完整世界状态 |
+
+**OpLog 示例**：
+```json
+{
+  "op": "replace",
+  "path": "/world/locations/loc_tavern/state/condition",
+  "value": ["ruined", "被战争摧毁"],
+  "turnId": "turn_42"
+}
+```
+
+### 5.2 与 Lorebook 4-Quadrant 的重映射
 
 | Quadrant | 原注入策略 | 世界模型锚定 | 增强策略 |
 |----------|-----------|-------------|----------|
@@ -291,7 +346,7 @@
 | **Encyclopedia** | Floating Chain (深层) | `world.locations.{id}` | 基于距离与访问历史分层 |
 | **Directive** | User Anchor | `world.factions.{id}.ideology` | 基于势力立场动态调整 |
 
-### 5.2 与 Scheduler 的协作
+### 5.3 与 Scheduler 的协作
 
 世界模型事件可作为调度触发器：
 
@@ -300,19 +355,18 @@
 - **Faction Stance**: 势力关系变化触发
 - **Information Spread**: 信息传播到特定 Agent 触发
 
-### 5.3 与 Social Graph 的整合
+### 5.4 筛选机制的作用
 
-**双层社交模型**:
+筛选机制**不控制加载**（因为全在内存），**只控制 Prompt 注入**：
 
 ```
-Layer 1: Personal Relations (Agent-Agent)
-  └─ Alice ──[好感度 70]──► Bob
-
-Layer 2: Faction Relations (Faction-Faction)
-  └─ 骑士团 ──[hostile]──► 暗影会
-
-Composite: 通过势力推导个人关系
-  └─ Alice(骑士团) 对 Bob(暗影会) 初始权重: -20
+内存中的完整 World State (State Chain)
+    │
+    ▼
+[Jacquard 筛选器] ──► 视口半径 / ACL / 优先级
+    │
+    ▼
+Skein 只注入相关子集（如当前地点+邻近地点）
 ```
 
 ---
@@ -321,10 +375,11 @@ Composite: 通过势力推导个人关系
 
 ```json
 {
-  "$meta": { "description": "世界状态根节点" },
+  "$meta": { "description": "完整 State Tree" },
+  
   "world": {
     "$meta": { 
-      "description": "完整世界模型",
+      "description": "世界模型层",
       "extensible": true
     },
     
@@ -368,6 +423,10 @@ Composite: 通过势力推导个人关系
         },
         "factionStanding": {
           "faction_knights": { "rank": "captain", "loyalty": [90, "忠诚"] }
+        },
+        "assets": {
+          "currencies": { "gold": 150 },
+          "inventory": ["item_silver_sword"]
         }
       }
     },
@@ -387,6 +446,28 @@ Composite: 通过势力推导个人关系
         "knownBy": ["char_alice", "char_bob"],
         "credibility": [0.6, "可信度一般"]
       }
+    },
+    
+    "economy": {
+      "markets": {
+        "loc_tavern": {
+          "prices": {
+            "item_beer": [5, "啤酒价格稳定"]
+          },
+          "stockpile": { "item_beer": 100 }
+        }
+      }
+    }
+  },
+  
+  "character": {
+    "hp": [85, "生命值"],
+    "mp": [100, "魔力值"]
+  },
+  
+  "quests": {
+    "active": {
+      "quest_rescue": { "progress": "2/3" }
     }
   }
 }
@@ -412,10 +493,32 @@ Composite: 通过势力推导个人关系
 
 | KiMi 指出的盲区 | 世界模型层的解决方案 |
 |----------------|---------------------|
-| "世界"概念薄弱 | 引入 World 作为独立实体，整合 Timeline/Location/Faction/Economy |
+| "世界"概念薄弱 | State Tree 的 `/world` 节点，整合 Timeline/Location/Faction/Economy |
 | 地理空间缺失 | Location Graph 提供结构化空间模型 |
 | 时间线/日历缺失 | Timeline 系统的 Game Time 层级 |
 | 势力关系缺失 | Faction Web 的形式化外交模型 |
 | 经济系统缺失 | Economy System 的市场与资源流动 |
 | 社交维度缺失 | Social Graph + Information Flow 的双层社交模型 |
 | 信息传播缺失 | Information Flow 的谣言/新闻传播机制 |
+
+---
+
+## 9. 关键设计决策
+
+### 9.1 为什么 World Model 是 State Chain 的子集？
+
+- **复用现有机制**：VWD、OpLog、Snapshot、时间旅行无需重新实现
+- **统一持久化**：一份 Snapshot 保存完整状态（个人+世界）
+- **原子性保证**：世界状态变更与角色状态变更在同一事务中
+
+### 9.2 为什么不需要 Cache 层？
+
+- **完整状态常驻内存**：中等规模世界 < 1MB，现代设备可接受
+- **启动时全量加载**：从 Snapshot 一次性加载，无需按需实例化
+- **L2 只作模板**：运行时只读 L3 State，不反向查询 L2
+
+### 9.3 为什么筛选不控制加载？
+
+- **内存中已有完整世界**：筛选只决定**什么进入 Prompt**
+- **Jacquard 负责注入策略**：基于视口、ACL、优先级动态选择
+- **不影响状态访问**：代码可直接访问任意世界状态（用于逻辑判断）
