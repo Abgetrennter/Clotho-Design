@@ -4,7 +4,7 @@
 **日期**: 2026-01-04
 **状态**: Approved
 **源文档**: `01_drafts/macro_system_spec.md`
-**关联文档**: [`../core/jacquard-orchestration.md`](../core/jacquard-orchestration.md), [`../core/mnemosyne-data-engine.md`](../core/mnemosyne-data-engine.md)
+**关联文档**: [`../jacquard/README.md`](../jacquard/README.md), [`../mnemosyne/README.md`](../mnemosyne/README.md)
 
 ---
 

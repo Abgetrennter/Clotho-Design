@@ -6,7 +6,7 @@
 **作者**: 资深系统架构师 (Architect Mode)
 **关联文档**:
 - `sqlite-architecture.md` (L3 存储)
-- `../core/infrastructure-layer.md` (资源服务)
+- `../mnemosyne/README.md` (资源服务)
 - `../workflows/character-import-migration.md` (导入逻辑)
 
 ---

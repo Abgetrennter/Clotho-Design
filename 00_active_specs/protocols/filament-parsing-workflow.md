@@ -8,7 +8,7 @@
 
 - 概述 [`filament-protocol-overview.md`](filament-protocol-overview.md)
 - 输出格式 [`filament-output-format.md`](filament-output-format.md)
-- 核心架构 [`../core/`](../core/)
+- Jacquard 编排层 [`../jacquard/README.md`](../jacquard/README.md)
 
 ---
 
@@ -181,7 +181,7 @@ graph TD
 ## 相关阅读
 
 - **[输出格式](filament-output-format.md)**: 了解被解析的标签格式
-- **[核心架构](../core/README.md)**: 查看解析器在系统核心架构中的位置
+- **[Jacquard 编排层](../jacquard/README.md)**: 查看解析器在系统核心架构中的位置
 - **[工作流与处理](../workflows/README.md)**: 了解解析流程在整体工作流中的作用
 
 ---

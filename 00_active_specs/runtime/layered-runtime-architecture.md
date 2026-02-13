@@ -195,5 +195,5 @@ MnemosyneContext {
 
 ## 6. 关联文档
 
-* **核心架构**: [`../core/mnemosyne-data-engine.md`](../core/mnemosyne-data-engine.md)
+* **数据引擎**: [`../mnemosyne/README.md`](../mnemosyne/README.md)
 * **工作流**: [`../workflows/character-import-migration.md`](../workflows/character-import-migration.md)

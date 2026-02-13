@@ -109,7 +109,7 @@ graph TD
 * **[角色卡导入与迁移指南](character-import-migration.md)**: 完整的角色卡导入系统设计
 * **[Jinja2 宏系统](../protocols/jinja2-macro-system.md)**: EJS 到 Jinja2 的转换规则和宏映射
 * **[Filament 协议](../protocols/filament-protocol-overview.md)**: 输入/输出格式规范
-* **[核心架构](../core/README.md)**: 迁移策略在系统架构中的位置
+* **[架构原则](../architecture-principles.md)**: 迁移策略在系统架构中的位置
 
 ---
 

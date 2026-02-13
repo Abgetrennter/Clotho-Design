@@ -305,7 +305,7 @@ graph TD
 
 ## 12. 相关文档
 
-* **[迁移策略](../core/migration-strategy.md)**: 了解 ST 生态迁移的整体策略
+* **[迁移策略](migration-strategy.md)**: 了解 ST 生态迁移的整体策略
 * **[Filament 协议](../protocols/filament-protocol-overview.md)**: 了解输入/输出格式规范
 * **[Jinja2 宏系统](../protocols/jinja2-macro-system.md)**: 了解 EJS 到 Jinja2 的转换规则
 * **[运行时环境](../runtime/layered-runtime-architecture.md)**: 了解导入后角色卡在运行时环境中的分层管理

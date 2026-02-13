@@ -17,7 +17,7 @@
 
 * **原则**: `00_active_specs/` 目录是项目的唯一权威文档源。
 * **实践**:
-  * **定义一次，引用多次**: 不要重复定义核心概念。例如，Jacquard 的详细逻辑应只在 [`core/jacquard-orchestration.md`](core/jacquard-orchestration.md) 中定义，其他地方应使用链接引用。
+  * **定义一次，引用多次**: 不要重复定义核心概念。例如，Jacquard 的详细逻辑应只在 [`jacquard/README.md`](../jacquard/README.md) 中定义，其他地方应使用链接引用。
   * **避免冲突**: 在写入新内容前，必须先搜索现有文档，确认是否存在冲突或重复。
 
 ## 3. 内容标准 (Content Standards)
@@ -29,7 +29,7 @@
 
 ### 3.2 术语 (Terminology)
 
-必须严格遵守 [`overview/metaphor-glossary.md`](overview/metaphor-glossary.md) 中定义的隐喻体系。
+必须严格遵守 [`../metaphor-glossary.md`](../metaphor-glossary.md) 中定义的隐喻体系。
 
 * **Clotho**: 整个系统。
 * **Jacquard**: 编排层/引擎。
@@ -64,7 +64,7 @@
 ### 4.2 链接
 
 * **相对链接**: 必须使用相对路径引用其他文档。
-  * ✅ `[Mnemosyne](../core/mnemosyne-data-engine.md)`
+  * ✅ `[Mnemosyne](../mnemosyne/README.md)`
 * **有效性检查**: 创建链接时，必须确认目标文件存在。
 
 ### 4.3 代码块

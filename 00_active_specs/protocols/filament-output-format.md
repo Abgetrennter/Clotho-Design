@@ -246,7 +246,7 @@ LLM 的所有输出必须包裹在特定的 Filament 标签中，确保机器可
 
 - **[解析流程](filament-parsing-workflow.md)**: 了解这些标签如何被实时解析和分发
 - **[输入格式](filament-input-format.md)**: 回顾输入端的 XML+YAML 结构
-- **[架构核心](../core/README.md)**: 查看标签在系统核心架构中的应用
+- **[架构索引](../README.md)**: 查看标签在系统核心架构中的应用
 
 ---
 

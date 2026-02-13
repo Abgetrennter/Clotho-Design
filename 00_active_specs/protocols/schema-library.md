@@ -7,7 +7,7 @@
 **关联文档**:
 
 - Filament 协议概述 [`filament-protocol-overview.md`](filament-protocol-overview.md)
-- Jacquard 编排层 [`../core/jacquard-orchestration.md`](../core/jacquard-orchestration.md)
+- Jacquard 编排层 [`../jacquard/README.md`](../jacquard/README.md)
 - 输入格式 [`filament-input-format.md`](filament-input-format.md)
 
 ---

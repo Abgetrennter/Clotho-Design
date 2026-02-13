@@ -9,30 +9,15 @@
 
 ## 1. 核心设计原则
 
-### 1.1 凯撒原则 (The Caesar Principle)
+### 1.1 凯撒原则与混合代理 (The Caesar Principle & Hybrid Agency)
 
-> **"Render unto Caesar the things that are Caesar's, and unto God the things that are God's."**  
-> **（凯撒的归凯撒，上帝的归上帝）**
+> **"Render unto Caesar the things that are Caesar's, and unto God the things that are God's."**
 
-#### 1.1.1 凯撒的归凯撒 (Code's Domain)
+Clotho 的核心设计哲学遵循 **凯撒原则** 和 **混合代理** 模型。代码（凯撒）负责确定性逻辑，LLM（上帝）负责语义与创意，两者通过严格的协议协作，绝不混淆职责。
 
-- **确定性逻辑**: 逻辑判断、数值计算、状态管理、流程控制必须由确定性代码严密掌控
-- **绝不外包**: 严禁将此类逻辑外包给 LLM
-- **代码权威**: Jacquard（编排层）和 Mnemosyne（数据层）拥有最终决策权
+*详细定义请参阅 👉 **[愿景与哲学: 凯撒原则](vision-and-philosophy.md#2-设计哲学-凯撒原则-the-caesar-principle)**。*
 
-#### 1.1.2 上帝的归上帝 (LLM's Domain)
-
-- **语义理解**: LLM 专注于语义理解、情感演绎、剧情生成、文本润色
-- **神性保留**: 不分散 LLM 注意力于琐碎的逻辑计算
-- **拒绝全权接管**: 不相信 LLM 能在处理复杂逻辑的同时保持高质量角色扮演
-
-### 1.2 混合代理 (Hybrid Agency)
-
-- **分工明确**: 人类提供意图，代码提供逻辑，LLM 提供语义
-- **协同工作**: 三者各司其职，通过严格定义的协议交互
-- **能力互补**: 发挥各自优势，避免短板效应
-
-### 1.3 缪斯原则 (The Muses Principle)
+### 1.2 缪斯原则 (The Muses Principle)
 
 > **"凯撒掌管律法，上帝掌管灵魂，而缪斯掌管灵感与技艺。"**
 
@@ -140,7 +125,7 @@
 ## 6. 关联文档
 
 - **[愿景与哲学](vision-and-philosophy.md)**: 项目根本指导思想
-- **[核心架构](../core/README.md)**: 具体组件实现原则
+- **[架构索引](../README.md)**: 核心组件架构索引
 - **[Filament 协议](../protocols/filament-protocol-overview.md)**: 协议设计原则
 - **[分层运行时架构](../runtime/layered-runtime-architecture.md)**: 运行时设计原则
 
