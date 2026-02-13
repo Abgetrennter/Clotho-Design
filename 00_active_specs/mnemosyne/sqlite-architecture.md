@@ -1,8 +1,14 @@
 # Mnemosyne SQLite 数据架构设计方案
 
+**版本**: 1.1.0
+**日期**: 2026-02-10
+**状态**: Draft
+
 ## 1. 架构概述
 
 本方案采用 **Unified SQLite Architecture** 作为 Mnemosyne 的核心存储引擎。利用现代 SQLite 的 JSON 处理能力和关系型数据库的强一致性，构建一个高性能、易移植、支持复杂查询的混合数据层。
+
+**v1.1 变更**: 采用 Turn-Centric 架构，将微观叙事功能整合进 Turn 对象，消除与 NarrativeLog (Micro) 的冗余。
 
 ### 1.1 核心设计理念
 
@@ -11,12 +17,15 @@
     *   **Relational**: 用于需要索引、聚合查询、外键约束的数据（如 `Event Log`, `History Chain`）。
     *   **JSON Document**: 用于结构多变、层级深、Schema 不固定的数据（如 `State Tree (VWD)`, `Character Profile`）。
 *   **Event Sourcing (事件溯源)**: 状态不仅仅是快照，而是由一系列 `OpLog` 演变而来，支持完美的时间旅行 (Time Travel)。
+*   **Turn-Centric (回合中心)**: Turn 是最小的完整叙事单元，包含对话、事件和摘要，用于 RAG 检索。
 
 ---
 
 ## 2. 实体关系模型 (ER Diagram)
 
 Mnemosyne 的数据模型围绕着 **Timeline (时间轴)** 展开，连接着四条核心数据链。
+
+**v1.1 变更**: Turn 增加 summary 和 vector_id 字段，Narrative Log 简化为仅支持 Macro Level。
 
 ```mermaid
 erDiagram
@@ -30,9 +39,8 @@ erDiagram
     TURN ||--o{ EVENT : triggers
     EVENT }|--|| EVENT_TYPE : classifies
     
-    %% Narrative Chain
-    TURN ||--o{ NARRATIVE_LOG : summarizes
-    NARRATIVE_LOG }|--o{ NARRATIVE_CHAPTER : groups_into
+    %% Narrative Chain (Macro Level Only)
+    MACRO_NARRATIVE ||--o{ TURN : aggregates
     
     %% Entity Definitions
     SESSION {
@@ -47,6 +55,8 @@ erDiagram
         string session_id FK
         int turn_index "Global sequence number"
         timestamp created_at
+        string summary "Turn summary for RAG"
+        string vector_id "Link to VectorDB"
     }
     
     MESSAGE {
@@ -76,16 +86,18 @@ erDiagram
         string id PK
         string turn_id FK
         string type_id FK
-        string summary
+        string summary "Optional, for debugging"
         string participants_json "Array of char_ids"
         string location
         string payload_json "Flexible event data"
+        string source_refs_json "Link to Messages"
     }
     
-    NARRATIVE_LOG {
+    MACRO_NARRATIVE {
         string id PK
-        string turn_id FK
-        string content
+        int period_start_turn FK
+        int period_end_turn FK
+        string content "Chapter summary"
         string vector_id "Link to VectorDB"
         string scope "global|private|shared"
         string owner_id "For private logs"
@@ -113,11 +125,14 @@ CREATE TABLE sessions (
 
 -- 回合表：时间的基本单位
 -- 每次交互（用户输入 + AI 回复）构成一个 Turn
+-- v1.1 变更：增加 summary 和 vector_id 字段，支持 Turn-Centric RAG
 CREATE TABLE turns (
     id TEXT PRIMARY KEY,
     session_id TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
     turn_index INTEGER NOT NULL, -- 线性递增序号，用于排序和回溯
     created_at INTEGER NOT NULL,
+    summary TEXT, -- 回合摘要，由 Post-Flash LLM 生成，用于 RAG 检索
+    vector_id TEXT, -- 关联向量库 ID
     UNIQUE(session_id, turn_index)
 );
 
@@ -207,7 +222,9 @@ CREATE INDEX idx_oplogs_turn ON state_oplogs(turn_id);
 
 ### 3.4 事件链 (Event Chain)
 
-采用 **结构化存储**，以便于 SQL 查询统计（如“查询在地点 X 发生的所有事件”）。
+采用 **结构化存储**，以便于 SQL 查询统计（如"查询在地点 X 发生的所有事件"）。
+
+**v1.1 变更**: summary 字段改为可选，主要用于调试。RAG 检索功能由 Turn.summary 承担。
 
 ```sql
 CREATE TABLE events (
@@ -217,13 +234,13 @@ CREATE TABLE events (
     -- 事件类型：plot_point, item_get, location_change, relationship_change
     event_type TEXT NOT NULL,
     
-    summary TEXT NOT NULL,
+    summary TEXT, -- 可选，简短描述，主要用于调试
     location TEXT,
     
     -- 参与者：使用 JSON 数组存储，便于查询
     -- 也可以拆分为多对多关联表，视查询复杂度而定。
     -- 在 SQLite 中，使用 json_each 查询 participants_json 通常足够快且灵活。
-    participants_json TEXT NOT NULL DEFAULT '[]', 
+    participants_json TEXT NOT NULL DEFAULT '[]',
     
     -- 灵活载荷：存储具体事件数据，如获得的物品 ID、好感度数值
     payload_json TEXT DEFAULT '{}',
@@ -238,19 +255,21 @@ CREATE INDEX idx_events_type ON events(event_type);
 CREATE INDEX idx_events_turn ON events(turn_id);
 ```
 
-### 3.5 叙事链 (Narrative Chain)
+### 3.5 宏观叙事 (Macro Narrative)
 
-用于 RAG 和长时记忆。
+**v1.1 变更**: 移除 NarrativeLog (Micro)，仅保留 Macro Level（章节总结）。
+
+用于跨时间段的总结与反思，作为长期记忆的高级单元。
 
 ```sql
-CREATE TABLE narrative_logs (
+CREATE TABLE macro_narratives (
     id TEXT PRIMARY KEY,
-    turn_id TEXT NOT NULL REFERENCES turns(id) ON DELETE CASCADE,
     
-    -- 内容层级：micro (单轮总结) | macro (章节大纲)
-    level TEXT NOT NULL DEFAULT 'micro',
+    -- 时间段范围
+    period_start_turn INTEGER NOT NULL,
+    period_end_turn INTEGER NOT NULL,
     
-    content TEXT NOT NULL,
+    content TEXT NOT NULL, -- 高度概括的反思内容
     
     -- ACL 权限控制
     scope TEXT NOT NULL DEFAULT 'global' CHECK(scope IN ('global', 'shared', 'private')),
@@ -259,6 +278,9 @@ CREATE TABLE narrative_logs (
     -- 向量数据库关联 ID (如果使用外置向量库)
     vector_id TEXT
 );
+
+-- 索引：加速时间段查询
+CREATE INDEX idx_macro_period ON macro_narratives(period_start_turn, period_end_turn);
 ```
 
 ### 3.6 世界书链 (Lorebook Chain)
@@ -287,12 +309,20 @@ CREATE TABLE lorebook_entries (
 
 采用 **Shadow Table** 模式：实体表存数据，虚拟表存向量。通过应用层逻辑保持 ID 同步。
 
+**v1.1 变更**: Turn-Centric 架构下，向量表包括 Turn Summaries 和 Macro Narratives。
+
 > **注意**: `vec0` 是 `sqlite-vec` 扩展提供的虚拟表引擎。
 > 假设 embedding 维度为 1536 (OpenAI text-embedding-3-small)。
 
 ```sql
--- 叙事向量表 (关联 narrative_logs.vector_id)
-CREATE VIRTUAL TABLE vec_narratives USING vec0(
+-- Turn Summary 向量表 (关联 turns.vector_id)
+CREATE VIRTUAL TABLE vec_turn_summaries USING vec0(
+    id TEXT PRIMARY KEY,
+    embedding FLOAT[1536]
+);
+
+-- Macro Narrative 向量表 (关联 macro_narratives.vector_id)
+CREATE VIRTUAL TABLE vec_macro_narratives USING vec0(
     id TEXT PRIMARY KEY,
     embedding FLOAT[1536]
 );
@@ -367,29 +397,46 @@ WHERE path LIKE '%/inventory/%'
 
 ### 4.4 RAG 混合检索 (Hybrid Search)
 
+**v1.1 变更**: 采用 Turn-Centric RAG 策略，直接检索 Turn Summaries 和 Macro Narratives。
+
 结合向量相似度 (Semantic) 和 SQL 过滤 (Metadata/Recency)。
 
-*   **示例**: 查找最近 20 回合内，关于 "Dark Magic" 的叙事记录。
+*   **示例 1**: 查找最近 20 回合内，关于 "Dark Magic" 的 Turn Summaries。
 
 ```sql
 SELECT
-    n.content,
-    n.turn_id,
+    t.summary,
+    t.turn_index,
     vec_distance_cosine(v.embedding, ?) AS distance
-FROM vec_narratives v
-JOIN narrative_logs n ON v.id = n.vector_id  -- 通过 vector_id 关联
-JOIN turns t ON n.turn_id = t.id
+FROM vec_turn_summaries v
+JOIN turns t ON v.id = t.vector_id  -- 通过 vector_id 关联
 WHERE distance < 0.3              -- 向量相似度阈值
   AND t.turn_index > (Current_Index - 20) -- SQL 时间过滤 (Recency Bias)
 ORDER BY distance ASC
 LIMIT 5;
 ```
 
+*   **示例 2**: 查找关于 "Dragon Slayer" 的 Macro Narratives。
+
+```sql
+SELECT
+    m.content,
+    m.period_start_turn,
+    m.period_end_turn,
+    vec_distance_cosine(v.embedding, ?) AS distance
+FROM vec_macro_narratives v
+JOIN macro_narratives m ON v.id = m.vector_id
+WHERE distance < 0.3
+  AND m.scope = 'global'
+ORDER BY distance ASC
+LIMIT 3;
+```
+
 ---
 
 ## 5. 数据一致性与事务
 
-*   **原子性提交**: 每一个 Turn 的写入（Turns + Messages + Oplogs + Events）必须包裹在一个 `BEGIN TRANSACTION ... COMMIT` 块中。这保证了要么整个 Turn 写入成功，要么完全不写入，不会出现“有消息但没状态”的断裂数据。
+*   **原子性提交**: 每一个 Turn 的写入（Turns + Messages + Oplogs + Events + Summary）必须包裹在一个 `BEGIN TRANSACTION ... COMMIT` 块中。这保证了要么整个 Turn 写入成功，要么完全不写入，不会出现"有消息但没状态"的断裂数据。
 *   **外键约束**: 全面启用 `PRAGMA foreign_keys = ON;`，利用 `ON DELETE CASCADE` 自动清理关联数据（例如删除一个 Session 自动删除所有 Turns 和 Messages）。
 
 ## 6. 扩展性考量
