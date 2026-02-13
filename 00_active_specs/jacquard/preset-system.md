@@ -1,12 +1,13 @@
 # Jacquard 预设与编排系统 (Preset & Orchestration System)
 
-**版本**: 1.0.0
-**日期**: 2026-02-09
+**版本**: 2.0.0
+**日期**: 2026-02-13
 **状态**: Draft
 **关联文档**:
 - [`README.md`](README.md)
 - [`../workflows/prompt-processing.md`](../workflows/prompt-processing.md)
 - [`../protocols/filament-protocol-overview.md`](../protocols/filament-protocol-overview.md)
+- [`capability-system-spec.md`](capability-system-spec.md) - 能力系统详细规范
 
 ---
 
@@ -15,15 +16,30 @@
 在 Clotho 架构中，**预设 (Preset)** 不再仅仅是一组静态的 API 参数或 System Prompt 字符串。它是 **Jacquard 编排层的配置蓝图 (Orchestration Blueprint)**。
 
 ### 1.1 预设的定义
-预设是一个结构化的配置包，它告诉 Jacquard：
-1.  **Thinking**: 如何进行认知处理（L1 - 基础能力）。
-2.  **Mapping**: 如何理解角色和世界（L2 - 适配层）。
-3.  **Reacting**: 如何在当前会话中动态调整（L3 - 实例层）。
+预设是一个结构化的配置包，它是系统的 **能力声明 (Capability Manifest)** 与 **编排蓝图 (Orchestration Blueprint)** 的统一体：
+
+> **预设 (Preset) = 能力声明 (Capabilities) + 编排配置 (Configuration) + 内容数据 (Content)**
+
+这种设计让功能开关成为预设的内在属性，实现：
+- **自描述能力**：角色卡声明自身需要哪些功能
+- **渐进式复杂**：从极简到完整，按需启用功能
+- **依赖清晰**：能力之间的关系在 Schema 中明确定义
+
+具体来说，预设告诉 Jacquard：
+1.  **Capabilities (能力)**: 启用哪些系统功能（规划器、RAG、任务系统等）。
+2.  **Thinking**: 如何进行认知处理（L1 - 基础能力）。
+3.  **Mapping**: 如何理解角色和世界（L2 - 适配层）。
+4.  **Reacting**: 如何在当前会话中动态调整（L3 - 实例层）。
 
 ### 1.2 解决的问题
-*   **Prompt 结构僵化**: 传统方案难以根据上下文动态调整 Prompt 结构（例如在战斗时切换为短指令）。
-*   **语义缺失**: 只有简单的文本拼接，缺乏对 Block 功能（如“破甲”、“防重复”）的语义理解，导致无法进行高级调度。
-*   **配置割裂**: 模型参数、提示词模板、世界书设置分散在不同地方，难以统一管理和分享。
+| 问题 | 传统方案 | Clotho 方案 |
+|------|----------|-------------|
+| **Prompt 结构僵化** | 难以根据上下文动态调整 Prompt 结构 | 能力声明明确，按需加载功能模块 |
+| **语义缺失** | 只有简单的文本拼接，缺乏对 Block 功能的语义理解 | Block Taxonomy + 能力联动，实现智能调度 |
+| **配置割裂** | 模型参数、提示词模板、功能开关分散在不同地方 | 统一在 Preset 中管理，三层叠加 |
+| **功能冗余** | 所有功能默认开启，资源浪费 | 能力声明明确，按需加载 |
+| **角色兼容性** | 加载角色卡后手动调整功能 | 角色卡自带需求声明，自动检测 |
+| **学习曲线** | 面对数十个独立开关无所适从 | 预设套件开箱即用，渐进调整 |
 
 ---
 
@@ -45,8 +61,9 @@ graph TD
 ```
 
 ### 2.1 L1: 基础架构 (Infrastructure & Capabilities)
-**定位**: 底层的、通用的“大脑配置”。通常由系统内置或高级用户创建（如 "Novel Writer Base", "Chat Bot Base"）。
+**定位**: 底层的、通用的“大脑配置”。定义系统**能提供**哪些能力。通常由系统内置或高级用户创建（如 "chat_minimal", "standard_rp", "full_rpg"）。
 
+*   **Capabilities (能力声明)**: 定义启用哪些 Jacquard 插件和 Mnemosyne 功能模块。
 *   **API Strategy**: 模型选择、参数预设 (Temp, TopP)、重试策略。
 *   **Skein Skeleton**: 定义 Skein 的基础骨架（哪些块在前，哪些块在后）。
 *   **Weaving Rules**: 定义浮动资产（如 Lorebook, RAG）的注入策略（插入位置、深度、优先级）。
