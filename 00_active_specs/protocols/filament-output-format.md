@@ -16,20 +16,22 @@
 
 LLM 的所有输出必须包裹在特定的 Filament 标签中，确保机器可解析。v2.1 版本引入了更多语义化标签以支持复杂交互。输出端遵循 **"XML + JSON"** 格式：XML 标签定义意图，JSON 描述具体参数。
 
-## 认知与表达标签 (Cognition & Expression)
+## Core 标签（始终可用）
 
-### `<thought>` - 思维链
+Core 仅包含两个标签，**所有角色卡默认支持**，无需声明：
+
+### `<think>` - 思维链
 
 用于推理、规划与自我反思。
 
 ```xml
-<thought>
+<think>
 用户询问了关于森林的危险性。我需要：
 1. 回忆森林中的主要威胁
 2. 根据当前时间（午夜）调整危险程度
 3. 考虑用户的装备水平
 4. 提供建议而非直接命令
-</thought>
+</think>
 ```
 
 **特性**:
@@ -45,18 +47,14 @@ LLM 的所有输出必须包裹在特定的 Filament 标签中，确保机器可
 <content>
 　　「在这片黑暗森林中，你要特别小心。」
 <!-- consider: (角色对白模拟插入) -->
-<!--
-1. 「a」
-2. 「aa」
--->
 </content>
 ```
 
-**特性 (v2.1 更新)**:
+**特性**:
 - 直接展示在聊天界面
 - 支持 Markdown 格式
-- **支持 HTML 注释**: 允许嵌入 `<!-- ... -->` 格式的注释，用于内部模拟、标记或辅助逻辑，Parser 会将其路由到特定处理器（如隐藏或记录），而不直接展示给用户。
-- **支持受限的行内 HTML**: 为满足富文本表现需求（如自定义颜色、字体样式），允许使用特定的行内 HTML 标签。系统会执行严格的白名单过滤。
+- **支持 HTML 注释**: 允许嵌入 `<!-- ... -->` 格式的注释，用于内部模拟
+- **支持受限的行内 HTML**: 特定白名单标签（见下方）
 
 ### 受限 HTML 白名单 (HTML Sanitization Whitelist)
 
@@ -73,11 +71,22 @@ LLM 的所有输出必须包裹在特定的 Filament 标签中，确保机器可
 - 前端渲染器（Flutter `HtmlWidget` 或 WebView）必须集成 Sanitize 模块（如 `DOMPurify`）。
 - 任何不在白名单中的标签（如 `<script>`, `<iframe>`, `onclick`）将被剥离或转义。
 
-## 逻辑与状态标签 (Logic & State)
+## Extension 标签（需显式启用）
 
-### `<variable_update>` - 变量更新 (v2.1 推荐)
+> **重要**: 以下标签**不属于 Core**。角色卡必须在 `configuration.protocols` 中显式启用对应的 Extension，Parser 才会识别这些标签。未启用的 Extension 标签将被视为普通文本。
 
-`<variable_update>` 是 `<state_update>` 的升级版，增加了 `<analysis>` 子标签用于记录变更原因，增强了可解释性。它兼容 v2.0 的 JSON OpCode 格式，并支持 v2.4 的简化格式。
+### `<variable_update>` - 变量更新 (Extension: `variable_update`)
+
+**启用方式**:
+```yaml
+configuration:
+  protocols:
+    - variable_update
+```
+
+**描述**: 状态变更指令，支持 JSON OpCode 格式。
+
+**注意**: 如果未启用 `variable_update` Extension，LLM 输出的 `<variable_update>` 标签将被视为普通文本，**不会**触发状态更新。
 
 ```xml
 <variable_update>
@@ -155,11 +164,41 @@ LLM 的所有输出必须包裹在特定的 Filament 标签中，确保机器可
 </tool_call>
 ```
 
+### `<tool_call>` - 工具调用 (Extension: `tool_call`)
+
+**启用方式**:
+```yaml
+configuration:
+  protocols:
+    - tool_call
+```
+
+请求执行特定的工具或函数。
+
+```xml
+<tool_call name="weather_forecast">
+{
+  "location": "Ancient Ruins",
+  "days": 3,
+  "units": "celsius"
+}
+</tool_call>
+```
+
+---
+
 ## 表现与交互标签 (Presentation & Interaction)
 
-### `<status_bar>` - 自定义状态栏 (v2.1 新增)
+### `<status_bar>` - 自定义状态栏 (Extension: `status_bar`)
 
-用于显示轻量级的、非标准化的状态信息。这体现了"边缘灵活性"哲学。
+**启用方式**:
+```yaml
+configuration:
+  protocols:
+    - status_bar
+```
+
+用于显示轻量级的、非标准化的状态信息。
 
 ```xml
 <status_bar>
@@ -169,51 +208,75 @@ LLM 的所有输出必须包裹在特定的 Filament 标签中，确保机器可
 </status_bar>
 ```
 
-**特性**:
-- **自由结构**: 内部标签名不限，由 UI 层动态解析并渲染。
-- **用途**: 适用于 Character Script 自定义的显示需求，无需预先定义 Schema。
+### `<details>` - 折叠摘要 (Extension: `details`)
 
-### `<details>` - 折叠摘要 (v2.1 新增)
+**启用方式**:
+```yaml
+configuration:
+  protocols:
+    - details
+```
 
 兼容 HTML `<details>` 标签，用于输出折叠的辅助信息或摘要。
 
 ```xml
 <details>
   <summary>摘要</summary>
-  用户询问了森林的危险性，我提供了关于暗影狼群和森林精灵的信息。
+  用户询问了森林的危险性...
 </details>
 ```
 
-### `<choice>` - 选择菜单 (v2.1 新增)
+### `<choice>` - 选择菜单 (Extension: `choice`)
 
-用于向用户提供明确的行动选项，替代不规范的 `<xx>` 标签。
+**启用方式**:
+```yaml
+configuration:
+  protocols:
+    - choice  # 标准选择菜单
+    # 或
+    - options_format  # 九选项覆盖格式
+```
+
+用于向用户提供明确的行动选项。
 
 ```xml
 <choice>
-  <prompt>请选择源的下一步行动：</prompt>
+  <prompt>请选择下一步行动：</prompt>
   <options>
     <option id="investigate">调查废墟</option>
     <option id="rest">休息恢复</option>
-    <option id="leave">离开此地</option>
   </options>
 </choice>
 ```
 
-### `<ui_component>` - 嵌入式前端
+### `<ui_component>` - 嵌入式前端 (Extension: `ui_component`)
 
-允许 LLM 请求渲染复杂的、原生的嵌入式 UI 组件。
+**启用方式**:
+```yaml
+configuration:
+  protocols:
+    - ui_component
+```
+
+允许 LLM 请求渲染复杂的原生嵌入式 UI 组件。
 
 ```xml
 <ui_component view="widget.inventory_grid">
 {
   "filter": "magical_items",
-  "columns": 3,
-  "max_items": 12
+  "columns": 3
 }
 </ui_component>
 ```
 
-### `<media>` - 媒体资源
+### `<media>` - 媒体资源 (Extension: `media`)
+
+**启用方式**:
+```yaml
+configuration:
+  protocols:
+    - media
+```
 
 请求插入图片、音频、视频等媒体资源。
 

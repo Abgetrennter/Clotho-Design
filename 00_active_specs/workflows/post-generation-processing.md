@@ -7,6 +7,7 @@
 
 - 提示词处理工作流 [`prompt-processing.md`](prompt-processing.md)
 - Filament 解析流程 [`../protocols/filament-parsing-workflow.md`](../protocols/filament-parsing-workflow.md)
+- Schema 注入器 [`../jacquard/schema-injector.md`](../jacquard/schema-injector.md)
 - Jacquard 编排层 [`../jacquard/README.md`](../jacquard/README.md)
 - Mnemosyne 存储架构 [`../mnemosyne/sqlite-architecture.md`](../mnemosyne/sqlite-architecture.md)
 
@@ -76,17 +77,22 @@ graph TD
 解析器是一个**容错状态机 (Fault-Tolerant State Machine)**，它实时扫描流中的 `<` 符号。
 - **模糊修正**: 自动补全缺失的标签头，推断未闭合的标签。
 - **流式分发**: 一旦识别出标签类型，立即将内容流导向对应的 Handler，而不需要等待标签闭合。
+- **动态标签注册**: 从 `JacquardContext.blackboard['parser_hints']` 读取 Schema Injector 注册的动态标签定义（如 `<live>`, `<variable_update>`）。
 
 ### 2.2 处理与渲染
 
-| 标签类型 | Handler | 行为 | UI 表现 |
-| :--- | :--- | :--- | :--- |
-| `<content>` | ContentHandler | 接收正文文本，执行 Markdown 渲染和 HTML 白名单过滤。 | **实时打字机效果** |
-| `<thought>` | ThoughtHandler | 接收思维链文本。 | **默认折叠/隐藏** |
-| `<variable_update>` | VariableParser | 累积 JSON 字符串，尝试增量解析。 | **不显示** (后台处理) |
-| `<status_bar>` | StatusBarRenderer | 解析动态标签。 | **刷新状态栏** |
-| `<choice>` | ChoiceRenderer | 解析选项结构。 | **显示交互按钮** |
-| `<ui_component>` | UIJSONParser | 解析组件参数。 | **渲染原生组件** |
+| 标签类型 | Handler | 行为 | UI 表现 | 来源 |
+| :--- | :--- | :--- | :--- | :--- |
+| `<content>` | ContentHandler | 接收正文文本，执行 Markdown 渲染和 HTML 白名单过滤。 | **实时打字机效果** | Core Schema |
+| `<thought>` | ThoughtHandler | 接收思维链文本。 | **默认折叠/隐藏** | Core Schema |
+| `<variable_update>` | VariableParser | 累积 JSON 字符串，尝试增量解析。 | **不显示** (后台处理) | Extension Schema |
+| `<status_bar>` | StatusBarRenderer | 解析动态标签。 | **刷新状态栏** | Extension Schema |
+| `<choice>` | ChoiceRenderer | 解析选项结构。 | **显示交互按钮** | Extension Schema |
+| `<ui_component>` | UIJSONParser | 解析组件参数。 | **渲染原生组件** | Extension Schema |
+| `<live>` / 自定义 | DynamicHandler | 根据 `parser_hints` 动态路由 | 按 Schema 定义 | Mode/Custom Schema |
+
+**动态标签处理**:
+Schema Injector 在生成阶段前向 `blackboard['parser_hints']` 注册动态标签（如直播模式的 `<live>`）。Filament Parser 在初始化时读取这些 hints，动态扩展标签路由表。
 
 ---
 

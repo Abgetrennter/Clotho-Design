@@ -276,12 +276,14 @@ dependencies:
     requires:
       - capability: "mnemosyne.retrieval.vector_storage"
         severity: "error"              # error | warning
+        auto_fix: true                 # 自动启用依赖
         message: "语义搜索需要启用向量存储"
   
   mnemosyne.memory.macro_narrative:
     requires:
       - capability: "mnemosyne.memory.turn_summary.enabled"
         severity: "warning"
+        auto_fix: true
         message: "宏观叙事建议配合回合摘要使用"
   
   # ─────────────────────────────────────────────────────────────────
@@ -292,6 +294,7 @@ dependencies:
       - capability: "mnemosyne.state_management.mode"
         one_of: ["standard", "full"]
         severity: "error"
+        auto_fix: false                # 无法自动修复，需用户决策
         message: "VWD描述需要标准或完整状态管理模式"
   
   mnemosyne.state_management.acl_scopes:
@@ -299,6 +302,7 @@ dependencies:
       - capability: "mnemosyne.state_management.mode"
         equals: "full"
         severity: "error"
+        auto_fix: false
         message: "ACL作用域需要完整状态管理模式"
   
   # ─────────────────────────────────────────────────────────────────
@@ -307,9 +311,12 @@ dependencies:
   mnemosyne.state_management.mode:
     conflicts:
       - condition: "value == 'simple'"
-        with_capability: "mnemosyne.state_management.vwd_descriptions"
-        when_enabled: true
-        message: "简单模式不支持VWD描述"
+        with_capabilities: 
+          - "mnemosyne.state_management.vwd_descriptions"
+          - "jacquard.pipeline.planner"
+          - "jacquard.pipeline.scheduler"
+        severity: "error"
+        message: "简单模式不支持VWD描述、规划器和调度器"
   
   # ─────────────────────────────────────────────────────────────────
   # Quest System Dependencies
@@ -318,43 +325,178 @@ dependencies:
     requires:
       - capability: "jacquard.pipeline.planner.enabled"
         severity: "error"
+        auto_fix: true
         message: "聚光灯聚焦需要启用规划器"
 ```
 
-### 4.3 依赖验证器
+### 4.3 关键能力依赖表
+
+| 能力路径 | 依赖 | 互斥 | 自动修复 | 验证失败后果 |
+|----------|------|------|----------|--------------|
+| `mnemosyne.retrieval.semantic_search` | `vector_storage` | - | 是 | 禁用语义搜索 |
+| `mnemosyne.memory.macro_narrative` | `turn_summary` | - | 是 | 降级为普通摘要 |
+| `mnemosyne.quest_system.spotlight_focus` | `planner` | - | 是 | 禁用聚焦功能 |
+| `mnemosyne.state_management.vwd_descriptions` | `mode: standard/full` | `mode: simple` | 否 | 配置错误 |
+| `jacquard.pipeline.planner` | `mode: standard/full` | `mode: simple` | 否 | 配置错误 |
+| `jacquard.pipeline.scheduler` | `mode: standard/full` | `mode: simple` | 否 | 配置错误 |
+| `mnemosyne.state_management.acl_scopes` | `mode: full` | `mode: simple/standard` | 否 | 配置错误 |
+
+**注**: `auto_fix: false` 的依赖表示需要用户手动解决，系统抛出 `CapabilityConfigurationException`。
+
+### 4.4 依赖验证器
 
 ```dart
 class CapabilityValidator {
+  /// 验证能力配置
+  /// 
+  /// 返回 ValidationResult，包含错误、警告和自动修复建议
   static ValidationResult validate(EffectiveCapabilities caps) {
     final errors = <ValidationError>[];
     final warnings = <ValidationWarning>[];
+    final autoFixes = <String, dynamic>{};
     
-    // 检查所有依赖规则
-    for (final rule in DependencyRegistry.rules) {
-      final result = rule.check(caps);
-      if (result.isError) {
-        errors.add(result.asError);
-      } else if (result.isWarning) {
-        warnings.add(result.asWarning);
+    // ─────────────────────────────────────────────────────────────────
+    // 1. 检查 Requires 依赖
+    // ─────────────────────────────────────────────────────────────────
+    for (final rule in DependencyRegistry.requiredRules) {
+      if (!rule.isSatisfied(caps)) {
+        final message = "'${rule.capability}' requires '${rule.dependsOn}'";
+        
+        if (rule.autoFix) {
+          // 可自动修复：记录修复建议
+          autoFixes[rule.dependsOn] = rule.fixValue ?? true;
+          warnings.add(ValidationWarning(
+            type: WarningType.autoFixableDependency,
+            capability: rule.capability,
+            message: "$message (will be auto-enabled)",
+          ));
+        } else {
+          // 不可自动修复：记录错误
+          errors.add(ValidationError(
+            type: ErrorType.missingDependency,
+            capability: rule.capability,
+            dependsOn: rule.dependsOn,
+            message: rule.message ?? message,
+          ));
+        }
       }
     }
     
-    return ValidationResult(errors, warnings);
+    // ─────────────────────────────────────────────────────────────────
+    // 2. 检查模式约束 (one_of, equals)
+    // ─────────────────────────────────────────────────────────────────
+    for (final rule in DependencyRegistry.modeConstraints) {
+      final actualValue = caps.getValue(rule.capabilityPath);
+      
+      if (rule.oneOf != null && !rule.oneOf.contains(actualValue)) {
+        errors.add(ValidationError(
+          type: ErrorType.invalidMode,
+          capability: rule.targetCapability,
+          constraint: "${rule.capabilityPath} must be one of ${rule.oneOf}",
+          actualValue: actualValue,
+          message: rule.message,
+        ));
+      }
+      
+      if (rule.equals != null && actualValue != rule.equals) {
+        errors.add(ValidationError(
+          type: ErrorType.invalidMode,
+          capability: rule.targetCapability,
+          constraint: "${rule.capabilityPath} must be '${rule.equals}'",
+          actualValue: actualValue,
+          message: rule.message,
+        ));
+      }
+    }
+    
+    // ─────────────────────────────────────────────────────────────────
+    // 3. 检查互斥关系
+    // ─────────────────────────────────────────────────────────────────
+    for (final conflict in DependencyRegistry.conflicts) {
+      if (conflict.isTriggered(caps)) {
+        final enabledCapabilities = conflict.getEnabledConflicts(caps);
+        errors.add(ValidationError(
+          type: ErrorType.capabilityConflict,
+          capabilities: enabledCapabilities,
+          message: conflict.message ?? 
+            "Mutually exclusive capabilities: ${enabledCapabilities.join(', ')}",
+        ));
+      }
+    }
+    
+    // ─────────────────────────────────────────────────────────────────
+    // 4. 检查循环依赖
+    // ─────────────────────────────────────────────────────────────────
+    final cycle = DependencyGraph.detectCycle(caps);
+    if (cycle != null) {
+      errors.add(ValidationError(
+        type: ErrorType.circularDependency,
+        cycle: cycle,
+        message: "Circular dependency detected: ${cycle.join(' -> ')}",
+      ));
+    }
+    
+    return ValidationResult(
+      errors: errors,
+      warnings: warnings,
+      autoFixes: autoFixes,
+      isValid: errors.isEmpty,
+    );
   }
   
-  /// 自动修复依赖
-  static EffectiveCapabilities autoFix(EffectiveCapabilities caps) {
-    var fixed = caps;
+  /// 应用自动修复
+  /// 
+  /// 仅修复 auto_fix: true 的依赖问题
+  static EffectiveCapabilities applyAutoFixes(
+    EffectiveCapabilities caps,
+    ValidationResult validation,
+  ) {
+    if (validation.autoFixes.isEmpty) {
+      return caps;
+    }
     
-    // 自动启用必需的依赖
-    for (final rule in DependencyRegistry.requiredRules) {
-      if (!rule.isSatisfied(fixed)) {
-        fixed = fixed.withCapabilityEnabled(rule.requiredCapability);
-      }
+    var fixed = caps;
+    for (final entry in validation.autoFixes.entries) {
+      final path = entry.key;
+      final value = entry.value;
+      
+      fixed = fixed.setValue(path, value);
+      log.info("Auto-fixed: enabled '$path' = $value");
+    }
+    
+    // 递归验证，确保修复没有引入新问题
+    final revalidation = validate(fixed);
+    if (!revalidation.isValid) {
+      log.warning("Auto-fix introduced new issues: ${revalidation.errors}");
     }
     
     return fixed;
   }
+}
+
+/// 验证结果
+class ValidationResult {
+  final List<ValidationError> errors;
+  final List<ValidationWarning> warnings;
+  final Map<String, dynamic> autoFixes;
+  final bool isValid;
+  
+  ValidationResult({
+    required this.errors,
+    required this.warnings,
+    this.autoFixes = const {},
+    required this.isValid,
+  });
+  
+  /// 序列化为 JSON (用于调试和 UI 展示)
+  Map<String, dynamic> toJson() => {
+    'valid': isValid,
+    'error_count': errors.length,
+    'warning_count': warnings.length,
+    'errors': errors.map((e) => e.toJson()).toList(),
+    'warnings': warnings.map((w) => w.toJson()).toList(),
+    'auto_fixes': autoFixes,
+  };
 }
 ```
 

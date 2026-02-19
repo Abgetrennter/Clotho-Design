@@ -353,51 +353,43 @@ mnemosyne.retrieval.vector_storage     # Mnemosyne - 检索 - 向量存储
 mnemosyne.quest_system.enabled         # Mnemosyne - 任务系统 - 总开关
 ```
 
-### 5.2 能力配置合并算法
+### 5.2 能力配置合并与验证
 
-运行时有效配置通过三层合并生成：
+运行时有效配置通过 **L1 → L2 → L3 三层合并** 生成。详见 [`capability-system-spec.md` 第5节](capability-system-spec.md#5-三层合并机制)。
 
 ```dart
-class CapabilityMerger {
-  EffectiveCapabilities merge(PresetLayerContext context) {
-    // 1. 从 L1 Infrastructure 获取基础能力
-    final base = context.l1Infrastructure.capabilities;
-    
-    // 2. 检查 L2 Pattern 的必需能力
-    for (final required in context.l2Pattern.required_capabilities) {
-      if (!base.hasCapability(required)) {
-        log.warning("Pattern requires '$required' but base preset disabled it");
-        base.enable(required);  // 自动启用必需能力
-      }
-    }
-    
-    // 3. 应用 L2 的能力覆盖
-    base.applyOverrides(context.l2Pattern.capability_overrides);
-    
-    // 4. 应用 L3 Session 的实时补丁
-    base.applyPatches(context.l3Session.capability_patches);
-    
-    // 5. 验证依赖关系和互斥条件
-    return base.validate();
-  }
-}
+// 高层概览
+final effective = CapabilityMerger.merge(
+  l1: infrastructurePreset.capabilities,
+  l2: patternPreset.requiredCapabilities,
+  l3: sessionPreset.capabilityPatches,
+);
 ```
+
+**合并优先级** (后者覆盖前者):
+1. L1 Infrastructure - 基础默认值
+2. L2 Pattern - 角色卡必需能力 + 覆盖配置
+3. L3 Session - 用户实时补丁
+4. Validation - 依赖验证与自动修复
 
 ### 5.3 依赖关系与验证
 
-能力之间存在依赖关系，系统自动验证：
+详见 [`capability-system-spec.md` 第4节](capability-system-spec.md#4-依赖关系系统)。
 
-| 能力 | 依赖 | 说明 |
-|------|------|------|
-| `semantic_search` | `vector_storage` | 语义搜索需要向量存储 |
-| `macro_narrative` | `turn_summary` | 宏观叙事依赖回合摘要 |
-| `spotlight_focus` | `planner` | 聚光灯聚焦需要规划器 |
-| `vwd_descriptions` | `mode != simple` | VWD模式需要标准或完整状态管理 |
+| 能力 | 依赖 | 互斥 | 自动修复 | 说明 |
+|------|------|------|----------|------|
+| `semantic_search` | `vector_storage` | - | 是 | 语义搜索需要向量存储 |
+| `macro_narrative` | `turn_summary` | - | 是 | 宏观叙事依赖回合摘要 |
+| `spotlight_focus` | `planner` | - | 是 | 聚光灯聚焦需要规划器 |
+| `vwd_descriptions` | - | `mode: simple` | 否 | VWD需要标准或完整模式 |
+| `planner` | - | `mode: simple` | 否 | 规划器需要标准或完整模式 |
+| `scheduler` | - | `mode: simple` | 否 | 调度器需要标准或完整模式 |
 
 **依赖处理策略**：
-1. **自动启用依赖**：用户开启A时，自动开启A依赖的B
+1. **自动启用依赖** (`autoFix: true`)：用户开启A时，自动开启A依赖的B
 2. **禁用保护**：用户尝试禁用B时，警告有A依赖它
-3. **强制覆盖**：L2角色卡可以强制启用某些能力以满足需求
+3. **强制覆盖**：L2角色卡通过 `requiredCapabilities` 强制启用必需能力
+4. **互斥检测**：`simple` 模式与 `planner`, `scheduler` 等能力互斥
 
 ## 6. 运行时动态调整
 

@@ -141,7 +141,34 @@ Scheduler 维护以下核心计数器，存储于 Mnemosyne 的 `scheduler_conte
 
 ---
 
-## 6. 安全与限制 (Safety & Limits)
+## 6. 与 Skein Builder 的集成
+
+Scheduler 通过 **Blackboard 模式** 向 Skein Builder 传递注入内容。
+
+### 6.1 数据流接口
+
+```typescript
+// Scheduler 执行后写入 blackboard
+interface SchedulerOutput {
+  // 定时任务注入的 PromptBlock 列表
+  scheduler_injects: PromptBlock[];
+}
+
+// Skein Builder 消费阶段读取
+const injects = context.blackboard['scheduler_injects'] || [];
+```
+
+### 6.2 注入规则
+
+| 动作类型 | Blackboard Key | 处理方式 | 优先级 |
+|----------|----------------|----------|--------|
+| `inject_system` | `scheduler_injects` | 合并入 System Chain 末尾 | 150 |
+| `inject_user` | `scheduler_injects` | 作为 User PromptBlock 插入 History Chain 末尾 | 动态 |
+| `force_thought` | `scheduler_injects` | 标记为 `type: 'thought'` 的 PromptBlock | 120 |
+
+> **注意**: Scheduler 不直接修改 Skein，仅在 blackboard 中写入注入请求。Skein Builder 在构建阶段统一读取并合并。
+
+## 7. 安全与限制 (Safety & Limits)
 
 为了防止死循环和资源滥用，Scheduler 实施以下限制：
 

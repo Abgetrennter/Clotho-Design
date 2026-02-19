@@ -146,7 +146,7 @@ class _StateTreeViewerState extends State<StateTreeViewer> {
     final theme = Theme.of(context);
 
     if (!node.hasChildren) {
-      return SizedBox(
+      return const SizedBox(
         width: SizeTokens.iconSmall,
         height: SizeTokens.iconSmall,
       );

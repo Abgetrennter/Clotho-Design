@@ -90,6 +90,19 @@ class JacquardContext {
   /// 用于存储跨插件的非持久化中间产物（如 RAG 搜索结果、临时标记）。
   final Map<String, dynamic> blackboard = {};
 
+  /// 标准 Blackboard Key 规范 (按组件分类)
+  /// 
+  /// ### Scheduler 产出
+  /// - `scheduler_injects`: List&lt;PromptBlock&gt; - 调度器注入的 Prompt 块
+  /// 
+  /// ### RAG Retriever 产出
+  /// - `rag_assets`: List&lt;FloatingAsset&gt; - RAG 检索到的浮动资产
+  /// 
+  /// ### 其他标准 Key
+  /// - `user_intent`: Map - 解析后的用户意图
+  /// - `extracted_entities`: List&lt;String&gt; - 实体提取结果
+  /// - `debug_markers`: Map - 调试标记（非生产环境）
+
   /// 流水线控制标志
   bool _abortRequested = false;
 

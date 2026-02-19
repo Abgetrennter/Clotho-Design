@@ -46,31 +46,110 @@ graph TD
     Router -- media --> MediaLoader[媒体加载器]
 ```
 
-## 路由分发表 (Routing Table) - v2.1
+## 路由分发表 (Routing Table) - v2.5
 
-| 标签类型 | 目标处理器 | 处理动作 | 备注 |
-|----------|------------|----------|------|
-| `<thought>` | ThoughtHandler | 存储思维日志 | 默认折叠 |
+### Core 标签（始终注册）
+
+| 标签 | 目标处理器 | 处理动作 | 备注 |
+|------|------------|----------|------|
+| `<think>` | ThoughtHandler | 存储思维日志 | 默认折叠 |
 | `<content>` | ContentHandler | 推送正文 | 支持 HTML 注释过滤 |
-| `<variable_update>` | VariableParser | 记录分析 + 更新状态 | 替代 `<state_update>` |
-| `<status_bar>` | StatusBarRenderer | 动态渲染状态标签 | 灵活结构 |
-| `<details>` | DetailsRenderer | 渲染折叠块 | 标准 HTML 行为 |
-| `<choice>` | ChoiceRenderer | 渲染交互按钮 | 替代 `<xx>` |
-| `<ui_component>` | UIJSONParser | 渲染复杂原生组件 | |
-| `<tool_call>` | ToolExecutor | 执行外部工具 | |
 
-## 期望结构注册表 (Expected Structure Registry, ESR) v2.0
+### Extension 标签（动态注册）
 
-ESR 是一个定义当前交互轮次中**合法**且**推荐**的 Filament 协议结构的元数据对象。它由 Jacquard 编排层在生成 Prompt 时动态构建，并作为解析器的核心指导引擎。
+| 标签 | 所属 Extension | 目标处理器 | 处理动作 |
+|------|---------------|------------|----------|
+| `<variable_update>` | `variable_update` | VariableParser | 记录分析 + 更新状态 |
+| `<status_bar>` | `status_bar` | StatusBarRenderer | 动态渲染状态标签 |
+| `<details>` | `details` | DetailsRenderer | 渲染折叠块 |
+| `<choice>` | `choice` | ChoiceRenderer | 渲染交互按钮 |
+| `<ui_component>` | `ui_component` | UIJSONParser | 渲染复杂原生组件 |
+| `<tool_call>` | `tool_call` | ToolExecutor | 执行外部工具 |
+
+> **重要**: Parser **只识别 ESR 注册表内的标签**。未注册的标签被视为普通文本，原样显示给用户。
+
+## 期望结构注册表 (Expected Structure Registry, ESR) v2.5
+
+ESR 是一个定义当前交互轮次中**合法**的 Filament 协议结构的元数据对象。它由 **Schema Injector** 根据角色卡配置动态构建，作为解析器的核心指导引擎。
+
+### 动态注册机制
+
+```dart
+// Parser 初始化流程
+void initialize(JacquardContext context) {
+  // 1. 从 blackboard 读取 Schema Injector 构建的 ESR
+  final esr = context.blackboard['expected_structure_registry'];
+  
+  // 2. 注册 Core 标签（始终存在）
+  _registerCoreTags();
+  
+  // 3. 注册 Extension 标签（仅 ESR 中声明的）
+  for (final tag in esr['expected_tags']) {
+    if (!_isCoreTag(tag)) {
+      _registerExtensionTag(tag);
+    }
+  }
+}
+```
+
+### ESR 构建（Schema Injector）
+
+```dart
+ESR buildESR(List<SchemaDefinition> schemas) {
+  final tags = <String>['think', 'content']; // Core 标签
+  
+  for (final schema in schemas) {
+    // 注册 schema 定义的 root_tag
+    if (schema.parserHints?.rootTag != null) {
+      tags.add(schema.parserHints.rootTag);
+    }
+  }
+  
+  return {
+    'version': '2.5',
+    'expected_tags': tags,
+    'topology': _buildTopology(schemas),
+    'cardinality': _buildCardinality(schemas),
+  };
+}
+```
 
 ### 组件构成
 
-一个完整的 ESR 包含以下四个子模块：
+一个完整的 ESR 包含以下子模块：
 
-1.  **拓扑约束 (Topology Constraints)**: 定义标签的出现顺序和嵌套关系。
-2.  **必须性约束 (Cardinality Constraints)**: 定义哪些标签是必须的，哪些是可选的。
-3.  **别名映射 (Alias Mapping)**: 定义标签的同义词和模糊匹配规则。
-4.  **自动修正策略 (Auto-Correction Policies)**: 定义当违反上述约束时，解析器应采取的行动。
+1.  **期望标签列表 (Expected Tags)**: 当前轮次中合法的标签集合。Parser **只识别此列表内的标签**。
+2.  **拓扑约束 (Topology Constraints)**: 定义标签的出现顺序和嵌套关系。
+3.  **必须性约束 (Cardinality Constraints)**: 定义哪些标签是必须的，哪些是可选的。
+4.  **别名映射 (Alias Mapping)**: 定义标签的同义词和模糊匹配规则。
+5.  **未注册标签策略 (Unregistered Tag Policy)**: 定义遇到未注册标签时的处理方式。
+
+### 未注册标签处理策略
+
+当 Parser 遇到不在 ESR `expected_tags` 列表中的标签时：
+
+| 策略 | 行为 | 适用场景 |
+|------|------|----------|
+| `treat_as_text` (默认) | 将标签视为普通文本，原样显示 | 生产环境 |
+| `fuzzy_match` | 尝试模糊匹配已注册标签 | 容错模式 |
+| `log_warning` | 记录警告日志，但仍视为文本 | 调试模式 |
+
+```dart
+TagType classify(String tag, ESR esr) {
+  // 1. 检查是否注册
+  if (esr.expectedTags.contains(tag)) {
+    return _isCoreTag(tag) ? TagType.core : TagType.extension;
+  }
+  
+  // 2. 未注册标签 = 普通文本
+  if (esr.policy.unregisteredTag == 'treat_as_text') {
+    return TagType.unknown; // 原样显示
+  }
+  
+  // 3. 容错：尝试模糊匹配
+  return _attemptFuzzyMatch(tag, esr);
+}
+```
 
 ### JSON Schema 示例
 

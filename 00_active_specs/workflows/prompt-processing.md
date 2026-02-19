@@ -9,6 +9,7 @@
 - Mnemosyne 数据引擎 [`../mnemosyne/README.md`](../mnemosyne/README.md)
 - 协议目录 [`../protocols/jinja2-macro-system.md`](../protocols/jinja2-macro-system.md)
 - Skein 编织系统 [`../jacquard/skein-and-weaving.md`](../jacquard/skein-and-weaving.md)
+- Schema 注入器 [`../jacquard/schema-injector.md`](../jacquard/schema-injector.md)
 - 规划器组件 [`../jacquard/planner-component.md`](../jacquard/planner-component.md)
 - 分层运行时架构 [`../runtime/layered-runtime-architecture.md`](../runtime/layered-runtime-architecture.md)
 
@@ -104,11 +105,18 @@ graph LR
 
 **产出**: `PlanContext` (包含模板 ID、初始指令、更新后的 `planner_context`)。
 
-### 2.2 第二阶段：Skein 构建 (Skein Builder)
+### 2.2 第二阶段：Skein 构建 (Skein Builder + Schema Injector)
 
 **输入**: `PlanContext`
 
-**职责**: 初始化 `Skein` 容器，并填充**原始数据**。
+**职责**: 初始化 `Skein` 容器，填充**原始数据**，并注入**协议 Schema**。
+
+本阶段由两个插件协作完成：
+
+| 插件 | 优先级 | 职责 |
+|------|--------|------|
+| **Skein Builder** | 300 | 构建基础 Skein，装填 System/History/Floating Chain |
+| **Schema Injector** | 350 | 扫描并加载协议 Schema，转换为 Block 注入 Skein |
 
 **Skein 结构**:
 
@@ -156,13 +164,15 @@ sequenceDiagram
 
 **装填操作**:
 
-| 操作 | 描述 |
-|------|------|
-| **快照获取** | 向 `Mnemosyne` 请求当前时间点 (`TimePointer`) 的状态快照 (`Punchcards`)，这是一个**只读的深拷贝** |
-| **上下文检索** | 根据语义检索相关的 Lorebook 条目 |
-| **System Chain** | 将 System Template 填入 `System Chain` |
-| **History Chain** | 将历史对话填入 `History Chain` |
-| **Floating Chain** | 将检索到的 World Info 和 Author's Note 封装为带 `InjectionConfig` 的 PromptBlock |
+| 操作 | 执行者 | 描述 |
+|------|--------|------|
+| **快照获取** | Skein Builder | 向 `Mnemosyne` 请求当前时间点 (`TimePointer`) 的状态快照 (`Punchcards`)，这是一个**只读的深拷贝** |
+| **上下文检索** | Skein Builder | 根据语义检索相关的 Lorebook 条目 |
+| **System Chain** | Skein Builder | 将 System Template 填入 `System Chain` |
+| **History Chain** | Skein Builder | 将历史对话填入 `History Chain` |
+| **Floating Chain** | Skein Builder | 将检索到的 World Info 和 Author's Note 封装为带 `InjectionConfig` 的 PromptBlock |
+| **Schema 注入** | Schema Injector | 扫描 `<use_protocol>` 和配置，加载 Schema 并注入为 Block |
+| **Parser Hints** | Schema Injector | 向 `blackboard['parser_hints']` 写入标签解析提示 |
 
 **装填策略（基于 Mnemosyne 四象限分类）**:
 
