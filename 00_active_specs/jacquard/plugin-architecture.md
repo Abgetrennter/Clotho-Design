@@ -127,7 +127,18 @@ class JacquardContext {
 
 ## 4. 优先级系统 (Priority System)
 
-为了规范原生插件的执行顺序，并为第三方插件预留插槽，我们定义了以下标准优先级锚点。
+### 4.1 设计演进：从硬编码到动态编排
+
+优先级系统经历了两个阶段的演进：
+
+| 阶段 | 模式 | 特点 | 适用场景 |
+|------|------|------|----------|
+| **静态锚点** | 硬编码常量 | 简单、可预测 | 系统默认行为 |
+| **动态编排** | 声明式配置 | 灵活、可重编程 | 角色卡定制、运行时调整 |
+
+### 4.2 静态优先级锚点 (Static Anchors)
+
+为了规范原生插件的执行顺序，并为第三方插件预留插槽，我们定义以下标准优先级锚点：
 
 ```dart
 class PluginPriority {
@@ -138,13 +149,17 @@ class PluginPriority {
   
   /// 调度层: 触发定时任务和脚本
   static const int scheduler = 200;
+  
+  /// RAG 检索层: 长期记忆检索
+  static const int ragRetriever = 250;
 
   // --- Phase 2: Construction ---
 
   /// 构建层: 从数据库提取数据，组装 Skein
   static const int builder = 300;
   
-  // (预留插槽: 350 - 例如在这里插入一个 "敏感词过滤" 或 "Prompt 优化" 插件)
+  /// Schema 注入层: 动态协议 Schema 注入
+  static const int schemaInjector = 350;
 
   /// 渲染层: 将 Skein 渲染为最终 Prompt 字符串 (Jinja2)
   static const int renderer = 400;
@@ -168,6 +183,201 @@ class PluginPriority {
   static const int cleanup = 900;
 }
 ```
+
+### 4.3 动态优先级编排 (Dynamic Priority Orchestration)
+
+**核心原则**: 从"硬编码锚点"演进为"声明式、可重编程的编排配置"。
+
+#### 4.3.1 配置 Schema
+
+```yaml
+# L1 Infrastructure: 流水线编排配置
+jacquard:
+  orchestration:
+    # 阶段定义
+    phases:
+      - id: "decision"
+        description: "决策与规划阶段"
+        default_slot_range: [100, 199]
+        
+      - id: "preparation"
+        description: "数据准备阶段"
+        default_slot_range: [200, 299]
+        
+      - id: "construction"
+        description: "Skein 构建阶段"
+        default_slot_range: [300, 399]
+        
+      - id: "execution"
+        description: "执行阶段"
+        default_slot_range: [400, 499]
+        
+      - id: "processing"
+        description: "后处理阶段"
+        default_slot_range: [500, 599]
+
+    # 插件编排定义
+    plugins:
+      planner:
+        phase: "decision"
+        ordering:
+          after: []
+          before: ["scheduler", "rag_retriever"]
+        priority:
+          base: 100
+          modifiers:
+            - condition: "capabilities.jacquard.pipeline.planner.goal_planning == true"
+              delta: -10
+              reason: "Complex planning needs more preparation time"
+            - condition: "context.estimated_tokens > 0.8 * context.token_limit"
+              delta: +20
+              reason: "Token pressure: prioritize early pruning"
+
+      scheduler:
+        phase: "preparation"
+        ordering:
+          after: ["planner"]
+          before: ["rag_retriever"]
+        priority:
+          base: 200
+          modifiers:
+            - condition: "context.scheduler.has_urgent_tasks == true"
+              set_absolute: 250
+              reason: "Urgent scheduler tasks detected"
+
+      rag_retriever:
+        phase: "preparation"
+        ordering:
+          after: ["scheduler"]
+          before: ["builder"]
+        priority:
+          base: 250
+          modifiers:
+            - condition: "context.planner.weaving_guide.retrieval_hints != null"
+              delta: +30
+              reason: "Planner requested specific retrieval"
+            - condition: "context.lorebook.entry_count > 1000"
+              delta: -20
+              reason: "Large knowledge base: defer retrieval"
+
+      builder:
+        phase: "construction"
+        ordering:
+          after: ["rag_retriever", "scheduler", "planner"]
+          before: ["renderer"]
+        priority:
+          base: 300
+```
+
+#### 4.3.2 优先级计算引擎
+
+```dart
+class DynamicOrchestrator {
+  /// 解析最终执行顺序
+  List<PluginExecutionOrder> resolveExecutionOrder(
+    OrchestrationConfig config,
+    JacquardContext context,
+  ) {
+    // 1. 收集启用的插件
+    final plugins = _collectEnabledPlugins(config);
+    
+    // 2. 计算动态优先级
+    final computedPriorities = <String, int>{};
+    for (final plugin in plugins) {
+      computedPriorities[plugin.id] = _computePriority(
+        plugin.priority,
+        context,
+      );
+    }
+    
+    // 3. 构建依赖图（相对顺序约束）
+    final graph = _buildDependencyGraph(plugins, computedPriorities);
+    
+    // 4. 检测循环依赖
+    if (final cycle = _detectCycle(graph)) {
+      throw CircularDependencyException(cycle);
+    }
+    
+    // 5. 拓扑排序
+    return _topologicalSort(graph);
+  }
+  
+  /// 计算动态优先级
+  int _computePriority(PriorityConfig config, JacquardContext context) {
+    var priority = config.base;
+    
+    for (final modifier in config.modifiers) {
+      if (_evaluateCondition(modifier.condition, context)) {
+        if (modifier.setAbsolute != null) {
+          priority = modifier.setAbsolute!;
+        } else if (modifier.delta != null) {
+          priority += modifier.delta!;
+        }
+      }
+    }
+    
+    return priority.clamp(0, 999);
+  }
+}
+```
+
+#### 4.3.3 冲突解决策略
+
+| 冲突类型 | 检测方法 | 解决策略 |
+|----------|----------|----------|
+| **循环依赖** | 拓扑排序前检测 | 抛出异常，拒绝执行 |
+| **优先级矛盾** | A.after=B 但 priority(A) > priority(B) | 相对顺序优先，记录警告 |
+| **阶段越界** | 计算后优先级超出阶段范围 | 调整或警告（可配置） |
+| **运行时动态冲突** | 条件同时满足多个 modifier | 按声明顺序应用 |
+
+#### 4.3.4 与 Preset 三层模型的集成
+
+```yaml
+# L2 Pattern: "Deep Research" 角色卡
+# 覆盖默认执行顺序：RAG 先于 Scheduler
+jacquard:
+  orchestration:
+    overrides:
+      plugins:
+        rag_retriever:
+          ordering:
+            after: ["planner"]
+            before: ["scheduler"]
+          priority:
+            base: 190
+            
+        scheduler:
+          ordering:
+            after: ["rag_retriever"]
+            before: ["builder"]
+          priority:
+            base: 210
+```
+
+```yaml
+# L3 Session: 用户实时调整
+capability_patches:
+  jacquard:
+    orchestration:
+      runtime_override:
+        plugin: "scheduler"
+        priority_delta: -50
+        effective_for: 1
+        reason: "User command: prioritize immediate response"
+```
+
+### 4.4 Blackboard 协作契约
+
+所有注入型组件统一通过 `JacquardContext.blackboard` 传递产物：
+
+| Blackboard Key | 写入者 | 读取者 | 产物类型 | 说明 |
+|----------------|--------|--------|----------|------|
+| `scheduler_injects` | Scheduler | Builder | `List<PromptBlock>` | 定时任务注入 |
+| `rag_assets` | RAG Retriever | Builder | `List<FloatingAsset>` | 检索到的记忆 |
+| `weaving_guide` | Planner | Builder | `WeavingGuide` | 编织指导 |
+| `parser_hints` | Schema Injector | Filament Parser | `Map<String, SchemaHint>` | 解析提示 |
+
+> **原则**: 注入型组件 **绝不直接修改 Skein**，仅写入 blackboard。Builder 在构建阶段统一读取并合并。
 
 ## 5. 插件与能力系统集成 (Capability Integration)
 

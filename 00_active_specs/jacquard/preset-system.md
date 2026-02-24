@@ -237,12 +237,79 @@ capabilities:
       event_triggers: false
 
 # ═══════════════════════════════════════════════════════════════════════
-# 2. 编排配置 (Configuration) - 各能力的详细参数
+# 2. 流水线编排配置 (Orchestration) - 插件执行顺序与优先级
+# ═══════════════════════════════════════════════════════════════════════
+orchestration:
+  phases:
+    - id: "decision"
+      description: "决策与规划阶段"
+      default_slot_range: [100, 199]
+    - id: "preparation"
+      description: "数据准备阶段"
+      default_slot_range: [200, 299]
+    - id: "construction"
+      description: "Skein 构建阶段"
+      default_slot_range: [300, 399]
+    - id: "execution"
+      description: "执行阶段"
+      default_slot_range: [400, 499]
+    - id: "processing"
+      description: "后处理阶段"
+      default_slot_range: [500, 599]
+
+  plugins:
+    planner:
+      phase: "decision"
+      ordering:
+        after: []
+        before: ["scheduler", "rag_retriever"]
+      priority:
+        base: 100
+        modifiers:
+          - condition: "capabilities.jacquard.pipeline.planner.goal_planning == true"
+            delta: -10
+            reason: "Complex planning needs more preparation time"
+
+    scheduler:
+      phase: "preparation"
+      ordering:
+        after: ["planner"]
+        before: ["rag_retriever"]
+      priority:
+        base: 200
+        modifiers:
+          - condition: "context.scheduler.has_urgent_tasks == true"
+            set_absolute: 250
+            reason: "Urgent scheduler tasks detected"
+
+    rag_retriever:
+      phase: "preparation"
+      requires_capability: "jacquard.pipeline.rag_retriever"
+      ordering:
+        after: ["scheduler"]
+        before: ["builder"]
+      priority:
+        base: 250
+        modifiers:
+          - condition: "context.planner.weaving_guide.retrieval_hints != null"
+            delta: +30
+            reason: "Planner requested specific retrieval"
+
+    builder:
+      phase: "construction"
+      ordering:
+        after: ["rag_retriever", "scheduler", "planner"]
+        before: ["renderer"]
+      priority:
+        base: 300
+
+# ═══════════════════════════════════════════════════════════════════════
+# 3. 编排配置 (Configuration) - 各能力的详细参数
 # ═══════════════════════════════════════════════════════════════════════
 configuration:
 
   # ─────────────────────────────────────────────────────────────────────
-  # 2.1 模型与API配置
+  # 3.1 模型与API配置
   # ─────────────────────────────────────────────────────────────────────
   model:
     prefer: ["gpt-4", "claude-3-opus"]
@@ -251,7 +318,7 @@ configuration:
       max_tokens: 2048
 
   # ─────────────────────────────────────────────────────────────────────
-  # 2.2 定义分组 (Groups)
+  # 3.2 定义分组 (Groups)
   # ─────────────────────────────────────────────────────────────────────
   groups:
     - id: "grp_jailbreak"
@@ -270,7 +337,7 @@ configuration:
       requires_capability: "jacquard.pipeline.planner"
   
   # ─────────────────────────────────────────────────────────────────────
-  # 2.3 定义 Skein 的骨架 (Skeleton)
+  # 3.3 定义 Skein 的骨架 (Skeleton)
   # ─────────────────────────────────────────────────────────────────────
   skein_skeleton:
     - slot: "system_header"
@@ -285,7 +352,7 @@ configuration:
       allowed_types: ["COGNITION_*", "META_FORMAT"]
 
   # ─────────────────────────────────────────────────────────────────────
-  # 2.4 定义编织规则 (Weaving Rules)
+  # 3.4 定义编织规则 (Weaving Rules)
   # ─────────────────────────────────────────────────────────────────────
   weaving_rules:
     - type: "AGENT"
@@ -310,7 +377,7 @@ configuration:
       priority: 110
 
 # ═══════════════════════════════════════════════════════════════════════
-# 3. 内容数据 (Content) - Pattern层特有
+# 4. 内容数据 (Content) - Pattern层特有
 # ═══════════════════════════════════════════════════════════════════════
 content:
   # 仅在 type = "pattern" 时存在
@@ -318,17 +385,101 @@ content:
   # lorebooks: [...]
 
 # ═══════════════════════════════════════════════════════════════════════
-# 4. 角色卡特有 (Pattern Layer Only)
+# 5. 角色卡特有 (Pattern Layer Only)
 # ═══════════════════════════════════════════════════════════════════════
 # required_capabilities: []       # 声明必需能力
 # capability_overrides: {}        # 覆盖能力配置
 
 # ═══════════════════════════════════════════════════════════════════════
-# 5. 会话特有 (Session Layer Only)
+# 6. 会话特有 (Session Layer Only)
 # ═══════════════════════════════════════════════════════════════════════
 # base_preset: "standard_rp"      # 基于哪个基础设施预设
 # capability_patches: {}          # 运行时能力补丁
 ```
+
+---
+
+## 4.1 动态优先级编排详解
+
+### 4.1.1 核心概念
+
+动态优先级编排 (Dynamic Priority Orchestration) 是 Clotho 的核心创新之一，它允许通过声明式配置而非硬编码来控制插件执行顺序。
+
+| 概念 | 说明 | 示例 |
+|------|------|------|
+| **Phase (阶段)** | 流水线的逻辑阶段 | `decision` → `preparation` → `construction` → `execution` → `processing` |
+| **Ordering (相对顺序)** | 插件间的依赖约束 | `after: ["planner"]`, `before: ["builder"]` |
+| **Priority (优先级)** | 执行顺序的数值表示 | `base: 200` + `modifiers` |
+
+### 4.1.2 优先级计算算法
+
+```dart
+int computePriority(PriorityConfig config, JacquardContext context) {
+  var priority = config.base;
+  
+  for (final modifier in config.modifiers) {
+    if (evaluateCondition(modifier.condition, context)) {
+      if (modifier.setAbsolute != null) {
+        priority = modifier.setAbsolute!;  // 直接设置绝对值
+      } else if (modifier.delta != null) {
+        priority += modifier.delta!;        // 相对调整
+      }
+    }
+  }
+  
+  return priority.clamp(0, 999);
+}
+```
+
+### 4.1.3 L2 Pattern 覆盖示例
+
+特定角色卡可以完全重编程执行顺序：
+
+```yaml
+# L2 Pattern: "Deep Research" 角色卡
+jacquard:
+  orchestration:
+    overrides:
+      plugins:
+        rag_retriever:
+          # 在此角色中，RAG 先于 Scheduler 执行
+          ordering:
+            after: ["planner"]
+            before: ["scheduler"]
+          priority:
+            base: 190
+            
+        scheduler:
+          ordering:
+            after: ["rag_retriever"]
+            before: ["builder"]
+          priority:
+            base: 210
+```
+
+### 4.1.4 L3 Session 实时调整
+
+用户可在会话中实时调整优先级：
+
+```yaml
+# L3: 临时降低 Scheduler 优先级
+capability_patches:
+  jacquard:
+    orchestration:
+      runtime_override:
+        plugin: "scheduler"
+        priority_delta: -50
+        effective_for: 1  # 仅当前回合
+        reason: "User command: prioritize immediate response"
+```
+
+### 4.1.5 冲突解决
+
+当相对顺序与计算优先级冲突时，遵循以下策略：
+
+1. **循环依赖**: 拓扑排序前检测，抛出异常
+2. **优先级矛盾**: `after`/`before` 约束优先于数值优先级
+3. **动态冲突**: 多个 modifier 条件同时满足时，按声明顺序应用
 
 ---
 
