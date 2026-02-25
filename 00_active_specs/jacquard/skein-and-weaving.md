@@ -180,12 +180,16 @@ Skein Builder 从多个来源消费数据，构建完整的 SkeinInstance。
 
 ### 3.1 输入来源汇总
 
-| 来源 | 位置 | 数据类型 | 说明 |
-|------|------|----------|------|
-| **Planner** | `context.plannerContext` | `CurationPlan`, `WeavingGuide` | 策展决策和编织指令 |
-| **Scheduler** | `context.blackboard` | `List[PromptBlock]` | 定时任务注入块 |
-| **RAG Retriever** | `context.blackboard` | `List[FloatingAsset]` | 检索到的浮动资产 |
-| **Mnemosyne** | 直接查询 | `Punchcards` (快照) | L1/L2/L3 状态快照 |
+Skein Builder 通过统一接口消费上游插件产物。这些插件的执行顺序由 [动态优先级编排](../plugin-architecture.md#43-动态优先级编排) 决定：
+
+| 来源 | 位置 | 数据类型 | 说明 | 默认优先级 |
+|------|------|----------|------|-----------|
+| **Planner** | `context.plannerContext` | `CurationPlan`, `WeavingGuide` | 策展决策和编织指令 | 100 (`decision` 阶段) |
+| **Scheduler** | `context.blackboard['scheduler_injects']` | `List[PromptBlock]` | 定时任务注入块 | 200 (`preparation` 阶段) |
+| **RAG Retriever** | `context.blackboard['rag_assets']` | `List[FloatingAsset]` | 检索到的浮动资产 | 250 (`preparation` 阶段) |
+| **Mnemosyne** | 直接查询 | `Punchcards` (快照) | L1/L2/L3 状态快照 | - |
+
+> **注意**: Scheduler 和 RAG Retriever 同属 `preparation` 阶段，其相对顺序可通过 L2 Pattern 的 `orchestration.overrides` 配置调整。详见 [Scheduler 与 RAG 职责分工](../scheduler-component.md#7-与-rag-retriever-的职责分工)。
 
 ### 3.2 输入处理流程
 
@@ -206,12 +210,23 @@ graph TD
 
 ### 3.3 字段映射规范
 
+#### 3.3.1 WeavingGuide 映射
+
 | WeavingGuide 字段 | SkeinInstance 字段 | 处理方式 |
 |-------------------|-------------------|----------|
 | `historyChain` | `historyChain` | 直接赋值 |
 | `floatingAssets` | `floatingChain` | 直接赋值 |
 | `systemExtensions` | `systemChain` | 追加到末尾 |
 | `recommendedTemplate` | `templateId` | 用于实例化 Template |
+
+#### 3.3.2 Blackboard 产物处理
+
+| Blackboard Key | 产物类型 | 映射目标 | 优先级处理 |
+|----------------|----------|----------|------------|
+| `scheduler_injects` | `List[PromptBlock]` | 根据 `block.type` 分别注入：<br>- `inject_system` → `systemChain`<br>- `inject_user` → `historyChain`<br>- `force_thought` → `floatingChain` | Scheduler 优先级：120-150 |
+| `rag_assets` | `List[FloatingAsset]` | `floatingChain` | Encyclopedia 默认优先级：50 |
+
+> **冲突解决**: 当 Scheduler 注入和 RAG 检索内容存在语义重叠时，Builder 根据 `priority` 字段和 `sourceQuadrant` 进行去重和排序。详见 [Step 4: RAG 融合与去重](#step-4-rag-融合与去重-rag-fusion--deduplication--fragment-deduplicated)。
 
 ## 4. Mnemosyne 映射策略 (Mnemosyne Integration)
 

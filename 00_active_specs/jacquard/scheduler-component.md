@@ -168,7 +168,63 @@ const injects = context.blackboard['scheduler_injects'] || [];
 
 > **注意**: Scheduler 不直接修改 Skein，仅在 blackboard 中写入注入请求。Skein Builder 在构建阶段统一读取并合并。
 
-## 7. 安全与限制 (Safety & Limits)
+## 7. 与 RAG Retriever 的职责分工
+
+Scheduler 与 RAG Retriever 都是**数据准备阶段**的组件，但职责不同：
+
+| 维度 | Scheduler | RAG Retriever |
+|------|-----------|---------------|
+| **触发逻辑** | 时间/事件驱动（楼层计数器、变量变更） | 语义相关驱动（用户输入相似度） |
+| **产物类型** | `PromptBlock`（即时指令） | `FloatingAsset`（上下文资产） |
+| **优先级** | 200（默认），可动态调整 | 250（默认），可动态调整 |
+| **执行顺序** | 通常在 RAG 之前 | 通常在 Scheduler 之后 |
+
+### 7.1 动态优先级调整
+
+通过 [动态优先级编排](../plugin-architecture.md#43-动态优先级编排)，可根据运行时状态调整执行顺序：
+
+```yaml
+# 默认配置：Scheduler 先于 RAG
+scheduler:
+  phase: "preparation"
+  ordering:
+    after: ["planner"]
+    before: ["rag_retriever"]
+  priority:
+    base: 200
+
+rag_retriever:
+  phase: "preparation"
+  ordering:
+    after: ["scheduler"]
+    before: ["builder"]
+  priority:
+    base: 250
+```
+
+```yaml
+# L2 Pattern 覆盖：RAG 先于 Scheduler（如 Deep Research 角色）
+overrides:
+  rag_retriever:
+    ordering:
+      after: ["planner"]
+      before: ["scheduler"]
+    priority:
+      base: 190  # 提升到 Scheduler 之前
+```
+
+### 7.2 Blackboard 协作契约
+
+两者通过 Blackboard 向 Builder 传递产物：
+
+| Blackboard Key | 写入者 | 产物类型 | 说明 |
+|----------------|--------|----------|------|
+| `scheduler_injects` | Scheduler | `List<PromptBlock>` | 定时任务注入的即时指令 |
+| `rag_assets` | RAG Retriever | `List<FloatingAsset>` | 检索到的长期记忆 |
+
+Builder 统一消费并合并，按 [Weaving 规则](../skein-and-weaving.md) 处理优先级和冲突。
+
+## 8. 安全与限制 (Safety & Limits)
 
 为了防止死循环和资源滥用，Scheduler 实施以下限制：
 
