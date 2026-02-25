@@ -43,23 +43,110 @@
 
 ## 二、职责重叠 (Overlapping Responsibilities)
 
-### 3. Scheduler 动作注入 vs RAG Retriever
+### 3. Scheduler 动作注入 vs RAG Retriever 职责分工
 
-| 组件 | 职责 | 注入方式 |
+#### 3.1 当前状态
+
+| 组件 | 原硬编码优先级 | 注入方式 | 产物类型 |
+|------|---------------|----------|----------|
+| **Scheduler** | 200 | `blackboard.scheduler_injects` | `List<PromptBlock>` |
+| **RAG Retriever** | 未定义 | `blackboard.rag_assets` | `List<FloatingAsset>` |
+| **Skein Builder** | 300 | 消费上述所有产物 | `SkeinInstance` |
+
+#### 3.2 架构设计：动态优先级编排 (Dynamic Priority Orchestration)
+
+**核心原则**: 从"硬编码锚点"演进为"声明式、可重编程的编排配置"。
+
+```yaml
+# L1 Infrastructure: 流水线编排配置
+jacquard:
+  orchestration:
+    phases:
+      - id: "preparation"
+        description: "数据准备阶段"
+        default_slot_range: [200, 299]
+        
+    plugins:
+      scheduler:
+        phase: "preparation"
+        ordering:
+          after: ["planner"]
+          before: ["rag_retriever"]
+        priority:
+          base: 200
+          modifiers:
+            # 紧急调度任务时提升优先级
+            - condition: "context.scheduler.has_urgent_tasks"
+              set_absolute: 250
+              
+      rag_retriever:
+        phase: "preparation"
+        ordering:
+          after: ["scheduler"]      # 可读取 Scheduler 更新的状态
+          before: ["builder"]
+        priority:
+          base: 250
+          modifiers:
+            # Planner 建议特定检索时提升
+            - condition: "context.planner.weaving_guide.retrieval_hints != null"
+              delta: +30
+              
+      builder:
+        phase: "construction"
+        ordering:
+          after: ["rag_retriever", "scheduler"]
+          before: ["renderer"]
+        priority:
+          base: 300
+```
+
+#### 3.3 Blackboard 协作契约
+
+所有注入型组件统一通过 `JacquardContext.blackboard` 传递产物，由 Builder 统一消费：
+
+| Blackboard Key | 写入者 | 读取者 | 产物类型 | 生命周期 |
+|----------------|--------|--------|----------|----------|
+| `scheduler_injects` | Scheduler | Builder | `List<PromptBlock>` | 单次 Pipeline |
+| `rag_assets` | RAG Retriever | Builder | `List<FloatingAsset>` | 单次 Pipeline |
+| `weaving_guide` | Planner | Builder | `WeavingGuide` | 单次 Pipeline |
+
+> **注意**: Scheduler 和 RAG Retriever **绝不直接修改 Skein**，仅写入 blackboard。Builder 在构建阶段统一读取并合并。
+
+#### 3.4 L2 Pattern 可覆盖示例
+
+特定角色卡可重编程执行顺序：
+
+```yaml
+# L2 Pattern: "Deep Research" 角色卡
+jacquard:
+  orchestration:
+    overrides:
+      plugins:
+        rag_retriever:
+          # 在此角色中，RAG 先于 Scheduler 执行
+          ordering:
+            after: ["planner"]
+            before: ["scheduler"]
+          priority:
+            base: 190
+            
+        scheduler:
+          ordering:
+            after: ["rag_retriever"]
+            before: ["builder"]
+          priority:
+            base: 210
+```
+
+#### 3.5 职责边界总结
+
+| 职责 | 归属 | 边界说明 |
 |------|------|----------|
-| **Scheduler** (优先级 200) | 触发时向 Skein 注入 Prompt | 通过修改 `JacquardContext.skein`? |
-| **RAG Retriever** (优先级 350) | 检索记忆并注入 Skein | 输出到 `blackboard`，Builder 读取? |
-| **Skein Builder** (优先级 300) | 组装 Skein | 读取各种输入 |
-
-**冲突点**:
-- Scheduler 优先级 200 < Builder 300，所以 Scheduler 的注入应该在 Builder 之前
-- 但文档未明确 Scheduler 如何修改 Skein (直接修改 context.skein? 还是写入 blackboard?)
-- 如果 Scheduler 直接修改 `context.skein`，那 Builder 的职责是什么？
-
-**建议**: 明确分工：
-- Scheduler: 写入 `context.blackboard['scheduler_injects']`
-- RAG Retriever: 写入 `context.blackboard['rag_results']`
-- Builder: 统一读取 blackboard 并组装 Skein
+| **何时检索** | Planner | 在 `weaving_guide` 中建议检索需求 |
+| **何时触发定时任务** | Scheduler | 基于时间/事件逻辑独立决策 |
+| **如何检索** | RAG Retriever | 专业化组件，可被 Capability 开关控制 |
+| **如何组装** | Builder | 唯一拥有编织算法的组件，统一仲裁冲突 |
+| **优先级仲裁** | 动态编排引擎 | 基于声明式配置 + 运行时条件计算 |
 
 ---
 
@@ -152,16 +239,31 @@
 
 ---
 
-### 8. Planner 的 "Pre-Generation Update" 权限
+### 8. Planner 的 "Pre-Generation Update" 权限 ✅ 已修复
 
-| 文档 | 描述 | 问题 |
+**状态**: 已统一为 Soft Suggestion 模型
+
+| 文档 | 描述 | 状态 |
 |------|------|------|
-| `README.md` | "Planner 直接修改 L3 Session State" | Hard Write |
-| `planner-component.md` (v1.2) | "Planner 不直接修改 `activeQuestId`，而是输出 suggestion" | Soft Suggestion |
+| `README.md` | "Planner 直接修改 L3 Session State" | ❌ 已废弃 |
+| `planner-component.md` (v1.2+) | "Planner 不直接修改 `activeQuestId`，而是输出 suggestion" | ✅ 已确认 |
 
-**冲突点**: 文档版本不一致，权限模型冲突
+**已执行的修复**:
 
-**建议**: 统一为 v1.2 的 Soft Suggestion 模型，更新 README.md
+1. **`planner-component.md` 第 2.2 节**: 明确说明 Planner **不直接修改** `activeQuestId`，而是将建议写入 `planner_context.suggestion`
+2. **`planner-component.md` 第 6.2 节**: 详细定义 Soft Suggestion 模型，区分 Planner 的 Soft Suggestion 与 State Updater 的 Hard Write
+3. **`planner-component.md` 第 8.1 节**: 在 `PlannerContext` 接口中明确定义 `suggestion` 字段结构
+
+```typescript
+// Planner 输出建议（软写入）
+suggestion: {
+  targetQuestId: string | null;
+  confidence: number;
+  reasoning: string;
+};
+```
+
+**写入时机**: State Updater 在 Main LLM 生成后，根据 `<planner_override>` 或默认确认逻辑，将 suggestion 应用到 `activeQuestId`
 
 ---
 
@@ -221,43 +323,85 @@
 
 ---
 
+---
+
+## 完成状态总结
+
+### ✅ 已完成的建议
+
+| # | 建议项 | 完成位置 | 验证方式 |
+|---|--------|----------|----------|
+| 5 | Capability 系统的文档分裂 | `capability-system-spec.md`, `preset-system.md` | 算法统一、validate() 补全、依赖关系表统一 |
+| 8 | Planner 的 Pre-Generation Update 权限 | `planner-component.md` 第 2.2, 6.2, 8.1 节 | Soft Suggestion 模型已确认 |
+| 9 | Schema Injector Plugin | `schema-injector.md` (新创建) | 独立文档 + 工作流整合 |
+| P1 | 接口统一 (Critical) | `planner-component.md` 第 8.1 节 | `PlannerContext` 接口已定义，WeavingGuide 映射规则已明确 |
+
+### ⏳ 待完成的建议
+
+| # | 建议项 | 优先级 | 下一步行动 |
+|---|--------|--------|------------|
+| 1 | Planner 输出 ↔ Skein Builder 输入 (WeavingGuide 字段映射) | Medium | 确认 `skein-and-weaving.md` 中的映射规则是否对齐 |
+| 2 | Block Taxonomy ↔ BlockType 映射表 | Medium | 创建新的映射文档或在 Skein 文档中补充 |
+| 3 | Scheduler 动作注入 vs RAG Retriever 职责分工 | High | 更新 `scheduler-component.md` 和 `plugin-architecture.md` |
+| 4 | Consolidation Phase 的双重定位 | Medium | 明确区分 Inline Pipeline vs Background Pipeline |
+| 6 | Weaving Rules 的双重定义 | Medium | 明确 YAML 配置格式 → TypeScript 接口的映射 |
+| 7 | Scheduler 触发时机 (Inline vs Event Mode) | High | 更新 `scheduler-component.md` 说明两种模式 |
+| 10 | Maintenance Pipeline 与主 Pipeline 关系 | Low | 创建 Maintenance Pipeline 架构文档 |
+
+---
+
 ## 六、综合建议：架构对齐方案
 
 ### 优先级 1: 接口统一 (Critical) ✅ 已修复
 
 **状态**: 已同步到正式文档
-- `00_active_specs/jacquard/planner-component.md` - 第8.1节
-- `00_active_specs/jacquard/scheduler-component.md` - 第6节
-- `00_active_specs/jacquard/skein-and-weaving.md` - 第3节
-- `00_active_specs/jacquard/plugin-architecture.md` - Blackboard Key 规范
 
-```yaml
-# 统一的数据流接口 (已对齐正式规范)
+| 文档 | 章节 | 状态 |
+|------|------|------|
+| `00_active_specs/jacquard/planner-component.md` | 第8.1节 | ✅ 已验证 |
+| `00_active_specs/jacquard/scheduler-component.md` | 第6节 | ✅ 待验证 |
+| `00_active_specs/jacquard/skein-and-weaving.md` | 第3节 | ✅ 待验证 |
+| `00_active_specs/jacquard/plugin-architecture.md` | Blackboard Key 规范 | ✅ 待验证 |
 
-Planner (产出 → planner_context):
-  - planner_context.curation_plan: CurationPlan   # 上下文策展方案
-  - planner_context.weaving_guide: WeavingGuide   # 编织指导指令
-  - planner_context.suggestion: FocusSuggestion   # 焦点切换建议 (软写入)
+**已执行的修复 (在 `planner-component.md` 第 321-348 行)**:
 
-Scheduler (产出 → blackboard):
-  - blackboard.scheduler_injects: List[PromptBlock]   # 定时任务注入块
+```typescript
+// Planner 产出写入位置 (已确认实现)
+interface PlannerContext {
+  // 上下文策展方案 (v1.2+)
+  curation_plan: CurationPlan;
+  
+  // 编织指导指令 (v1.2+)
+  weaving_guide: WeavingGuide;
+  
+  // 焦点切换建议 (软写入，需 State Updater 确认)
+  suggestion: {
+    targetQuestId: string | null;
+    confidence: number;
+    reasoning: string;
+  };
+}
 
-RAG Retriever (产出 → blackboard):
-  - blackboard.rag_assets: List[FloatingAsset]        # 检索到的浮动资产
-
-Skein Builder (消费):
-  - 从 planner_context: curation_plan, weaving_guide
-  - 从 blackboard: scheduler_injects, rag_assets
-  - 产出: SkeinInstance
+// Skein Builder 消费方式 (已确认实现)
+// - 从 context.plannerContext.weaving_guide 读取编织指令
+// - WeavingGuide.historyChain → 映射到 SkeinInstance.historyChain
+// - WeavingGuide.floatingAssets → 映射到 SkeinInstance.floatingChain
+// - WeavingGuide.systemExtensions → 合并入 SkeinInstance.systemChain 末尾
 ```
 
+**统一的数据流接口**:
+
+| 组件 | 产出位置 | 产物类型 |
+|------|----------|----------|
+| **Planner** | `planner_context` | `CurationPlan`, `WeavingGuide`, `FocusSuggestion` |
+| **Scheduler** | `blackboard.scheduler_injects` | `List[PromptBlock]` |
+| **RAG Retriever** | `blackboard.rag_assets` | `List[FloatingAsset]` |
+| **Skein Builder** | 消费上述数据 → 产出 `SkeinInstance` | - |
+
 **关键修正**:
-1. **Planner 输出位置**: 写入 `planner_context` (JacquardContext 的专用字段)，而非 blackboard
-2. **WeavingGuide 字段对齐**: 
-   - `historyChain` → 映射到 SkeinInstance.historyChain
-   - `floatingAssets` → 映射到 SkeinInstance.floatingChain
-   - `systemExtensions` → 合并入 systemChain 末尾
-3. **Scheduler 注入方式**: 通过 `blackboard.scheduler_injects` 传递，Skein Builder 在构建阶段读取并合并
+1. ✅ **Planner 输出位置**: 写入 `planner_context` (JacquardContext 的专用字段)，而非 blackboard
+2. ✅ **WeavingGuide 字段对齐**: 明确映射规则到 SkeinInstance
+3. ✅ **Scheduler 注入方式**: 通过 `blackboard.scheduler_injects` 传递
 
 ### 优先级 2: 文档合并/引用 (High)
 
