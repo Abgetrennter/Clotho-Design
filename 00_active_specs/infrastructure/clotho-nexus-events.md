@@ -22,6 +22,44 @@ ClothoNexus 是实现 **"凯撒原则"** (确定性控制) 的关键组件，它
 3.  **驱动自动化**: 作为 Jacquard Scheduler Shuttle 的输入源，驱动基于事件的自动化逻辑。
 4.  **UI 响应**: 通过 Bridge Provider 将底层事件流暴露给 Riverpod，驱动 UI 更新。
 
+### 2.1 与 Mnemosyne 的职责边界 (Boundary with Mnemosyne)
+
+**核心原则**: ClothoNexus 是状态变更**通知总线**，Mnemosyne 是状态**存储权威源**。
+
+| 职责 | ClothoNexus | Mnemosyne |
+|------|-------------|-----------|
+| **状态存储** | ❌ 不存储任何状态 | ✅ 唯一状态存储权威源 (SSOT) |
+| **事件广播** | ✅ 负责广播状态变更事件 | ❌ 不直接广播，通过 ClothoNexus 发布 |
+| **历史回溯** | ❌ 无回溯能力 | ✅ 通过 OpLog 实现时间旅行 |
+| **快照生成** | ❌ 不生成快照 | ✅ 生成 Punchcards 快照 |
+| **数据持久化** | ❌ 无持久化能力 | ✅ SQLite 持久化存储 |
+
+**协作流程**:
+
+```mermaid
+sequenceDiagram
+    participant App as Application
+    participant CN as ClothoNexus
+    participant M as Mnemosyne
+    participant UI as UI (Riverpod)
+    
+    Note over App,UI: 状态变更流程
+    App->>M: 提交状态变更 (OpLog)
+    M->>M: 写入 SQLite + 生成快照
+    M->>CN: 发布 VariableChangeEvent
+    CN->>CN: 广播给所有订阅者
+    CN->>UI: Stream<Event>
+    UI->>UI: 触发 Widget 重绘
+    
+    Note over App,UI: 关键约束
+    Note right of App: ❌ ClothoNexus 不存储状态
+    Note right of App: ✅ Mnemosyne 是唯一状态源
+```
+
+**状态管理分层**:
+
+详见 **[架构原则 - 状态管理分层](../architecture-principles.md#23-状态管理分层-state-management-layers)**。
+
 ---
 
 ## 3. 架构设计 (Architecture)

@@ -180,6 +180,49 @@ graph TB
 
 **详细说明**: 请参阅 **[依赖注入规范](dependency-injection.md#2-依赖注入架构全景-di-architecture-overview)**。
 
+### 4.2.1 状态管理分层 (State Management Layers)
+
+在混合 DI 架构中，状态管理分为三个层次，与 DI 边界对应：
+
+| 层级 | 名称 | 负责组件 | DI 容器 | 职责 |
+|------|------|----------|--------|------|
+| **L1** | 持久化层 | Mnemosyne | GetIt | 状态存储、快照生成、历史回溯 |
+| **L2** | 通知层 | ClothoNexus | GetIt | 状态变更事件广播、生命周期通知 |
+| **L3** | 展示层 | Riverpod | Riverpod | UI 状态投影与缓存、组件重绘 |
+
+**DI 边界与状态管理的关系**:
+
+```mermaid
+graph TB
+    subgraph "GetIt 容器 (核心层)"
+        M[Mnemosyne Repository]
+        CN[ClothoNexus Event Bus]
+    end
+    
+    subgraph "Riverpod 容器 (UI 层)"
+        SP[StateNotifierProvider]
+        BP[Bridge Provider]
+    end
+    
+    subgraph "UI Widgets"
+        W1[MessageList]
+        W2[Inspector]
+    end
+    
+    M -.->|暴露为 | BP
+    CN -.->|暴露为 | SP
+    
+    BP -->|ref.watch | W1
+    SP -->|ref.watch | W2
+    
+    style M fill:#e3f2fd
+    style CN fill:#e3f2fd
+    style BP fill:#f3e5f5
+    style SP fill:#f3e5f5
+```
+
+**详细说明**: 请参阅 **[架构原则 - 状态管理分层](../architecture-principles.md#23-状态管理分层-state-management-layers)**。
+
 ### 4.3 服务注册
 
 **详细说明**: 请参阅 **[依赖注入规范](dependency-injection.md#3-getit-容器配置-getit-container-configuration)**。
