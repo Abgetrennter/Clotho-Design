@@ -430,7 +430,7 @@ python scripts/merge_specs_to_xml.py
 
 ### 10.2 自定义技能
 
-项目包含一个自定义 Kimi Code CLI 技能：
+项目包含一个自定义 CLI 技能：
 
 - **路径**: `.roo/skills/clotho-documentation-author/SKILL.md`
 - **用途**: 在创建或更新 `00_active_specs/` 文档时确保符合项目标准
