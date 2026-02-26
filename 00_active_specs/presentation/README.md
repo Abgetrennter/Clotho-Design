@@ -115,6 +115,74 @@ UI 子系统与用户输入之间的**唯一写通道**。
 
 UI 不维护权威状态。当 `Mnemosyne` 更新状态后，通过 Stream 广播新快照，UI 接收后触发 `build` 重绘。这种机制确保了在回溯历史时，UI 状态能自动且正确地回滚。
 
+### 5.3 数据访问边界 (Data Access Boundaries)
+
+**核心原则**: UI 组件严禁直接访问 Mnemosyne 状态树。所有数据访问必须通过 Jacquard 编排层进行代理。
+
+| 组件 | 数据访问路径 | 说明 |
+|------|-------------|------|
+| **Inspector** | UI → Jacquard → Mnemosyne → Jacquard → UI | Jacquard 返回 Schema 投影，而非原始数据 |
+| **StateTreeViewer** | UI → Jacquard → Mnemosyne → Jacquard → UI | 仅请求当前选中节点的数据 |
+| **InputDraftController** | UI → Jacquard → Mnemosyne | 写操作通过 Jacquard 验证后应用 |
+| **MessageBubble** | UI ← Jacquard (Filament 流) | 只读消费，不直接访问状态 |
+
+**数据访问序列图**:
+
+```mermaid
+sequenceDiagram
+    participant UI as UI Component
+    participant J as Jacquard Orchestrator
+    participant M as Mnemosyne Data Engine
+    
+    Note over UI,M: 读操作 (Inspector 查看状态)
+    UI->>J: 请求 UI Schema (path: character.inventory)
+    J->>M: 查询状态元数据 ($meta.ui_schema)
+    M-->>J: 返回 Schema + 数据投影
+    J->>J: 应用访问控制 (ACL 过滤)
+    J-->>UI: 返回 Schema 投影 (非原始数据)
+    
+    Note over UI,M: 写操作 (InputDraftController 提交)
+    UI->>J: 提交 Intent (用户输入)
+    J->>J: 验证 Intent 合法性
+    J->>M: 应用状态变更 (OpLog)
+    M-->>J: 确认变更 + 新快照
+    J-->>UI: 广播状态更新 (Stream)
+    
+    Note over UI,M: 关键约束
+    Note right of UI: ❌ 禁止：UI 直接读取 Mnemosyne
+    Note right of UI: ✅ 允许：UI 通过 Jacquard 代理访问
+```
+
+**违反边界的后果**:
+
+| 违规行为 | 后果 | 正确做法 |
+|---------|------|---------|
+| UI 直接读取 `$meta.ui_schema` | 绕过 ACL 过滤，可能泄露敏感数据 | 通过 `Jacquard.requestUISchema(path)` |
+| UI 直接写入 Mnemosyne | 破坏 OpLog 链，无法回溯历史 | 通过 `Jacquard.submitIntent(intent)` |
+| UI 缓存状态快照 | 导致状态不一致，回溯失效 | 监听 Jacquard 的 Stream 流 |
+
+**实现指南**:
+
+```dart
+// ❌ 错误示例：UI 直接访问 Mnemosyne
+class Inspector extends StatelessWidget {
+  void _onNodeSelected(String path) {
+    // 错误：直接读取 Mnemosyne 状态树
+    final schema = Mnemosyne.getState(path).meta.uiSchema;
+    _render(schema);
+  }
+}
+
+// ✅ 正确示例：UI 通过 Jacquard 代理访问
+class Inspector extends StatelessWidget {
+  void _onNodeSelected(String path) {
+    // 正确：通过 Jacquard 请求 UI Schema 投影
+    final schema = await Jacquard.requestUISchema(path);
+    _render(schema);
+  }
+}
+```
+
 ---
 
 ## 6. 设计规范文档 (Design Specifications)

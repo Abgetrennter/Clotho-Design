@@ -1028,6 +1028,247 @@ abstract class FileSystemService {
 }
 ```
 
+### 5.5 Presentation ↔ Jacquard 接口
+
+**设计原则**: UI 组件严禁直接访问 Mnemosyne 状态树。所有数据访问必须通过本章节定义的接口进行代理。
+
+```dart
+// clotho_core/lib/src/service/jacquard_ui_adapter.dart
+
+import 'dart:async';
+
+/// UI Schema 请求参数
+class UISchemaRequest {
+  /// 状态树路径 (如：character.inventory)
+  final String path;
+  
+  /// 是否包含元数据
+  final bool includeMetadata;
+  
+  const UISchemaRequest({
+    required this.path,
+    this.includeMetadata = true,
+  });
+}
+
+/// UI Schema 响应结果
+class UISchemaResponse {
+  /// Schema 类型 (table, card, list, tree)
+  final String type;
+  
+  /// Schema 配置
+  final Map<String, dynamic> config;
+  
+  /// 数据投影
+  final dynamic data;
+  
+  /// 访问控制信息
+  final ACLInfo? aclInfo;
+  
+  const UISchemaResponse({
+    required this.type,
+    required this.config,
+    required this.data,
+    this.aclInfo,
+  });
+}
+
+/// 访问控制信息
+class ACLInfo {
+  /// 访问级别 (Global, Shared, Private)
+  final String accessLevel;
+  
+  /// 是否可写
+  final bool isWritable;
+  
+  const ACLInfo({
+    required this.accessLevel,
+    required this.isWritable,
+  });
+}
+
+/// 数据投影请求参数
+class DataProjectionRequest {
+  /// 状态树路径
+  final String path;
+  
+  /// 深度限制 (0 表示无限制)
+  final int maxDepth;
+  
+  /// 是否包含子节点
+  final bool includeChildren;
+  
+  const DataProjectionRequest({
+    required this.path,
+    this.maxDepth = 0,
+    this.includeChildren = true,
+  });
+}
+
+/// 数据投影响应结果
+class DataProjectionResponse {
+  /// 路径
+  final String path;
+  
+  /// 数据类型
+  final String dataType;
+  
+  /// 数据值
+  final dynamic value;
+  
+  /// 子节点 (如果请求)
+  final List<DataProjectionResponse>? children;
+  
+  const DataProjectionResponse({
+    required this.path,
+    required this.dataType,
+    required this.value,
+    this.children,
+  });
+}
+
+/// Intent 提交请求参数
+class IntentSubmitRequest {
+  /// Intent 类型
+  final String type;
+  
+  /// Intent 数据
+  final Map<String, dynamic> payload;
+  
+  /// 源组件 ID
+  final String? sourceComponentId;
+  
+  const IntentSubmitRequest({
+    required this.type,
+    required this.payload,
+    this.sourceComponentId,
+  });
+}
+
+/// Intent 提交响应结果
+class IntentSubmitResponse {
+  /// 是否成功
+  final bool success;
+  
+  /// 结果消息
+  final String? message;
+  
+  /// 状态变更 (如果适用)
+  final Map<String, dynamic>? stateChanges;
+  
+  const IntentSubmitResponse({
+    required this.success,
+    this.message,
+    this.stateChanges,
+  });
+}
+
+/// UI 与 Jacquard 编排层的接口契约
+///
+/// 这是 Presentation 层与 Jacquard 编排层之间的唯一数据访问通道。
+/// UI 组件必须通过此接口访问 Mnemosyne 状态树，严禁直接访问。
+///
+/// ## 使用示例:
+///
+/// ### Inspector 组件获取 UI Schema
+/// ```dart
+/// class _InspectorState extends State<Inspector> {
+///   final JacquardUIAdapter _adapter = Jacquard.instance.uiAdapter;
+///
+///   Future<void> _onNodeSelected(String path) async {
+///     // ✅ 正确：通过 Jacquard 代理访问
+///     final schema = await _adapter.requestUISchema(
+///       UISchemaRequest(path: path),
+///     );
+///     _render(schema);
+///   }
+/// }
+/// ```
+///
+/// ### InputDraftController 提交 Intent
+/// ```dart
+/// class InputDraftController extends ChangeNotifier {
+///   final JacquardUIAdapter _adapter = Jacquard.instance.uiAdapter;
+///
+///   Future<void> submitIntent(String type, Map<String, dynamic> payload) async {
+///     final response = await _adapter.submitIntent(
+///       IntentSubmitRequest(
+///         type: type,
+///         payload: payload,
+///         sourceComponentId: 'InputDraftController',
+///       ),
+///     );
+///
+///     if (response.success) {
+///       _clear();
+///     }
+///   }
+/// }
+/// ```
+///
+/// ## 错误示例:
+///
+/// ```dart
+/// // ❌ 错误：UI 直接访问 Mnemosyne
+/// class Inspector extends StatelessWidget {
+///   void _onNodeSelected(String path) {
+///     // 错误：直接读取 Mnemosyne 状态树
+///     final schema = Mnemosyne.getState(path).meta.uiSchema;
+///     _render(schema);
+///   }
+/// }
+/// ```
+abstract class JacquardUIAdapter {
+  /// 请求 UI Schema
+  ///
+  /// 参数:
+  /// - [request]: UI Schema 请求参数
+  ///
+  /// 返回:
+  /// [UISchemaResponse] 包含 Schema 定义和数据投影
+  ///
+  /// 异常:
+  /// - [PathNotFoundException]: 当路径不存在时
+  /// - [AccessDeniedException]: 当访问被拒绝时
+  Future<UISchemaResponse> requestUISchema(UISchemaRequest request);
+  
+  /// 请求数据投影
+  ///
+  /// 参数:
+  /// - [request]: 数据投影请求参数
+  ///
+  /// 返回:
+  /// [DataProjectionResponse] 包含数据投影
+  ///
+  /// 异常:
+  /// - [PathNotFoundException]: 当路径不存在时
+  /// - [AccessDeniedException]: 当访问被拒绝时
+  Future<DataProjectionResponse> requestDataProjection(DataProjectionRequest request);
+  
+  /// 提交 Intent
+  ///
+  /// 参数:
+  /// - [request]: Intent 提交请求参数
+  ///
+  /// 返回:
+  /// [IntentSubmitResponse] 包含提交结果
+  ///
+  /// 异常:
+  /// - [IntentValidationException]: 当 Intent 格式无效时
+  /// - [IntentProcessingException]: 当 Intent 处理失败时
+  Future<IntentSubmitResponse> submitIntent(IntentSubmitRequest request);
+  
+  /// 订阅状态同步事件
+  ///
+  /// 返回:
+  /// 一个 [Stream]，emit 状态快照
+  Stream<Map<String, dynamic>> onStateSync();
+  
+  /// 释放资源
+  void dispose();
+}
+```
+
 ---
 
 ## 6. 事件定义 (Event Definitions)
