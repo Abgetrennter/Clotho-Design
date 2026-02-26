@@ -28,3 +28,4 @@ COPYRIGHT
 *.vrm
 *.ico
 10_references/PeroCore-tauri/*
+04_prototype/*
