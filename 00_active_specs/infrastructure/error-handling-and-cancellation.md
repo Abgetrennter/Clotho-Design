@@ -176,9 +176,125 @@ class SystemErrorEvent extends ClothoEvent {
 
 ---
 
-## 5. 设计行动项 (Action Items)
+## 5. 模块错误处理策略 (Module Error Handling Strategies)
 
-1.  **[Infra]** 实现 `CancellationScope` 和 `CancellationToken` 基础类。
-2.  **[Muse]** 在 `BaseLLMClient` 中集成 Retry Policy 和 Circuit Breaker。
-3.  **[Jacquard]** 在 Pipeline 执行器中添加 `try-catch` 块，捕获异常并触发自我修正或回滚逻辑。
-4.  **[UI]** 设计全局 Toast/Snackbar 系统，用于展示 `SystemErrorEvent`。
+各关键模块的详细错误处理策略定义在 **[模块错误处理策略详解](module-error-handling-strategies.md)** 文档中，包括：
+
+### 5.1 Jacquard Pipeline 错误处理
+
+| 错误类型 | 错误码 | 恢复策略 |
+| :--- | :--- | :--- |
+| **PluginCrash** | `3002` | 跳过非关键插件，关键插件崩溃时回滚状态 |
+| **PipelineTimeout** | `3004` | 中止当前执行，回滚状态 |
+| **SkeinBuildFailure** | `3005` | 重试构建（最多 2 次） |
+| **TemplateRenderError** | `3001` | 使用降级模板 |
+| **MaxCorrectionsExceeded** | `3003` | 终止生成，返回部分结果 |
+
+详见：[模块错误处理策略详解](module-error-handling-strategies.md#3-jacquard-pipeline-错误处理策略)
+
+### 5.2 Filament Parser 错误处理
+
+| 错误类型 | 错误码 | 恢复策略 |
+| :--- | :--- | :--- |
+| **MalformedXML** | `3101` | 流式模糊修正 (Fuzzy Correction) |
+| **InvalidJSON** | `3102` | 尝试修复 JSON，使用默认值 |
+| **SchemaViolation** | `3103` | 降级为纯文本处理 |
+| **UnknownTag** | `3104` | 视为普通文本 |
+| **ESREmpty** | `3105` | 使用默认 Core Schema |
+
+详见：[模块错误处理策略详解](module-error-handling-strategies.md#4-filament-parser-错误处理策略)
+
+### 5.3 Mnemosyne OpLog 错误处理
+
+| 错误类型 | 错误码 | 恢复策略 |
+| :--- | :--- | :--- |
+| **OpLogApplyFailure** | `4003` | 跳过该 OpLog，记录错误 |
+| **SnapshotCorruption** | `4004` | 使用更早的快照 + 重放 OpLog |
+| **ConstraintViolation** | `4001` | 回滚事务 |
+| **MigrationFailed** | `4002` | 回滚到迁移前状态 |
+| **StateInconsistency** | `4005` | 重建 Head State |
+
+详见：[模块错误处理策略详解](module-error-handling-strategies.md#5-mnemosyne-oplog-错误处理策略)
+
+### 5.4 Muse Gateway 错误处理
+
+| 错误类型 | 错误码 | 恢复策略 |
+| :--- | :--- | :--- |
+| **ProviderOverload** | `2001` | 指数退避重试 |
+| **ContextLimitExceeded** | `2002` | 自动裁剪上下文 |
+| **SafetyFilterTriggered** | `2003` | 修改 Prompt 重试 |
+| **InvalidAPIKey** | `2010` | 提示用户更新配置 |
+| **QuotaExhausted** | `2011` | 提示用户充值 |
+| **ModelUnavailable** | `2012` | 切换到备用模型 |
+
+详见：[模块错误处理策略详解](module-error-handling-strategies.md#6-muse-gateway-错误处理策略)
+
+---
+
+## 6. 设计行动项 (Action Items)
+
+### 6.1 基础设施层 (Infrastructure)
+
+1. **[Infra]** 实现 `CancellationScope` 和 `CancellationToken` 基础类。
+2. **[Infra]** 实现 `CircuitBreaker` 熔断器组件。
+3. **[Infra]** 实现 `RetryPolicy` 重试策略配置类。
+
+### 6.2 Muse 智能服务层
+
+4. **[Muse]** 在 `BaseLLMClient` 中集成 Retry Policy 和 Circuit Breaker。
+5. **[Muse]** 实现 `ContextLimitHandler` 上下文自动裁剪组件。
+
+### 6.3 Jacquard 编排层
+
+6. **[Jacquard]** 在 Pipeline 执行器中添加 `try-catch` 块，捕获异常并触发自我修正或回滚逻辑。
+7. **[Jacquard]** 实现 `PipelineErrorHandler` 组件。
+8. **[Jacquard]** 在 Filament Parser 中集成流式模糊修正器。
+
+### 6.4 Mnemosyne 数据引擎层
+
+9. **[Mnemosyne]** 实现 `OpLogApplier` 组件，支持原子性批量应用。
+10. **[Mnemosyne]** 实现 `SnapshotRecoveryStrategy` 快照恢复策略。
+11. **[Mnemosyne]** 实现 `HeadStateConsistencyChecker` 一致性检查器。
+
+### 6.5 Presentation 表现层
+
+12. **[UI]** 设计全局 Toast/Snackbar 系统，用于展示 `SystemErrorEvent`。
+13. **[UI]** 实现错误严重性分级提示组件。
+
+---
+
+## 7. 错误处理验证清单 (Error Handling Validation Checklist)
+
+在实现各模块错误处理时，应验证以下项目：
+
+### 7.1 通用检查项
+
+- [ ] 所有公共方法都有 try-catch 包装
+- [ ] 错误被正确记录到日志系统
+- [ ] 适当的错误事件发布到 ClothoNexus
+- [ ] 错误码符合统一规范（见第 4.1 节）
+- [ ] 用户可见的错误消息已本地化
+
+### 7.2 模块特定检查项
+
+#### Jacquard Pipeline
+- [ ] 插件崩溃不会导致整个 Pipeline 崩溃
+- [ ] 关键插件失败时正确回滚状态
+- [ ] Pipeline 超时正确处理
+
+#### Filament Parser
+- [ ] ESR 为空时有降级策略
+- [ ] 模糊修正器能处理常见错误
+- [ ] 未知标签正确处理为普通文本
+
+#### Mnemosyne OpLog
+- [ ] OpLog 应用失败不影响数据一致性
+- [ ] 快照损坏时能恢复
+- [ ] Head State 不一致时能重建
+
+#### Muse Gateway
+- [ ] 重试策略正确配置
+- [ ] 熔断器正常工作
+- [ ] 上下文超限自动裁剪
+
+详见：[模块错误处理策略详解](module-error-handling-strategies.md#8-错误处理验证清单)

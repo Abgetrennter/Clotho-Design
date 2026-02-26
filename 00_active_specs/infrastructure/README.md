@@ -27,6 +27,9 @@
 *   [日志分级与输出规范 (Logging Standards)](./logging-standards.md)
     *   定义了 CoreLogger 服务与 Sink 架构。
     *   规范了日志等级、隐私脱敏规则以及与 Nexus 的混合集成模式。
+*   [多包架构设计 (Multi-Package Architecture)](./multi-package-architecture.md)
+    *   定义了 Monorepo 包结构和依赖关系。
+    *   规范了包间通信机制和依赖注入策略。
 
 ### 3.2 待定规范 (Planned Specs)
 *   (暂无)
