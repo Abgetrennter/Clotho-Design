@@ -147,15 +147,20 @@ Scheduler 通过 **Blackboard 模式** 向 Skein Builder 传递注入内容。
 
 ### 6.1 数据流接口
 
-```typescript
-// Scheduler 执行后写入 blackboard
-interface SchedulerOutput {
-  // 定时任务注入的 PromptBlock 列表
-  scheduler_injects: PromptBlock[];
+```dart
+// lib/models/scheduler_output.dart
+/// SchedulerOutput - Scheduler 执行后写入 blackboard 的输出
+class SchedulerOutput {
+  /// 定时任务注入的 PromptBlock 列表
+  final List<PromptBlock> schedulerInjects;
+  
+  const SchedulerOutput({
+    required this.schedulerInjects,
+  });
 }
 
-// Skein Builder 消费阶段读取
-const injects = context.blackboard['scheduler_injects'] || [];
+// 使用示例：Skein Builder 消费阶段读取
+// final injects = context.blackboard['scheduler_injects'] ?? [];
 ```
 
 ### 6.2 注入规则

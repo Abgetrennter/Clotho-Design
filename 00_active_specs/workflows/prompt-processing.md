@@ -120,23 +120,48 @@ graph LR
 
 **Skein 结构**:
 
-```typescript
-interface Skein {
-  // 1. 经线 (System Chain): 静态骨架，定义认知框架
-  systemChain: PromptBlock[];
+```dart
+// lib/models/skein.dart
+/// Skein - Prompt 组装容器
+///
+/// 包含经线 (System Chain)、纬线 (History Chain) 和浮线 (Floating Chain)
+class Skein {
+  /// 1. 经线 (System Chain): 静态骨架，定义认知框架
+  final List<PromptBlock> systemChain;
   
-  // 2. 纬线 (History Chain): 动态基底，即线性时间轴
-  historyChain: PromptBlock[];
+  /// 2. 纬线 (History Chain): 动态基底，即线性时间轴
+  final List<PromptBlock> historyChain;
   
-  // 3. 浮线 (Floating Chain): 待注入的动态资产
-  floatingChain: FloatingAsset[];
+  /// 3. 浮线 (Floating Chain): 待注入的动态资产
+  final List<FloatingAsset> floatingChain;
   
-  // 元数据与约束
-  metadata: {
-    tokenLimit: number;
-    activePresetId: string;
-    focusMode: string;
-  };
+  /// 元数据与约束
+  final SkeinMetadata metadata;
+  
+  const Skein({
+    required this.systemChain,
+    required this.historyChain,
+    required this.floatingChain,
+    required this.metadata,
+  });
+}
+
+/// Skein 元数据
+class SkeinMetadata {
+  /// Token 限制
+  final int tokenLimit;
+  
+  /// 激活的预设 ID
+  final String activePresetId;
+  
+  /// 聚焦模式
+  final String focusMode;
+  
+  const SkeinMetadata({
+    required this.tokenLimit,
+    required this.activePresetId,
+    required this.focusMode,
+  });
 }
 ```
 

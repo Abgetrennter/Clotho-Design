@@ -235,29 +235,77 @@ interface CurationPlan {
 
 给 Skein Builder 的具体指令。
 
-```typescript
-interface WeavingGuide {
-  // History Chain 构建指令
-  historyChain: PromptBlock[];
+```dart
+// lib/models/weaving_guide.dart
+/// WeavingGuide - 给 Skein Builder 的具体指令
+class WeavingGuide {
+  /// History Chain 构建指令
+  final List<PromptBlock> historyChain;
   
-  // Floating Assets
-  floatingAssets: FloatingAsset[];
+  /// Floating Assets
+  final List<FloatingAsset> floatingAssets;
   
-  // System Extension 指令
-  systemExtensions: {
-    type: 'relevant_facts' | 'quest_context';
-    content: string;
-  }[];
+  /// System Extension 指令
+  final List<SystemExtension> systemExtensions;
   
-  // Template 选择
-  recommendedTemplate: string;
+  /// Template 选择
+  final String recommendedTemplate;
   
-  // 特殊指令
-  directives: {
-    type: 'emphasize' | 'suppress' | 'inject_first';
-    target: string;
-    content: string;
-  }[];
+  /// 特殊指令
+  final List<WeavingDirective> directives;
+  
+  const WeavingGuide({
+    required this.historyChain,
+    required this.floatingAssets,
+    required this.systemExtensions,
+    required this.recommendedTemplate,
+    required this.directives,
+  });
+}
+
+/// 系统扩展指令
+class SystemExtension {
+  /// 扩展类型
+  final SystemExtensionType type;
+  
+  /// 扩展内容
+  final String content;
+  
+  const SystemExtension({
+    required this.type,
+    required this.content,
+  });
+}
+
+/// 系统扩展类型枚举
+enum SystemExtensionType {
+  relevantFacts,
+  questContext,
+}
+
+/// 编织指令
+class WeavingDirective {
+  /// 指令类型
+  final DirectiveType type;
+  
+  /// 目标
+  final String target;
+  
+  /// 指令内容
+  final String content;
+  
+  const WeavingDirective({
+    required this.type,
+    required this.target,
+    required this.content,
+  });
+}
+
+/// 指令类型枚举
+enum DirectiveType {
+  emphasize,
+  suppress,
+  injectFirst,
 }
 ```
 
@@ -322,21 +370,26 @@ Planner **不直接修改** State，而是产出建议：
 
 Planner 通过 `JacquardContext.plannerContext` 向下游组件传递产物：
 
-```typescript
-// Planner 产出写入位置
-interface PlannerContext {
-  // 上下文策展方案 (v1.2+)
-  curation_plan: CurationPlan;
+```dart
+// lib/models/planner_context.dart
+/// PlannerContext - Planner 产出写入位置
+///
+/// Planner 通过 `JacquardContext.plannerContext` 向下游组件传递产物
+class PlannerContext {
+  /// 上下文策展方案 (v1.2+)
+  final CurationPlan curationPlan;
   
-  // 编织指导指令 (v1.2+)
-  weaving_guide: WeavingGuide;
+  /// 编织指导指令 (v1.2+)
+  final WeavingGuide weavingGuide;
   
-  // 焦点切换建议 (软写入，需 State Updater 确认)
-  suggestion: {
-    targetQuestId: string | null;
-    confidence: number;
-    reasoning: string;
-  };
+  /// 焦点切换建议 (软写入，需 State Updater 确认)
+  final FocusSuggestion? suggestion;
+  
+  const PlannerContext({
+    required this.curationPlan,
+    required this.weavingGuide,
+    this.suggestion,
+  });
 }
 ```
 

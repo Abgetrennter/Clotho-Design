@@ -1,7 +1,7 @@
 # 文档标准与撰写指南 (Documentation Standards)
 
-**版本**: 1.0.0
-**日期**: 2026-01-10
+**版本**: 1.1.0
+**日期**: 2026-02-27
 **状态**: Active
 **适用对象**: AI 助手、文档维护者、贡献者
 
@@ -69,10 +69,125 @@
 
 ### 4.3 代码块
 
-* 必须指定语言类型 (e.g., ```typescript,```xml, ```mermaid)。
+* 必须指定语言类型 (e.g., ```dart, ```yaml, ```mermaid)。
 * Mermaid 图表中避免在 `[]` 内使用双引号 `""` 或括号 `()`。
 
-## 5. 🤖 AI 审查清单 (AI Review Checklist)
+---
+
+## 5. 代码示例规范 (Code Example Standards)
+
+### 5.1 语言选择
+
+| 用途 | 推荐语言 | 说明 |
+|------|----------|------|
+| **实现代码** | **Dart** | Clotho 使用 Flutter 作为唯一技术栈 |
+| **配置文件** | YAML | 用于协议定义、预设配置 |
+| **数据交换** | JSON | 用于 API 响应、状态序列化 |
+| **协议格式** | XML | 用于 Filament 协议示例 |
+| **流程图** | Mermaid | 用于架构和流程说明 |
+
+### 5.2 禁止使用的语言
+
+* ❌ **TypeScript/JavaScript**: 项目不使用 Web 技术栈
+* ❌ **Python**: 仅用于算法伪代码（需明确标注为伪代码）
+* ❌ **Java/Kotlin/Swift**: 不使用原生移动开发语言
+
+### 5.3 Dart 代码风格
+
+* **类命名**: 使用 `PascalCase` (e.g., `SkeinBuilder`, `PromptBlock`)
+* **接口定义**: 使用 `abstract class` 或 `mixin` (Dart 无 interface 关键字)
+* **注释风格**: 使用 `///` 文档注释 (e.g., `/// Skein 构建器`)
+* **缩进**: 2 空格缩进
+* **文件路径注释**: 使用 `// lib/path/to/file.dart` 格式
+
+### 5.4 示例模板
+
+#### 接口定义
+
+```dart
+/// 接口定义示例
+abstract class SkeinBuilder {
+  /// 构建 Skein 实例
+  ///
+  /// 从 Mnemosyne 获取上下文快照并组装 Prompt
+  Future<SkeinInstance> build({
+    required String tapestryId,
+    required String turnId,
+    SkeinTemplate? template,
+  });
+}
+```
+
+#### 数据模型
+
+```dart
+// 数据模型示例
+// lib/models/skein_instance.dart
+class SkeinInstance {
+  final String instanceId;
+  final String templateId;
+  final String tapestryId;
+  final String turnId;
+  
+  const SkeinInstance({
+    required this.instanceId,
+    required this.templateId,
+    required this.tapestryId,
+    required this.turnId,
+  });
+}
+```
+
+#### 枚举类型
+
+```dart
+/// 区块类型枚举
+enum BlockType {
+  /// 系统指令
+  systemInstruction,
+  
+  /// 角色设定
+  characterDefinition,
+  
+  /// 历史记录
+  chatHistory,
+  
+  /// 浮动资产
+  floatingAsset,
+}
+```
+
+### 5.5 伪代码规范
+
+如需表达算法逻辑而非具体实现，使用以下格式：
+
+```
+// 伪代码：Weaving 算法
+FUNCTION weave(instance, template):
+  1. 构建骨架 (Skeleton)
+  2. 锚定历史 (Anchoring)
+  3. 编织浮线 (Floating Stitching)
+  4. 去重 (Deduplication)
+  5. 截断 (Truncation)
+  RETURN 最终 Prompt
+```
+
+### 5.6 代码块语言标识
+
+必须始终指定语言类型：
+
+* ✅ `` ```dart ``
+* ✅ `` ```yaml ``
+* ✅ `` ```json ``
+* ✅ `` ```xml ``
+* ✅ `` ```mermaid ``
+* ❌ `` ``` `` (无语言标识)
+* ❌ `` ```typescript ``
+* ❌ `` ```python `` (除非明确标注为伪代码)
+
+---
+
+## 6. 🤖 AI 审查清单 (AI Review Checklist)
 
 AI 在提交任何文档更改前，必须执行以下自我审查：
 
@@ -81,3 +196,4 @@ AI 在提交任何文档更改前，必须执行以下自我审查：
 * [ ] **术语一致性**: 是否使用了 "Pattern", "Tapestry", "Jacquard" 等标准术语？是否避免了旧术语？
 * [ ] **目录位置**: 文件是否放置在正确的子目录下（Core, Protocols, Workflows 等）？
 * [ ] **语调检查**: 是否去除了 "Great", "Sure" 等对话式填充词？
+* [ ] **代码示例语言**: 所有代码示例是否使用 Dart（配置/协议除外）？

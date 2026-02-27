@@ -94,16 +94,38 @@
 
 ### 3.2 数据结构变更
 
-```typescript
-// Turn 对象增强
+```dart
+// lib/models/turn.dart
+/// Turn - 回合数据模型
+///
+/// 最小的完整叙事单元，包含消息、事件和摘要
 class Turn {
-    id: string;
-    index: number;
-    summary: string;      // v1.1 新增
-    vectorId: string;     // v1.1 新增
-    messages: Message[];
-    events: GameEvent[];
-    // ...
+  /// 唯一标识符
+  final String id;
+  
+  /// 回合索引
+  final int index;
+  
+  /// 回合摘要 (v1.1 新增)
+  final String summary;
+  
+  /// 向量 ID，用于 RAG 检索 (v1.1 新增)
+  final String vectorId;
+  
+  /// 消息列表
+  final List<Message> messages;
+  
+  /// 游戏事件列表
+  final List<GameEvent> events;
+  
+  const Turn({
+    required this.id,
+    required this.index,
+    required this.summary,
+    required this.vectorId,
+    required this.messages,
+    required this.events,
+  });
 }
 ```
 

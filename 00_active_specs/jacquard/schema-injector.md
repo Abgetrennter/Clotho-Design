@@ -98,74 +98,202 @@ context.blackboard['parser_hints'] = {
 
 ### 3.1 SchemaDefinition (协议定义)
 
-```typescript
-interface SchemaDefinition {
-  // 元数据
-  id: string;                    // 唯一标识，如 "variable_update"
-  version: string;               // 语义化版本，如 "1.2.0"
-  type: SchemaType;              // 协议类型
+```dart
+// lib/models/schema_definition.dart
+/// SchemaDefinition - 协议定义
+///
+/// 定义 Filament 扩展协议的规则、示例和解析提示
+class SchemaDefinition {
+  /// 唯一标识，如 "variable_update"
+  final String id;
   
-  // 内容
-  instruction: string;           // 协议规则说明（注入 System Prompt）
-  examples?: Example[];          // Few-shot 示例
-  lore_context?: string;         // 世界观补充（可选）
+  /// 语义化版本，如 "1.2.0"
+  final String version;
   
-  // 解析提示
-  parser_hints: ParserHints;     // 供 Filament Parser 使用
+  /// 协议类型
+  final SchemaType type;
   
-  // 注入配置
-  priority: number;              // 注入优先级（决定覆盖关系）
-  position_strategy: PositionStrategy;  // 注入位置策略
+  /// 协议规则说明（注入 System Prompt）
+  final String instruction;
+  
+  /// Few-shot 示例
+  final List<Example>? examples;
+  
+  /// 世界观补充（可选）
+  final String? loreContext;
+  
+  /// 解析提示（供 Filament Parser 使用）
+  final ParserHints parserHints;
+  
+  /// 注入优先级（决定覆盖关系）
+  final int priority;
+  
+  /// 注入位置策略
+  final PositionStrategy positionStrategy;
+  
+  const SchemaDefinition({
+    required this.id,
+    required this.version,
+    required this.type,
+    required this.instruction,
+    this.examples,
+    this.loreContext,
+    required this.parserHints,
+    required this.priority,
+    required this.positionStrategy,
+  });
 }
 
-type SchemaType = 
-  | 'core'       // 核心协议：仅包含 <think> 和 <content>，始终启用，不可覆盖
-  | 'extension'  // 扩展协议：按需启用，完全解耦，无不自动加载
-  | 'mode'       // 模式协议：全局输出风格，与其他 Mode 互斥
-  | 'override';  // 覆盖协议：替换特定 Extension 的实现
-
-interface ParserHints {
-  root_tag: string;              // 根标签名，如 "variable_update"
-  required_fields?: string[];    // 必需字段列表
-  streaming_support?: boolean;   // 是否支持流式解析
-  partial_tag?: string;          // 流式分块标签（如 "partial"）
+/// 协议类型枚举
+enum SchemaType {
+  /// 核心协议：仅包含 <think> 和 <content>，始终启用，不可覆盖
+  core,
+  
+  /// 扩展协议：按需启用，完全解耦，不自动加载
+  extension,
+  
+  /// 模式协议：全局输出风格，与其他 Mode 互斥
+  mode,
+  
+  /// 覆盖协议：替换特定 Extension 的实现
+  override,
 }
 
-type PositionStrategy = 
-  | 'system_start'     // System Chain 起始（高优先级覆盖）
-  | 'system_end'       // System Chain 末尾（默认）
-  | 'before_history'   // History Chain 之前（Few-shot）
-  | 'after_history'    // History Chain 之后
-  | 'floating';        // Floating Chain（动态注入）
+/// 解析提示
+class ParserHints {
+  /// 根标签名，如 "variable_update"
+  final String rootTag;
+  
+  /// 必需字段列表
+  final List<String>? requiredFields;
+  
+  /// 是否支持流式解析
+  final bool? streamingSupport;
+  
+  /// 流式分块标签（如 "partial"）
+  final String? partialTag;
+  
+  const ParserHints({
+    required this.rootTag,
+    this.requiredFields,
+    this.streamingSupport,
+    this.partialTag,
+  });
+}
 
-interface Example {
-  input: string;
-  output: string;
-  description?: string;
+/// 注入位置策略枚举
+enum PositionStrategy {
+  /// System Chain 起始（高优先级覆盖）
+  systemStart,
+  
+  /// System Chain 末尾（默认）
+  systemEnd,
+  
+  /// History Chain 之前（Few-shot）
+  beforeHistory,
+  
+  /// History Chain 之后
+  afterHistory,
+  
+  /// Floating Chain（动态注入）
+  floating,
+}
+
+/// Few-shot 示例
+class Example {
+  /// 输入示例
+  final String input;
+  
+  /// 输出示例
+  final String output;
+  
+  /// 示例描述
+  final String? description;
+  
+  const Example({
+    required this.input,
+    required this.output,
+    this.description,
+  });
 }
 ```
 
 ### 3.2 SchemaInjectionConfig (注入配置)
 
-```typescript
-interface SchemaInjectionConfig {
-  // 动态检测配置
-  dynamic_detection: boolean;
-  detection_method: 'tag' | 'intent' | 'both';
+```dart
+// lib/models/schema_injection_config.dart
+/// SchemaInjectionConfig - Schema 注入配置
+class SchemaInjectionConfig {
+  /// 是否启用动态检测
+  final bool dynamicDetection;
   
-  // 加载配置
-  library_path: string;          // Schema 库路径，如 "data/schemas"
-  default_protocols: string[];   // 默认启用的协议（除 core 外）
-  max_concurrent: number;        // 最大同时激活协议数
+  /// 检测方法
+  final DetectionMethod detectionMethod;
   
-  // 冲突解决
-  conflict_resolution: 'priority' | 'merge' | 'error';
+  /// Schema 库路径，如 "data/schemas"
+  final String libraryPath;
   
-  // 注入策略
-  injection_strategy: {
-    instruction: 'system_start' | 'system_end';
-    examples: 'before_history' | 'after_history';
-  };
+  /// 默认启用的协议（除 core 外）
+  final List<String> defaultProtocols;
+  
+  /// 最大同时激活协议数
+  final int maxConcurrent;
+  
+  /// 冲突解决策略
+  final ConflictResolution conflictResolution;
+  
+  /// 注入策略
+  final InjectionStrategy injectionStrategy;
+  
+  const SchemaInjectionConfig({
+    required this.dynamicDetection,
+    required this.detectionMethod,
+    required this.libraryPath,
+    required this.defaultProtocols,
+    required this.maxConcurrent,
+    required this.conflictResolution,
+    required this.injectionStrategy,
+  });
+}
+
+/// 检测方法枚举
+enum DetectionMethod {
+  tag,
+  intent,
+  both,
+}
+
+/// 冲突解决策略枚举
+enum ConflictResolution {
+  priority,
+  merge,
+  error,
+}
+
+/// 注入策略
+class InjectionStrategy {
+  /// 指令注入位置
+  final InstructionPosition instruction;
+  
+  /// 示例注入位置
+  final ExamplePosition examples;
+  
+  const InjectionStrategy({
+    required this.instruction,
+    required this.examples,
+  });
+}
+
+/// 指令位置枚举
+enum InstructionPosition {
+  systemStart,
+  systemEnd,
+}
+
+/// 示例位置枚举
+enum ExamplePosition {
+  beforeHistory,
+  afterHistory,
 }
 ```
 
