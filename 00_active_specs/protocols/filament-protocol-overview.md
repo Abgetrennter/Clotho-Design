@@ -47,7 +47,7 @@ Filament 遵循以下两大设计哲学：
 
 Filament 是**专门针对 LLM 设计的通信协议**，其应用范畴严格限定于：
 
-1. **提示词组装 (Prompt Assembly)**: 通过 XML+YAML 结构化注入 Character Card、World Info 等上下文。
+1. **提示词组装 (Prompt Assembly)**: 通过 XML+YAML 结构化注入 Pattern (织谱)、Lore (纹理) 等上下文。
 2. **LLM 输出解析 (Output Parsing)**: 解析 XML+JSON 格式的响应，提取思考过程、内容、状态更新等指令。
 3. **标签语义体系 (Tag Semantics)**: 定义标准化的 XML 标签集，明确表达 LLM 的意图（如 `<thought>`, `<content>`, `<variable_update>`）。
 4. **嵌入式 UI 指令 (Embedded UI)**: 允许 LLM 通过协议标签（如 `<mini_app>`）请求渲染原生组件。
@@ -94,7 +94,7 @@ graph LR
 - **[Jacquard 编排层](../jacquard/README.md)**: 协议在编排层中的应用
 - **[Mnemosyne 数据引擎](../mnemosyne/README.md)**: 协议在数据引擎中的应用
 - **[工作流与处理](../workflows/README.md)**: 使用协议的具体业务流程
-- **[角色卡导入与迁移](../workflows/character-import-migration.md)**: 从遗留系统迁移到 Filament 协议的实践指导
+- **[Pattern (织谱) 导入与迁移](../workflows/character-import-migration.md)**: 从遗留系统迁移到 Filament 协议的实践指导
 
 ---
 

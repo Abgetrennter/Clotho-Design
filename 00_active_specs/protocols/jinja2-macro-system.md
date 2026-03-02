@@ -200,7 +200,7 @@ Mnemosyne 的状态树以只读字典形式注入 Jinja2 上下文。
 
 | SillyTavern Macro | Clotho (Jinja2) | 说明 |
 |-------------------|-----------------|------|
-| `{{outlet::name}}` | `{{ outlet(name) }}` | World Info Outlet |
+| `{{outlet::name}}` | `{{ outlet(name) }}` | Lore Outlet |
 | `{{maxPrompt}}` | `{{ config.max_context }}` | 最大 Context Size |
 | `{{pipe}}` | `{{ pipe_result }}` | Slash Command 管道 |
 | `{{anchorBefore}}` | `{{ anchor_before }}` | WI 插入锚点（前） |

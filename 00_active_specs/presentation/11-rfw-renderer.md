@@ -321,7 +321,7 @@ class CharacterStatusPackage extends RFWPackage {
 }
 ```
 
-### 5.2 世界书卡片包
+### 5.2 Lore (纹理) 卡片包
 
 ```dart
 class LorebookCardPackage extends RFWPackage {

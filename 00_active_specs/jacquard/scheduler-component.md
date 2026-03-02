@@ -92,7 +92,7 @@ Scheduler 维护以下核心计数器，存储于 Mnemosyne 的 `scheduler_conte
 
 ## 4. 配置规范 (Configuration Spec)
 
-调度规则作为 **元数据 (Metadata)** 存在于 `World Info` 或 `Character Card` 中。
+调度规则作为 **元数据 (Metadata)** 存在于 `Lore` 或 `Pattern` 中。
 
 **JSON 结构**:
 

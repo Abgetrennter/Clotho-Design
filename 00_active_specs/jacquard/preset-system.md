@@ -21,7 +21,7 @@
 > **预设 (Preset) = 能力声明 (Capabilities) + 编排配置 (Configuration) + 内容数据 (Content)**
 
 这种设计让功能开关成为预设的内在属性，实现：
-- **自描述能力**：角色卡声明自身需要哪些功能
+- **自描述能力**：Pattern (织谱) 声明自身需要哪些功能
 - **渐进式复杂**：从极简到完整，按需启用功能
 - **依赖清晰**：能力之间的关系在 Schema 中明确定义
 
@@ -38,7 +38,7 @@
 | **语义缺失** | 只有简单的文本拼接，缺乏对 Block 功能的语义理解 | Block Taxonomy + 能力联动，实现智能调度 |
 | **配置割裂** | 模型参数、提示词模板、功能开关分散在不同地方 | 统一在 Preset 中管理，三层叠加 |
 | **功能冗余** | 所有功能默认开启，资源浪费 | 能力声明明确，按需加载 |
-| **角色兼容性** | 加载角色卡后手动调整功能 | 角色卡自带需求声明，自动检测 |
+| **角色兼容性** | 加载 Pattern 后手动调整功能 | Pattern (织谱) 自带需求声明，自动检测 |
 | **学习曲线** | 面对数十个独立开关无所适从 | 预设套件开箱即用，渐进调整 |
 
 ---
@@ -73,13 +73,13 @@ graph TD
 ### 2.2 L2: 角色与世界适配 (Character & World Adaptation / The Pattern)
 **定位**: 中间层的“风格滤镜”。定义这个角色**需要**哪些能力。
 
-*   **Required Capabilities (必需能力)**: 角色卡声明自身需要哪些系统功能才能正常工作（如 RPG 角色需要任务系统）。
-*   **Capability Overrides (能力覆盖)**: 角色卡可以强制开启或调整某些能力的配置。
-*   **Style Enforcement**: 具体的文风指导（提取自角色卡）。
+*   **Required Capabilities (必需能力)**: Pattern (织谱) 声明自身需要哪些系统功能才能正常工作（如 RPG 角色需要任务系统）。
+*   **Capability Overrides (能力覆盖)**: Pattern (织谱) 可以强制开启或调整某些能力的配置。
+*   **Style Enforcement**: 具体的文风指导（提取自 Pattern）。
 *   **Lore Strategy**: 世界书的触发机制（关键词/向量）和插入位置。
-*   **Mapping Rules**: 角色卡字段 (Description, Scenario) 如何映射到 L1 定义的 Block 中。
+*   **Mapping Rules**: Pattern (织谱) 字段 (Description, Scenario) 如何映射到 L1 定义的 Block 中。
 
-**示例**: 一个地下城主角色卡可以声明：
+**示例**: 一个地下城主 Pattern (织谱) 可以声明：
 ```yaml
 required_capabilities:
   - "mnemosyne.quest_system"
@@ -150,7 +150,7 @@ capability_patches:
 
 *   **批量开关**: 用户可以一键启用/禁用整个“越狱组”或“风格组”。
 *   **语义聚合**: 将功能相近的 Block（如 `QUAL_ANTI_REPEAT` 和 `QUAL_ANTI_CLICHE`）聚合为“质量控制组”。
-*   **继承与覆盖**: L2 角色卡可以针对特定组定义覆盖策略（例如“在该角色中禁用所有‘反八股’组的指令”）。
+*   **继承与覆盖**: L2 Pattern (织谱) 可以针对特定组定义覆盖策略（例如“在该角色中禁用所有‘反八股’组的指令”）。
 *   **能力联动**: 分组的可见性和可用性与能力状态联动。例如，当 `quest_system` 能力禁用时，相关的任务提示分组自动隐藏。
 
 ```yaml
@@ -385,7 +385,7 @@ content:
   # lorebooks: [...]
 
 # ═══════════════════════════════════════════════════════════════════════
-# 5. 角色卡特有 (Pattern Layer Only)
+# 5. Pattern 特有 (Pattern Layer Only)
 # ═══════════════════════════════════════════════════════════════════════
 # required_capabilities: []       # 声明必需能力
 # capability_overrides: {}        # 覆盖能力配置
@@ -433,10 +433,10 @@ int computePriority(PriorityConfig config, JacquardContext context) {
 
 ### 4.1.3 L2 Pattern 覆盖示例
 
-特定角色卡可以完全重编程执行顺序：
+特定 Pattern (织谱) 可以完全重编程执行顺序：
 
 ```yaml
-# L2 Pattern: "Deep Research" 角色卡
+# L2 Pattern: "Deep Research" Pattern (织谱)
 jacquard:
   orchestration:
     overrides:
@@ -519,7 +519,7 @@ final effective = CapabilityMerger.merge(
 
 **合并优先级** (后者覆盖前者):
 1. L1 Infrastructure - 基础默认值
-2. L2 Pattern - 角色卡必需能力 + 覆盖配置
+2. L2 Pattern - Pattern (织谱) 必需能力 + 覆盖配置
 3. L3 Session - 用户实时补丁
 4. Validation - 依赖验证与自动修复
 
@@ -539,7 +539,7 @@ final effective = CapabilityMerger.merge(
 **依赖处理策略**：
 1. **自动启用依赖** (`autoFix: true`)：用户开启A时，自动开启A依赖的B
 2. **禁用保护**：用户尝试禁用B时，警告有A依赖它
-3. **强制覆盖**：L2角色卡通过 `requiredCapabilities` 强制启用必需能力
+3. **强制覆盖**：L2 Pattern (织谱) 通过 `requiredCapabilities` 强制启用必需能力
 4. **互斥检测**：`simple` 模式与 `planner`, `scheduler` 等能力互斥
 
 ## 6. 运行时动态调整
@@ -682,7 +682,7 @@ capabilities:
 │  ━━━ 编排能力 (Jacquard) ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━   │
 │  ☑ 智能规划器 (Planner)                                      │
 │  ☑ 调度器 (Scheduler)                                       │
-│  ☐ RAG检索器    [需: 向量存储]  [角色卡要求]                  │
+│  ☐ RAG检索器    [需: 向量存储]  [Pattern 要求]                  │
 │  ☐ 记忆整理 (Consolidation)  [需: 回合摘要]                   │
 │                                                             │
 │  ━━━ 数据能力 (Mnemosyne) ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━   │
@@ -702,7 +702,7 @@ capabilities:
 │  ☑ 关键词检索   历史窗口: [20] 条                            │
 │                                                             │
 │  ━━━ 任务系统 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━   │
-│  ☐ 任务系统    [角色卡推荐开启]                              │
+│  ☐ 任务系统    [Pattern 推荐开启]                              │
 │                                                             │
 │              [恢复默认]    [取消]    [应用]                   │
 └─────────────────────────────────────────────────────────────┘
@@ -744,7 +744,7 @@ capabilities:
 ### Phase 3: 预设套件
 
 1. 设计并实现内置预设套件
-2. 角色卡能力需求声明规范
+2. Pattern (织谱) 能力需求声明规范
 3. 导入时能力兼容性检测
 4. 性能监控与自动降级
 

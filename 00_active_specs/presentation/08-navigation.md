@@ -157,12 +157,12 @@ class ClothoNavigationRail extends StatelessWidget {
         NavigationRailDestination(
           icon: Icon(Icons.book_outline),
           selectedIcon: Icon(Icons.book),
-          label: Text('世界书'),
+          label: Text('Lore (纹理)'),
         ),
         NavigationRailDestination(
           icon: Icon(Icons.person_outline),
           selectedIcon: Icon(Icons.person),
-          label: Text('角色卡'),
+          label: Text('Pattern (织谱)'),
         ),
         NavigationRailDestination(
           icon: Icon(Icons.settings_outlined),
@@ -199,12 +199,12 @@ class ExtendedNavigationRail extends StatelessWidget {
         NavigationRailDestination(
           icon: Icon(Icons.book_outline),
           selectedIcon: Icon(Icons.book),
-          label: Text('世界书'),
+          label: Text('Lore (纹理)'),
         ),
         NavigationRailDestination(
           icon: Icon(Icons.person_outline),
           selectedIcon: Icon(Icons.person),
-          label: Text('角色卡'),
+          label: Text('Pattern (织谱)'),
         ),
         NavigationRailDestination(
           icon: Icon(Icons.settings_outlined),
@@ -266,12 +266,12 @@ class ClothoNavigationDrawer extends StatelessWidget {
         NavigationDrawerDestination(
           icon: Icon(Icons.book_outline),
           selectedIcon: Icon(Icons.book),
-          label: Text('世界书'),
+          label: Text('Lore (纹理)'),
         ),
         NavigationDrawerDestination(
           icon: Icon(Icons.person_outline),
           selectedIcon: Icon(Icons.person),
-          label: Text('角色卡'),
+          label: Text('Pattern (织谱)'),
         ),
         const Divider(),
         NavigationDrawerDestination(
@@ -334,7 +334,7 @@ class NavigationPane extends StatelessWidget {
                   context,
                   icon: Icons.book_outline,
                   selectedIcon: Icons.book,
-                  label: '世界书',
+                  label: 'Lore (纹理)',
                   index: 1,
                   selectedIndex: selectedIndex,
                   onTap: onDestinationSelected,
@@ -343,7 +343,7 @@ class NavigationPane extends StatelessWidget {
                   context,
                   icon: Icons.person_outline,
                   selectedIcon: Icons.person,
-                  label: '角色卡',
+                  label: 'Pattern (织谱)',
                   index: 2,
                   selectedIndex: selectedIndex,
                   onTap: onDestinationSelected,

@@ -18,7 +18,7 @@ LLM 的所有输出必须包裹在特定的 Filament 标签中，确保机器可
 
 ## Core 标签（始终可用）
 
-Core 仅包含两个标签，**所有角色卡默认支持**，无需声明：
+Core 仅包含两个标签，**所有 Pattern (织谱) 默认支持**，无需声明：
 
 ### `<think>` - 思维链
 
@@ -73,7 +73,7 @@ Core 仅包含两个标签，**所有角色卡默认支持**，无需声明：
 
 ## Extension 标签（需显式启用）
 
-> **重要**: 以下标签**不属于 Core**。角色卡必须在 `configuration.protocols` 中显式启用对应的 Extension，Parser 才会识别这些标签。未启用的 Extension 标签将被视为普通文本。
+> **重要**: 以下标签**不属于 Core**。Pattern (织谱) 必须在 `configuration.protocols` 中显式启用对应的 Extension，Parser 才会识别这些标签。未启用的 Extension 标签将被视为普通文本。
 
 ### `<variable_update>` - 变量更新 (Extension: `variable_update`)
 

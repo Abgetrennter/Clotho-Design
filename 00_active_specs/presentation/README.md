@@ -319,7 +319,7 @@ class Inspector extends StatelessWidget {
 定义 RFW 原生渲染，包括：
 - **RFW 包结构**: Schema 定义、验证机制
 - **RFW 加载器**: 本地加载、动态代码加载
-- **内置包**: 角色状态包、世界书卡片包
+- **内置包**: Pattern (织谱) 状态包、Lore (纹理) 卡片包
 
 #### WebView 兜底 ([`12-webview-fallback.md`](./12-webview-fallback.md))
 

@@ -19,7 +19,7 @@
 
 1. **统一配置入口**: 所有功能开关集中在 Preset 中管理
 2. **渐进式复杂度**: 从极简到完整，按需启用功能
-3. **自描述能力**: 角色卡声明自身需求，自动适配
+3. **自描述能力**: Pattern (织谱) 声明自身需求，自动适配
 4. **依赖清晰**: 明确功能间的依赖和互斥关系
 5. **运行时动态**: 支持会话中实时调整功能配置
 
@@ -520,7 +520,7 @@ class CapabilityMerger {
     // 2. 检查 L2 的必需能力
     for (final required in l2.requiredCapabilities) {
       if (!base.isEnabled(required)) {
-        // 角色卡需要但基础预设禁用的能力
+        // Pattern (织谱) 需要但基础预设禁用的能力
         // 策略：自动启用并记录警告
         base = base.withCapabilityEnabled(required);
         log.warning(
@@ -552,7 +552,7 @@ class CapabilityMerger {
 ```
 运行时有效配置 = L1 Infrastructure (基础默认值)
                 ⊕ L2 Required (强制启用必需能力)
-                ⊕ L2 Overrides (角色卡覆盖)
+                ⊕ L2 Overrides (Pattern 覆盖)
                 ⊕ L3 Patches (用户实时调整)
                 → Validation (验证依赖)
 ```
@@ -779,13 +779,13 @@ class CapabilityConflictDetector {
   ) {
     final conflicts = <CapabilityConflict>[];
     
-    // 检查角色卡需求与实际配置的冲突
+    // 检查 Pattern 需求与实际配置的冲突
     for (final required in pattern.requiredCapabilities) {
       if (!caps.isEnabled(required)) {
         conflicts.add(CapabilityConflict(
           type: ConflictType.missingRequiredCapability,
           capability: required,
-          message: "角色卡需要 '$required' 但当前配置未启用",
+          message: "Pattern 需要 '$required' 但当前配置未启用",
         ));
       }
     }

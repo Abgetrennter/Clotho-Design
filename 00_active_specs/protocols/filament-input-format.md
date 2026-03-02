@@ -135,7 +135,7 @@ graph TD
 ## 最佳实践 (Best Practices)
 
 1. **保持 YAML 简洁**: YAML 应专注于描述数据，避免复杂的嵌套结构。
-2. **使用 Schema Library**: 避免将复杂的逻辑规则（如 `<UpdateVariable>` 的具体格式）直接写在 System Prompt 中，应使用 [Schema 库规范](schema-library.md) 进行管理，通过 Character Card 的 `protocols` 字段引用。
+2. **使用 Schema Library**: 避免将复杂的逻辑规则（如 `<UpdateVariable>` 的具体格式）直接写在 System Prompt 中，应使用 [Schema 库规范](schema-library.md) 进行管理，通过 Pattern (织谱) 的 `protocols` 字段引用。
 3. **善用 `<use_protocol>`**: 仅在运行时动态需要某种模式时使用此标签。
 4. **标签语义化**: 使用有意义的标签名称，如 `<location_forest>` 而非 `<entry>`。
 5. **缩进一致**: 统一使用 2 空格缩进，确保 YAML 的可读性。

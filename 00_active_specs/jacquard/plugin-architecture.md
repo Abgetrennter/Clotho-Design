@@ -134,7 +134,7 @@ class JacquardContext {
 | 阶段 | 模式 | 特点 | 适用场景 |
 |------|------|------|----------|
 | **静态锚点** | 硬编码常量 | 简单、可预测 | 系统默认行为 |
-| **动态编排** | 声明式配置 | 灵活、可重编程 | 角色卡定制、运行时调整 |
+| **动态编排** | 声明式配置 | 灵活、可重编程 | Pattern (织谱) 定制、运行时调整 |
 
 ### 4.2 静态优先级锚点 (Static Anchors)
 
@@ -333,7 +333,7 @@ class DynamicOrchestrator {
 #### 4.3.4 与 Preset 三层模型的集成
 
 ```yaml
-# L2 Pattern: "Deep Research" 角色卡
+# L2 Pattern: "Deep Research" Pattern (织谱)
 # 覆盖默认执行顺序：RAG 先于 Scheduler
 jacquard:
   orchestration:

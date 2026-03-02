@@ -70,7 +70,7 @@ graph TD
 
 ## 期望结构注册表 (Expected Structure Registry, ESR) v2.5
 
-ESR 是一个定义当前交互轮次中**合法**的 Filament 协议结构的元数据对象。它由 **Schema Injector** 根据角色卡配置动态构建，作为解析器的核心指导引擎。
+ESR 是一个定义当前交互轮次中**合法**的 Filament 协议结构的元数据对象。它由 **Schema Injector** 根据 Pattern (织谱) 配置动态构建，作为解析器的核心指导引擎。
 
 ### 动态注册机制
 

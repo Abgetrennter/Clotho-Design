@@ -87,7 +87,7 @@ class SDUIDispatcher {
 ```dart
 enum SDUIContentType {
   characterStatus,  // 角色状态
-  lorebookCard,     // 世界书卡片
+  lorebookCard,     // Lore (纹理) 卡片
   customWidget,     // 自定义组件
 }
 
@@ -367,7 +367,7 @@ void initializeSDUIExtensions() {
     ),
   );
 
-  // 注册世界书卡片包
+  // 注册 Lore (纹理) 卡片包
   registry.register(
     'lorebookCard',
     RFWPackage(

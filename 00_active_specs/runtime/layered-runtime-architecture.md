@@ -70,7 +70,7 @@ graph TD
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **L0** | **Infrastructure** | **骨架** | 定义与 LLM 的通信协议和 Prompt 结构。 | Read-Only | Prompt Template, API Config |
 | **L1** | **Environment** | **环境** | 定义跨角色共享的世界规则与用户身份。 | Read-Only | User Persona, Global Lorebooks |
-| **L2** | **The Pattern (织谱)** | **蓝图** | 定义角色的初始设定、固有特质与潜在逻辑。**(原 Character Card)** | Read-Only | **Pattern Data** (Name, Desc, First Mes), Base Lorebooks, Regex Scripts |
+| **L2** | **The Pattern (织谱)** | **蓝图** | 定义角色的初始设定、固有特质与潜在逻辑。**(原 "Character Card")** | Read-Only | **Pattern Data** (Name, Desc, First Mes), Base Lorebooks, Regex Scripts |
 | **L3** | **The Threads (丝络)** | **状态** | 记录角色的成长、记忆与状态变更。 | **Read-Write** | **Patches**, History Chain, VWD State Tree |
 
 ---
@@ -86,7 +86,7 @@ Mnemosyne 在 **上下文加载 (Context Load)** 阶段执行一次性的 **Deep
 1.  **Fast Path (Head State)**: 尝试从 `active_states` 表读取最新的完整状态树。如果命中，直接跳过 OpLog 重放过程，仅需将状态树中的 `patches` 应用于 L2 基底。
 2.  **Slow Path (Reconstruction)**: 如果 Head State 缺失，则回退到 "Snapshot + OpLog" 机制，重建出最新的状态树。
 3.  **Hydrate (注水)**: 将重建/加载的状态树（包含变量与 Patch）应用到 L2 静态基底上，生成最终的 `Projected State`。
-4.  **Runtime Modification (运行时修改)**: 此后所有的属性变更直接作用于内存对象，并同步触发 **Write-Back (回写)**，同时更新 `active_states` (热缓存) 和 `oplogs` (历史记录)。
+4.  **Runtime Modification (运行时修改)**: 此后所有的属性变更直接作用于内存对象，并同步触发 **Write-Back (回写)**，同时更新 `active_states` (热缓存) 和 `oplogs` (变更日志)。
 
 `patches` 字典采用 **"路径-值"** 结构，例如：
 
