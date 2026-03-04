@@ -37,9 +37,9 @@
 
 | 模式 | 宽度 (dp) | 布局策略 |
 | :--- | :--- | :--- |
-| **Desktop** | > 1200 | **三栏全开**: Nav (左) - Stage (中) - Inspector (右) |
-| **Tablet** | 600 - 1200 | **双栏/抽屉**: Nav 收起为 Rail，Inspector 默认隐藏 |
-| **Mobile** | <= 600 | **单栏流式**: 仅显示 Stage，其他功能通过 Drawer/Sheet 呼出 |
+| **Desktop** | ≥ 840 | **三栏全开**: Nav (左) - Stage (中) - Inspector (右) |
+| **Tablet** | 600 - 839 | **双栏/抽屉**: Nav 收起为 Rail，Inspector 默认隐藏 |
+| **Mobile** | ≤ 599 | **单栏流式**: 仅显示 Stage，其他功能通过 Drawer/Sheet 呼出 |
 
 ---
 
