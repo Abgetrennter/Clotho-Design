@@ -43,15 +43,84 @@ example_package.cpk
   "name": "com.clotho.templates.galgame",
   "version": "1.0.0",
   "min_api_level": 1,
+  "max_api_level": 5,
   "author": "Clotho Team",
   "description": "Galgame style message bubbles and status panels.",
   "permissions": ["network_image", "local_storage"],
   "entry_points": {
     "message_bubble": "GalgameBubble",
     "status_panel": "GalgameStatus"
+  },
+  "compatibility": {
+    "backward_compatible": true,
+    "forward_compatible": false,
+    "notes": "此包向后兼容 API Level 1-5，但不保证向前兼容"
   }
 }
 ```
+
+### 2.3 版本兼容性策略
+
+Clotho RFW 包采用语义化版本管理 (Semantic Versioning) 和 API Level 双重机制：
+
+#### 语义化版本 (SemVer)
+
+| 版本格式 | 说明 | 兼容性保证 |
+|---------|------|-----------|
+| `MAJOR.MINOR.PATCH` | 主版本。不兼容的 API 变更 | 不兼容 |
+| `MAJOR.MINOR.PATCH` | 次版本。向后兼容的功能新增 | 向后兼容 |
+| `MAJOR.MINOR.PATCH` | 修订号。向后兼容的问题修复 | 向后兼容 |
+
+#### API Level 机制
+
+| 字段 | 类型 | 必填 | 说明 |
+|-----|------|-----|------|
+| `min_api_level` | Integer | ✅ | 包所需的最低 API 级别 |
+| `max_api_level` | Integer | ✅ | 包支持的最高 API 级别 |
+| `compatibility.backward_compatible` | Boolean | ❌ | 是否向后兼容旧版本 |
+| `compatibility.forward_compatible` | Boolean | ❌ | 是否向前兼容新版本 |
+| `compatibility.notes` | String | ❌ | 兼容性说明 |
+
+#### 版本兼容性规则
+
+1. **加载检查**: 宿主应用加载包时，检查当前 API Level 是否在 `min_api_level` 和 `max_api_level` 范围内
+2. **拒绝加载**: 如果 API Level 不匹配，拒绝加载并返回错误信息
+3. **警告提示**: 如果包标记为不向后兼容，加载时显示警告
+4. **推荐更新**: 对于旧版本包，提示用户更新到最新版本
+
+```dart
+class RFWPackageLoader {
+  final int currentApiLevel = 5; // 当前宿主 API Level
+  
+  bool canLoadPackage(Manifest manifest) {
+    // 检查 API Level 范围
+    if (currentApiLevel < manifest.minApiLevel ||
+        currentApiLevel > manifest.maxApiLevel) {
+      return false;
+    }
+    
+    // 检查兼容性标记
+    if (!manifest.compatibility.backwardCompatible &&
+        currentApiLevel > manifest.minApiLevel) {
+      // 显示警告但不阻止加载
+      showCompatibilityWarning(manifest);
+    }
+    
+    return true;
+  }
+}
+```
+
+#### API Level 变更历史
+
+| API Level | Clotho 版本 | 主要变更 |
+|----------|-----------|---------|
+| 1 | 1.0.0 | 初始版本，基础 RFW 支持 |
+| 2 | 1.1.0 | 添加 SDUI 内容类型支持 |
+| 3 | 1.2.0 | 添加事件处理器支持 |
+| 4 | 1.3.0 | 添加主题同步支持 |
+| 5 | 1.4.0 | 添加 Pattern 状态组件 (当前版本) |
+
 
 ### 2.3 RFW 二进制库 (`main.rfw`)
 
