@@ -40,8 +40,8 @@ class Message {
   final String id;
   final String content;
   final bool isUser;
-  final String? characterName;
-  final String? avatarUrl;
+  final String? patternName;
+  final String? patternAvatar;
   final DateTime timestamp;
   final MessageStatus status;
   final List<MessageAction>? actions;
@@ -64,7 +64,7 @@ class MessageBubble extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // 头像
-          if (!isUser) Avatar(message.avatarUrl, message.characterName),
+          if (!isUser) Avatar(message.patternAvatar, message.patternName),
           SizedBox(width: 12),
           // 消息内容
           Expanded(
@@ -84,7 +84,7 @@ class MessageBubble extends StatelessWidget {
           ),
           SizedBox(width: 12),
           // 用户头像（可选）
-          if (isUser) Avatar(message.avatarUrl, 'User'),
+          if (isUser) Avatar(message.patternAvatar, 'User'),
         ],
       ),
     );
@@ -145,7 +145,7 @@ class AIMessageBubble extends StatelessWidget {
         // 头像
         CircleAvatar(
           radius: 20,
-          backgroundImage: NetworkImage(message.avatarUrl ?? ''),
+          backgroundImage: NetworkImage(message.patternAvatar ?? ''),
           backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
         ),
         SizedBox(width: 12),
@@ -168,7 +168,7 @@ class AIMessageBubble extends StatelessWidget {
               children: [
                 // AI 名称
                 Text(
-                  message.characterName ?? 'AI',
+                  message.patternName ?? 'AI',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),

@@ -258,12 +258,12 @@ class _RFWSlotRendererState extends State<RFWSlotRenderer> {
 ### 5.1 角色状态包
 
 ```dart
-class CharacterStatusPackage extends RFWPackage {
-  CharacterStatusPackage()
+class PatternStatusPackage extends RFWPackage {
+  PatternStatusPackage()
       : super(
-          name: 'CharacterStatus',
+          name: 'PatternStatus',
           version: '1.0.0',
-          type: 'characterStatus',
+          type: 'patternStatus',
           schema: {
             'name': 'string',
             'status': 'string',

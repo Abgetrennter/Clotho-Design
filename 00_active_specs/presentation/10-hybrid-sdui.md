@@ -86,9 +86,9 @@ class SDUIDispatcher {
 
 ```dart
 enum SDUIContentType {
-  characterStatus,  // 角色状态
-  lorebookCard,     // Lore (纹理) 卡片
-  customWidget,     // 自定义组件
+  patternStatus,  // Pattern (织谱) 状态
+  lorebookCard,   // Lore (纹理) 卡片
+  customWidget,   // 自定义组件
 }
 
 class SDUIContent {
@@ -350,17 +350,17 @@ class SDUIExtensionRegistry {
 void initializeSDUIExtensions() {
   final registry = SDUIExtensionRegistry();
 
-  // 注册角色状态包
+  // 注册 Pattern (织谱) 状态包
   registry.register(
-    'characterStatus',
+    'patternStatus',
     RFWPackage(
-      name: 'CharacterStatus',
+      name: 'PatternStatus',
       version: '1.0.0',
       schema: {
         'name': 'string',
         'status': 'string',
       },
-      builder: (data) => CharacterStatusWidget(
+      builder: (data) => PatternStatusWidget(
         name: data['name'],
         status: data['status'],
       ),
