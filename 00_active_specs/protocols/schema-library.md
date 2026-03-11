@@ -1,14 +1,26 @@
 # Schema 库规范 (Schema Library Specification)
 
-**版本**: 1.0.0
-**日期**: 2025-12-30
-**状态**: Draft
+**版本**: 1.1.0
+**日期**: 2026-03-11
+**状态**: Active
 **作者**: 资深系统架构师 (Architect Mode)
 **关联文档**:
 
 - Filament 协议概述 [`filament-protocol-overview.md`](filament-protocol-overview.md)
 - Jacquard 编排层 [`../jacquard/README.md`](../jacquard/README.md)
 - 输入格式 [`filament-input-format.md`](filament-input-format.md)
+
+---
+
+## 📖 术语使用说明
+
+本文档使用**隐喻术语**进行架构描述：
+
+| 隐喻术语 | 技术术语 | 说明 |
+|---------|---------|------|
+| Character Card (角色卡) | **Persona** (角色设定) | 静态蓝图 |
+
+在代码实现时，请使用 [`../naming-convention.md`](../naming-convention.md) 中定义的技术术语。
 
 ---
 

@@ -1,9 +1,9 @@
 # Filament 协议概述 (Filament Protocol Overview)
 
-**版本**: 2.3.0  
-**日期**: 2025-12-28  
-**状态**: Draft  
-**作者**: 资深系统架构师 (Architect Mode)  
+**版本**: 2.4.0
+**日期**: 2026-03-11
+**状态**: Active
+**作者**: 资深系统架构师 (Architect Mode)
 **关联文档**:
 
 - 输入格式 [`filament-input-format.md`](filament-input-format.md)
@@ -12,6 +12,20 @@
 - 解析流程 [`filament-parsing-workflow.md`](filament-parsing-workflow.md)
 - Jacquard 编排层 [`../jacquard/README.md`](../jacquard/README.md)
 - Mnemosyne 数据引擎 [`../mnemosyne/README.md`](../mnemosyne/README.md)
+
+---
+
+## 📖 术语使用说明
+
+本文档使用**隐喻术语**进行架构描述：
+
+| 隐喻术语 | 技术术语 | 说明 |
+|---------|---------|------|
+| Skein (绞纱) | **PromptBundle** (提示词包) | Prompt 组装容器 |
+| Pattern (织谱) | **Persona** (角色设定) | 静态蓝图 |
+| Tapestry (织卷) | **Session** (会话) | 运行时实例 |
+
+在代码实现时，请使用 [`../naming-convention.md`](../naming-convention.md) 中定义的技术术语。
 
 ---
 

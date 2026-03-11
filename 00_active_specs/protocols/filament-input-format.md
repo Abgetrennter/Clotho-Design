@@ -1,15 +1,28 @@
 # 输入格式：XML+YAML (Input Format: XML+YAML)
 
-**版本**: 2.3.0  
-**日期**: 2025-12-28  
-**状态**: Draft  
-**作者**: 资深系统架构师 (Architect Mode)  
+**版本**: 2.4.0
+**日期**: 2026-03-11
+**状态**: Active
+**作者**: 资深系统架构师 (Architect Mode)
 **关联文档**:
 
 - 概述 [`filament-protocol-overview.md`](filament-protocol-overview.md)
 - Jinja2 宏系统 [`jinja2-macro-system.md`](jinja2-macro-system.md)
 - 输出格式 [`filament-output-format.md`](filament-output-format.md)
 - 解析流程 [`filament-parsing-workflow.md`](filament-parsing-workflow.md)
+
+---
+
+## 📖 术语使用说明
+
+本文档使用**隐喻术语**进行架构描述：
+
+| 隐喻术语 | 技术术语 | 说明 |
+|---------|---------|------|
+| Pattern (织谱) | **Persona** (角色设定) | 静态蓝图 |
+| Skein (绞纱) | **PromptBundle** (提示词包) | Prompt 组装容器 |
+
+在代码实现时，请使用 [`../naming-convention.md`](../naming-convention.md) 中定义的技术术语。
 
 ---
 
