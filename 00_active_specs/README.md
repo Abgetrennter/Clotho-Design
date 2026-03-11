@@ -1,9 +1,34 @@
 # Clotho 系统架构文档索引
 
-**版本**: 3.0.0
-**日期**: 2026-01-12
-**状态**: Reorganized
+**版本**: 3.1.0
+**日期**: 2026-03-11
+**状态**: Active
 **作者**: Clotho 文档重构团队
+
+---
+
+## 📖 术语使用说明
+
+Clotho 项目采用**双术语体系**，请根据场景选择合适的术语：
+
+| 场景 | 推荐术语体系 | 文档链接 |
+|-----|------------|---------|
+| **架构设计文档** | 隐喻体系 (Metaphor) | [`metaphor-glossary.md`](metaphor-glossary.md) |
+| **代码实现** | 技术语义体系 (Technical) | [`naming-convention.md`](naming-convention.md) |
+| **用户界面** | 技术语义体系 | [`naming-convention.md`](naming-convention.md) |
+| **对外交流** | 视受众而定 | 两者混合使用 |
+
+### 快速映射表
+
+| 隐喻术语 | 技术术语 | 代码示例 |
+|---------|---------|---------|
+| Tapestry (织卷) | **Session** (会话) | `final session = await getSession(id);` |
+| Pattern (织谱) | **Persona** (角色设定) | `final persona = session.persona;` |
+| Threads (丝络) | **Context** (上下文) | `final context = session.context;` |
+| Punchcards (穿孔卡) | **Snapshot** (快照) | `final snapshot = await createSnapshot(id);` |
+| Skein (绞纱) | **PromptBundle** (提示词包) | `final bundle = await assemblePrompt(id, input);` |
+
+> 💡 **简单规则**: 写代码时，请将隐喻术语"翻译"为 [`naming-convention.md`](naming-convention.md) 中的技术术语。
 
 ---
 
@@ -64,7 +89,8 @@ graph TD
 - **文件列表**:
   - [`vision-and-philosophy.md`](vision-and-philosophy.md) - 愿景与哲学
   - [`architecture-principles.md`](architecture-principles.md) - 架构原则
-  - [`metaphor-glossary.md`](metaphor-glossary.md) - 术语表与隐喻体系
+  - [`metaphor-glossary.md`](metaphor-glossary.md) - 术语表与隐喻体系（纺织隐喻）
+  - [`naming-convention.md`](naming-convention.md) - 命名规范（技术语义体系）
 
 ### 2. 子系统 (Subsystems)
 
@@ -138,8 +164,9 @@ graph TD
 ### 新用户阅读路径
 
 1. **第一步**: 阅读 [`vision-and-philosophy.md`](vision-and-philosophy.md) 理解设计理念
-2. **第二步**: 阅读 [`metaphor-glossary.md`](metaphor-glossary.md) 理解核心术语
-3. **第三步**: 根据兴趣深入特定子系统目录
+2. **第二步**: 阅读 [`metaphor-glossary.md`](metaphor-glossary.md) 理解核心隐喻概念
+3. **第三步**: 阅读 [`naming-convention.md`](naming-convention.md) 了解技术命名规范（开发者必读）
+4. **第四步**: 根据兴趣深入特定子系统目录
 
 ### 开发者阅读路径
 
