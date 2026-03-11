@@ -1,10 +1,25 @@
 # 核心组件：规划器 (Planner)
 
-**版本**: 1.2.0
-**日期**: 2026-02-19
-**状态**: Draft
+**版本**: 1.3.0
+**日期**: 2026-03-11
+**状态**: Active
 **作者**: 资深系统架构师 (Architect Mode)
 **关联文档**: [`jacquard-orchestration.md`](README.md), [`../mnemosyne/abstract-data-structures.md`](../mnemosyne/abstract-data-structures.md), [`skein-and-weaving.md`](skein-and-weaving.md)
+
+---
+
+## 📖 术语使用说明
+
+本文档混合使用**隐喻术语**和**技术术语**：
+
+| 隐喻术语 (架构概念) | 技术术语 (代码实现) | 说明 |
+|-------------------|-------------------|------|
+| Tapestry (织卷) | **Session** (会话) | 运行时实例 |
+| Pattern (织谱) | **Persona** (角色设定) | 静态蓝图 |
+| Threads (丝络) | **Context** / **HistoryChain** | 动态状态/历史链 |
+| Skein (绞纱) | **PromptBundle** (提示词包) | Prompt 组装容器 |
+
+在代码实现时，请使用 [`../naming-convention.md`](../naming-convention.md) 中定义的技术术语。
 
 ---
 

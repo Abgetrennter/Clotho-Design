@@ -1,13 +1,27 @@
 # Jacquard 预设与编排系统 (Preset & Orchestration System)
 
-**版本**: 2.0.0
-**日期**: 2026-02-13
-**状态**: Draft
+**版本**: 2.1.0
+**日期**: 2026-03-11
+**状态**: Active
 **关联文档**:
 - [`README.md`](README.md)
 - [`../workflows/prompt-processing.md`](../workflows/prompt-processing.md)
 - [`../protocols/filament-protocol-overview.md`](../protocols/filament-protocol-overview.md)
 - [`capability-system-spec.md`](capability-system-spec.md) - 能力系统详细规范
+
+---
+
+## 📖 术语使用说明
+
+本文档混合使用**隐喻术语**和**技术术语**：
+
+| 隐喻术语 (架构概念) | 技术术语 (代码实现) | 说明 |
+|-------------------|-------------------|------|
+| Pattern (织谱) | **Persona** (角色设定) | 静态蓝图 |
+| Tapestry (织卷) | **Session** (会话) | 运行时实例 |
+| Shuttle (梭子) | **Plugin** (插件) | 流水线功能单元 |
+
+在代码实现时，请使用 [`../naming-convention.md`](../naming-convention.md) 中定义的技术术语。
 
 ---
 

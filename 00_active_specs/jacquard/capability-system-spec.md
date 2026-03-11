@@ -1,13 +1,26 @@
 # Jacquard 能力系统规范 (Capability System Specification)
 
-**版本**: 1.0.0
-**日期**: 2026-02-13
-**状态**: Draft
+**版本**: 1.1.0
+**日期**: 2026-03-11
+**状态**: Active
 **作者**: 资深系统架构师
 **关联文档**:
 - [`preset-system.md`](preset-system.md) - 预设系统总览
 - [`plugin-architecture.md`](plugin-architecture.md) - 插件架构
 - [`../mnemosyne/abstract-data-structures.md`](../mnemosyne/abstract-data-structures.md) - 数据结构
+
+---
+
+## 📖 术语使用说明
+
+本文档混合使用**隐喻术语**和**技术术语**：
+
+| 隐喻术语 (架构概念) | 技术术语 (代码实现) | 说明 |
+|-------------------|-------------------|------|
+| Pattern (织谱) | **Persona** (角色设定) | 静态蓝图 |
+| Tapestry (织卷) | **Session** (会话) | 运行时实例 |
+
+在代码实现时，请使用 [`../naming-convention.md`](../naming-convention.md) 中定义的技术术语。
 
 ---
 

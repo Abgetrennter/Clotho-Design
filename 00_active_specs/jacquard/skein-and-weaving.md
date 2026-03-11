@@ -1,13 +1,27 @@
 # Skein 编织系统设计规范 (Skein Weaving System)
 
-**版本**: 1.1.0
-**日期**: 2026-02-19
-**状态**: Draft
+**版本**: 1.2.0
+**日期**: 2026-03-11
+**状态**: Active
 **关联文档**:
 - [`README.md`](README.md)
 - [`preset-system.md`](preset-system.md)
 - [`../mnemosyne/abstract-data-structures.md`](../mnemosyne/abstract-data-structures.md)
 - [`../workflows/prompt-processing.md`](../workflows/prompt-processing.md)
+
+---
+
+## 📖 术语使用说明
+
+本文档使用**隐喻术语**进行架构描述：
+
+| 隐喻术语 | 技术术语 | 说明 |
+|---------|---------|------|
+| Skein (绞纱) | **PromptBundle** (提示词包) | Prompt 组装容器 |
+| Weaving (编织) | **Assemble** (组装) | Prompt 构建过程 |
+| Shuttle (梭子) | **Plugin** (插件) | 流水线功能单元 |
+
+在代码实现时，请使用 [`../naming-convention.md`](../naming-convention.md) 中定义的技术术语。
 
 ---
 

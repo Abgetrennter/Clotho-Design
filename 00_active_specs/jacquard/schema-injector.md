@@ -1,8 +1,8 @@
 # Schema Injector 组件规范 (Schema Injector Specification)
 
-**版本**: 1.0.0
-**日期**: 2026-02-19
-**状态**: Draft
+**版本**: 1.1.0
+**日期**: 2026-03-11
+**状态**: Active
 **作者**: 资深系统架构师
 **关联文档**:
 - [`README.md`](README.md) - Jacquard 概览
@@ -11,6 +11,19 @@
 - [`../protocols/schema-library.md`](../protocols/schema-library.md) - Schema 库规范
 - [`../workflows/prompt-processing.md`](../workflows/prompt-processing.md) - 提示词处理工作流
 - [`../workflows/post-generation-processing.md`](../workflows/post-generation-processing.md) - 生成后处理工作流
+
+---
+
+## 📖 术语使用说明
+
+本文档混合使用**隐喻术语**和**技术术语**：
+
+| 隐喻术语 (架构概念) | 技术术语 (代码实现) | 说明 |
+|-------------------|-------------------|------|
+| Skein (绞纱) | **PromptBundle** (提示词包) | Prompt 组装容器 |
+| Shuttle (梭子) | **Plugin** (插件) | 流水线功能单元 |
+
+在代码实现时，请使用 [`../naming-convention.md`](../naming-convention.md) 中定义的技术术语。
 
 ---
 
