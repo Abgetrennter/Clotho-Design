@@ -30,4 +30,11 @@ COPYRIGHT
 10_references/PeroCore-tauri/*
 04_prototype/*
 08_demo/*
-09_mvp/*
+*.cmake
+*.cc
+
+09_mvp/android/
+09_mvp/ios/
+09_mvp/macos/
+09_mvp/windows/
+09_mvp/linux/
