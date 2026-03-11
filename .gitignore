@@ -76,28 +76,12 @@ COPYRIGHT
 09_mvp/.pub-cache/
 09_mvp/.pub/
 
-# Android
-09_mvp/android/.gradle/
-09_mvp/android/captures/
-09_mvp/android/gradlew
-09_mvp/android/gradlew.bat
-09_mvp/android/local.properties
-09_mvp/android/**/GeneratedPluginRegistrant.java
-09_mvp/android/**/GeneratedPluginRegistrant.kt
-
-# iOS
-09_mvp/ios/Pods/
-09_mvp/ios/.symlinks/
-09_mvp/ios/Flutter/Flutter.framework
-09_mvp/ios/Flutter/Flutter.podspec
-09_mvp/ios/Flutter/Generated.xcconfig
-09_mvp/ios/Flutter/ephemeral/
-09_mvp/ios/Runner/GeneratedPluginRegistrant.h
-09_mvp/ios/Runner/GeneratedPluginRegistrant.m
-
-# Linux
-09_mvp/linux/flutter/ephemeral/
-09_mvp/linux/flutter/generated_plugin_registrant.cc
+# Platform directories (entire)
+09_mvp/android/
+09_mvp/ios/
+09_mvp/linux/
+09_mvp/macos/
+09_mvp/windows/
 09_mvp/linux/flutter/generated_plugin_registrant.h
 09_mvp/linux/runner/generated_plugin_registrant.cc
 09_mvp/linux/runner/generated_plugin_registrant.h
