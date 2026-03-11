@@ -1,10 +1,27 @@
 # Clotho 架构一致性审计报告 (Architecture Consistency Audit Report)
 
-**版本**: 1.1.0
-**日期**: 2026-02-26
+**版本**: 1.2.0
+**日期**: 2026-03-11
 **状态**: Active
 **审计范围**: `00_active_specs/` 目录下所有设计文档
 **审计依据**: Flutter 最佳实践、Clean Architecture、SOLID 原则、官方设计指南
+
+---
+
+## 📖 术语使用说明
+
+本文档使用**技术语义术语**：
+
+| 术语 | 说明 |
+|------|------|
+| **Session** | 会话实例 |
+| **Persona** | 角色设定 |
+| **Jacquard** | 编排层 |
+| **Mnemosyne** | 数据引擎 |
+
+在代码实现时，请使用 [`../naming-convention.md`](../naming-convention.md) 中定义的技术术语。
+
+> **注**: 本文档中引用的旧术语（如 "Character Card"）仅用于标识需要修复的文档位置。
 
 ---
 

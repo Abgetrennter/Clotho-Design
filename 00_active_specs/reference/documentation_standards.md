@@ -1,9 +1,30 @@
 # 文档标准与撰写指南 (Documentation Standards)
 
-**版本**: 1.1.0
-**日期**: 2026-02-27
+**版本**: 1.2.0
+**日期**: 2026-03-11
 **状态**: Active
 **适用对象**: AI 助手、文档维护者、贡献者
+
+---
+
+## 📖 双术语体系使用说明
+
+Clotho 项目采用**双术语体系**，撰写文档时请遵循以下规则：
+
+### 架构文档中的术语选择
+
+| 文档类型 | 推荐术语体系 | 说明 |
+|---------|------------|------|
+| **架构设计文档** | 隐喻体系 (Metaphor) | 保持概念形象化，如 Tapestry, Pattern, Threads |
+| **代码规范文档** | 技术语义体系 (Technical) | 使用精确技术术语，如 Session, Persona, Context |
+| **API 文档** | 技术语义体系 | 与代码变量名保持一致 |
+
+### 术语映射参考
+
+- 主术语表：[`../metaphor-glossary.md`](../metaphor-glossary.md)
+- 代码命名规范：[`../naming-convention.md`](../naming-convention.md)
+
+> 💡 **简单规则**: 架构文档使用隐喻术语，代码相关文档使用技术术语。
 
 ---
 
@@ -29,7 +50,11 @@
 
 ### 3.2 术语 (Terminology)
 
-必须严格遵守 [`../metaphor-glossary.md`](../metaphor-glossary.md) 中定义的隐喻体系。
+项目使用双术语体系，根据场景选择：
+
+#### 隐喻体系（架构设计）
+
+遵循 [`../metaphor-glossary.md`](../metaphor-glossary.md) 中的纺织隐喻：
 
 * **Clotho**: 整个系统。
 * **Jacquard**: 编排层/引擎。
@@ -37,6 +62,16 @@
 * **The Pattern (织谱)**: 静态定义集（原 Character Card）。
 * **The Tapestry (织卷)**: 运行时实例/存档。
 * **Threads (丝络)**: 动态状态流/历史记录。
+
+#### 技术语义体系（代码实现）
+
+遵循 [`../naming-convention.md`](../naming-convention.md) 中的命名规范：
+
+* **Persona**: 角色设定（对应 Pattern）。
+* **Session**: 会话（对应 Tapestry）。
+* **Context**: 上下文（对应 Threads）。
+* **Snapshot**: 快照（对应 Punchcards）。
+* **PromptBundle**: 提示词包（对应 Skein）。
 
 🚫 **禁止使用**: 不要使用 "SillyTavern", "Character Card" , "Chat History" 等旧术语来描述新架构，但是可以引用作为在新架构中的映射内容
 
