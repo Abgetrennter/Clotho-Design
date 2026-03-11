@@ -30,22 +30,22 @@
 | **基础对话交互** | 用户输入 → LLM 响应，支持流式输出 | P0 |
 | **历史记录展示** | 线性展示对话历史，支持滚动 | P0 |
 | **Filament 协议解析** | 解析 `<think>` 和 `<content>` 标签 (v2.4 协议) | P0 |
-| **Pattern 加载** | 支持加载预设织谱（简化版 L2 Pattern） | P1 |
+| **Persona 加载** | 支持加载预设角色设定（简化版 L2 Persona） | P1 |
 
 ### 2.2 排除的功能 (Out-of-Scope)
 
 | 功能类别 | 具体内容 | 排除原因 |
 |----------|----------|----------|
-| **状态管理** | VWD 变量更新、状态持久化、OpLog | MVP 阶段专注于对话核心流程 |
-| **Planning Phase** | 意图分流、Planner 上下文管理 | MVP 阶段统一走完整生成通道 |
+| **状态管理** | VWD 变量更新、StateTree 持久化、OpLog | MVP 阶段专注于对话核心流程 |
+| **Pre-Generation** | 意图分流、Planner 上下文管理 | MVP 阶段统一走完整生成通道 |
 | **RAG 检索** | 基于语义检索的 Floating Asset 注入 | 使用固定上下文替代 |
 | **ACL 权限控制** | 动态作用域访问控制 (Global/Shared/Private) | 单角色场景无需复杂权限 |
 | **Quest 任务系统** | 状态化任务管理 | MVP 阶段不涉及复杂剧情 |
-| **Consolidation Phase** | 异步记忆归档、Turn Summary 生成 | MVP 阶段仅保留原始历史 |
+| **Post-Generation** | 异步记忆归档、Turn Summary 生成 | MVP 阶段仅保留原始历史 |
 | **混合渲染引擎** | RFW + WebView 双轨渲染 | 仅使用基础 Flutter UI |
-| **状态回溯与分支** | 时间旅行、多重宇宙树 | MVP 阶段仅支持线性历史 |
-| **Jinja2 宏系统** | 动态模板渲染、Skein 编织 | MVP 阶段使用静态 Prompt 模板 |
-| **Inspector 数据检视器** | 状态树可视化、Schema 驱动渲染 | MVP 阶段不涉及状态可视化 |
+| **状态回溯与分支** | 时间旅行、Session Fork | MVP 阶段仅支持线性历史 |
+| **Jinja2 宏系统** | 动态模板渲染、PromptBundle 编织 | MVP 阶段使用静态 Prompt 模板 |
+| **Inspector 数据检视器** | StateTree 可视化、Schema 驱动渲染 | MVP 阶段不涉及状态可视化 |
 | **Extension 标签** | `<variable_update>`, `<tool_call>`, `<choice>` 等 | 仅使用 Core 标签 |
 
 ---
@@ -55,23 +55,23 @@
 ```mermaid
 sequenceDiagram
     participant U as 用户
-    participant UI as 表现层 (Stage)
+    participant UI as Stage (表现层)
     participant J as Jacquard (编排层)
     participant M as Mnemosyne (数据层)
     participant L as LLM API
 
     Note over U,L: 初始化流程
     U->>UI: 启动 Demo
-    UI->>M: 加载预设 Pattern (L2 织谱)
-    M-->>UI: 返回 Pattern 投影
+    UI->>M: 加载预设 Persona (L2 角色设定)
+    M-->>UI: 返回 Persona 投影
     UI-->>U: 显示聊天界面
 
     Note over U,L: 对话交互流程
     U->>UI: 输入消息
     UI->>J: 发送用户输入 (Intent)
-    J->>M: 请求历史记录 (Threads)
+    J->>M: 请求历史记录 (TurnHistory)
     M-->>J: 返回 Messages
-    J->>J: 组装 Prompt (简化版 Skein)
+    J->>J: 组装 Prompt (简化版 PromptBundle)
     J->>L: 调用 LLM API (Filament v2.4)
     L-->>J: 流式返回 Filament 输出
     J->>J: 解析 Filament (<think>, <content>)
@@ -85,13 +85,13 @@ sequenceDiagram
 
 1. **启动阶段**
    - 用户启动 Demo 应用
-   - 系统自动加载预设 Pattern（如"森林精灵 Seraphina"）
+   - 系统自动加载预设 Persona（如"森林精灵 Seraphina"）
    - UI 显示聊天界面（输入框 + 消息列表）
 
 2. **首次对话**
    - 用户在输入框输入："你好，你是谁？"
    - 点击发送按钮
-   - 系统组装 Prompt（包含 Pattern 系统提示 + 用户输入）
+   - 系统组装 Prompt（包含 Persona 系统提示 + 用户输入）
    - 调用 LLM API
    - 解析返回的 Filament 标签（`<think>` + `<content>`）
    - UI 显示 AI 回复："你好，我是 Seraphina，一名来自森林的精灵..."
@@ -109,92 +109,269 @@ sequenceDiagram
 
 ## 4. 关键技术架构
 
-### 4.1 分层运行时模型 (Layered Runtime)
+### 4.1 术语对照表
+
+根据 [命名规范](../00_active_specs/naming-convention.md)，本文档采用以下术语体系：
+
+| 隐喻术语 (架构文档) | 技术术语 (代码实现) | 说明 |
+|--------------------|--------------------|------|
+| The Pattern (织谱) | **Persona** | 静态角色设定 |
+| The Tapestry (织卷) | **Session** | 运行时会话实例 |
+| The Threads (丝络) | **Context** | 动态上下文 |
+| Punchcards | **Snapshot** | 状态快照 |
+| Skein | **PromptBundle** | 提示词组装容器 |
+| Planning Phase | **Pre-Generation** | 预生成阶段 |
+| Consolidation Phase | **Post-Generation** | 后生成阶段 |
+| Weaving | **Assemble** | Prompt 组装 |
+
+### 4.2 分层运行时模型 (Layered Runtime)
 
 根据 [分层运行时环境架构](../00_active_specs/runtime/layered-runtime-architecture.md)，MVP 实现简化的四层叠加模型：
 
-| 层级 | 隐喻名称 | 功能 | MVP 实现 | 读写权限 |
+| 层级 | 隐喻名称 | 技术名称 | MVP 实现 | 读写权限 |
 | :--- | :--- | :--- | :--- | :--- |
-| **L0** | Infrastructure | Prompt 模板、API 配置 | 硬编码默认模板 | Read-Only |
-| **L1** | Environment | 全局 Lore、User Persona | 暂不实现 | - |
-| **L2** | The Pattern (织谱) | 角色静态定义 | 简化 YAML Pattern | Read-Only |
-| **L3** | The Threads (丝络) | 历史记录、状态 | 仅 Messages，无状态树 | Read-Write |
+| **L0** | Infrastructure | **Config** | 硬编码默认 Prompt 模板 | Read-Only |
+| **L1** | Environment | **World** | 暂不实现 | - |
+| **L2** | The Pattern | **Persona** | 简化 YAML Persona | Read-Only |
+| **L3** | The Threads | **State** | 仅 Messages，无 StateTree | Read-Write |
 
-### 4.2 简化数据模型
+### 4.3 简化数据模型
 
-#### 4.2.1 核心实体定义
+#### 4.3.1 核心实体定义 (Dart)
 
-```yaml
-# Pattern (织谱) - L2 静态定义
-Pattern:
-  id: string              # 唯一标识
-  name: string            # 角色名称
-  description: string     # 角色描述
-  system_prompt: string   # 系统提示词 (L2 核心)
-  first_message: string   # 首条消息
-  created_at: timestamp
+```dart
+// lib/mnemosyne/models/persona.dart
+/// Persona - 角色设定
+/// 
+/// 对应隐喻体系中的 "Pattern (织谱)"
+/// L2 层：静态只读，作为 Session 的蓝图
+class Persona {
+  final String id;
+  final String name;
+  final String description;
+  final String systemPrompt;
+  final String? firstMessage;
+  final DateTime createdAt;
+  
+  const Persona({
+    required this.id,
+    required this.name,
+    required this.description,
+    required this.systemPrompt,
+    this.firstMessage,
+    required this.createdAt,
+  });
+}
 
-# Tapestry (织卷) - 运行时实例
-Tapestry:
-  id: string              # 唯一标识
-  pattern_id: string      # 关联的 Pattern ID (L2 引用)
-  title: string           # 会话标题
-  created_at: timestamp
-  updated_at: timestamp
+// lib/mnemosyne/models/session.dart
+/// Session - 运行时会话实例
+///
+/// 对应隐喻体系中的 "Tapestry (织卷)"
+/// 用户感知的"一个存档"或"一段人生"
+class Session {
+  final String id;
+  final String personaId;
+  final String title;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  
+  const Session({
+    required this.id,
+    required this.personaId,
+    required this.title,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+}
 
-# Turn (回合) - v1.1 Turn-Centric 架构
-Turn:
-  id: string              # 唯一标识
-  tapestry_id: string     # 所属织卷
-  index: integer          # 回合序号 (全局递增)
-  created_at: timestamp
-  # MVP 简化：不包含 summary, vector_id, stateSnapshot
+// lib/mnemosyne/models/turn.dart
+/// Turn - 回合数据模型
+///
+/// 最小的完整叙事单元
+/// v1.1 Turn-Centric 架构核心
+class Turn {
+  final String id;
+  final String sessionId;
+  final int index;
+  final DateTime createdAt;
+  final List<Message> messages;
+  
+  // MVP 简化：不包含以下字段
+  // final String summary;
+  // final String vectorId;
+  // final StateSnapshot? stateSnapshot;
+  
+  const Turn({
+    required this.id,
+    required this.sessionId,
+    required this.index,
+    required this.createdAt,
+    required this.messages,
+  });
+}
 
-# Message (消息) - Threads 组成部分
-Message:
-  id: string              # 唯一标识
-  turn_id: string         # 所属回合
-  role: enum              # "user" | "assistant" | "system"
-  content: string         # 消息内容
-  type: enum              # "text" | "thought" (来自 <think>)
-  timestamp: timestamp
-  # MVP 简化：不包含 token 元数据
+// lib/mnemosyne/models/message.dart
+/// Message - 消息数据模型
+///
+/// Threads (丝络) 的组成部分
+class Message {
+  final String id;
+  final String turnId;
+  final MessageRole role;
+  final String content;
+  final MessageType type;
+  final DateTime timestamp;
+  final bool isActive;
+  
+  const Message({
+    required this.id,
+    required this.turnId,
+    required this.role,
+    required this.content,
+    required this.type,
+    required this.timestamp,
+    this.isActive = true,
+  });
+}
+
+enum MessageRole { user, assistant, system }
+enum MessageType { text, thought }
 ```
 
-### 4.3 核心 API 定义
+### 4.4 核心 API 定义
 
-#### 4.3.1 Repository 层接口
+#### 4.4.1 Repository 层接口
 
 根据 [公共接口定义](../00_active_specs/protocols/interface-definitions.md)：
 
-| 接口 | 方法 | 描述 |
-|------|------|------|
-| **TurnRepository** | `getBySession(sessionId)` | 获取会话的所有 Turns |
-| | `create(turn)` | 创建新 Turn |
-| **SessionRepository** | `getById(id)` | 获取 Session |
-| | `create(session)` | 创建新 Session |
-| | `getAll()` | 获取所有 Sessions |
-| **PatternRepository** | `getById(id)` | 获取 Pattern |
-| | `getAll()` | 获取所有 Patterns |
+```dart
+// lib/mnemosyne/repositories/turn_repository.dart
+/// Turn 数据访问接口
+abstract class TurnRepository {
+  /// 获取会话的所有 Turns
+  Future<List<Turn>> getBySession(String sessionId);
+  
+  /// 创建新 Turn
+  Future<Turn> create(Turn turn);
+  
+  /// 获取会话的最后一个 Turn
+  Future<Turn?> getLastTurn(String sessionId);
+}
 
-#### 4.3.2 UseCase 层接口
+// lib/mnemosyne/repositories/session_repository.dart
+/// Session 数据访问接口
+abstract class SessionRepository {
+  /// 根据 ID 获取 Session
+  Future<Session> getById(String id);
+  
+  /// 创建新 Session
+  Future<Session> create(Session session);
+  
+  /// 更新 Session
+  Future<void> update(Session session);
+  
+  /// 删除 Session 及其所有 Turns
+  Future<void> delete(String id);
+  
+  /// 获取所有 Sessions
+  Future<List<Session>> getAll();
+  
+  /// 获取最近的 Sessions
+  Future<List<Session>> getRecent({int limit = 10});
+}
 
-| 接口 | 方法 | 描述 |
-|------|------|------|
-| **GenerateResponseUseCase** | `execute(params)` | 执行生成响应 |
-| | `executeStreaming(params)` | 流式生成响应 |
-| | `cancel(taskId)` | 取消生成 |
-| **CreateTurnUseCase** | `execute(params)` | 创建新回合 |
-| **LoadSessionUseCase** | `execute(params)` | 加载会话 |
+// lib/mnemosyne/repositories/persona_repository.dart
+/// Persona 数据访问接口
+abstract class PersonaRepository {
+  /// 根据 ID 获取 Persona
+  Future<Persona> getById(String id);
+  
+  /// 获取所有 Personas
+  Future<List<Persona>> getAll();
+}
+```
 
-### 4.4 简化架构组件
+#### 4.4.2 UseCase 层接口
+
+```dart
+// lib/domain/use_cases/generate_response_use_case.dart
+/// 生成响应用例的输入参数
+class GenerateResponseParams {
+  final String sessionId;
+  final String turnId;
+  final String userInput;
+  final GenerationOptions? options;
+  
+  const GenerateResponseParams({
+    required this.sessionId,
+    required this.turnId,
+    required this.userInput,
+    this.options,
+  });
+}
+
+/// 生成响应选项
+class GenerationOptions {
+  final Duration? timeout;
+  final bool streaming;
+  
+  const GenerationOptions({
+    this.timeout,
+    this.streaming = true,
+  });
+}
+
+/// 生成内容块（用于流式输出）
+class GenerationChunk {
+  final String content;
+  final bool isComplete;
+  final Map<String, dynamic>? metadata;
+  
+  const GenerationChunk({
+    required this.content,
+    this.isComplete = false,
+    this.metadata,
+  });
+}
+
+/// 生成响应用例接口
+abstract class GenerateResponseUseCase {
+  /// 执行生成响应用例
+  Future<void> execute(GenerateResponseParams params);
+  
+  /// 流式执行生成响应用例
+  Stream<GenerationChunk> executeStreaming(GenerateResponseParams params);
+  
+  /// 取消正在进行的生成
+  Future<void> cancel(String taskId);
+}
+
+// lib/domain/use_cases/create_turn_use_case.dart
+/// 创建回合用例的输入参数
+class CreateTurnParams {
+  final String sessionId;
+  final String userContent;
+  
+  const CreateTurnParams({
+    required this.sessionId,
+    required this.userContent,
+  });
+}
+
+/// 创建回合用例接口
+abstract class CreateTurnUseCase {
+  Future<Turn> execute(CreateTurnParams params);
+}
+```
+
+### 4.5 简化架构组件
 
 ```mermaid
 graph TD
     subgraph "MVP Demo 架构"
-        UI[Flutter Stage<br/>表现层]
-        J[Jacquard Lite<br/>编排层]
-        M[Mnemosyne Lite<br/>数据层]
+        UI[Stage<br/>表现层]
+        J[Jacquard<br/>编排层]
+        M[Mnemosyne<br/>数据层]
         L[LLM API<br/>外部服务]
         CN[ClothoNexus<br/>事件总线]
     end
@@ -208,32 +385,131 @@ graph TD
     CN -->|Stream| UI
 ```
 
-#### 4.4.1 Jacquard Lite (简化版编排层)
+#### 4.5.1 Jacquard (编排层)
 
 **核心组件**:
 
-1. **Skein Builder (简化版)**
-   - 从 Mnemosyne 获取历史 Messages
-   - 组装基础 Prompt 结构（System Prompt + History + User Input）
-   - **MVP 简化**: 无 Floating Chain 注入、无深度注入
+```dart
+// lib/jacquard/jacquard_orchestrator.dart
+class JacquardOrchestrator {
+  final MnemosyneDataEngine _dataEngine;
+  final LLMService _llmService;
+  final FilamentParser _parser;
+  
+  /// 处理用户输入，生成 AI 响应
+  Stream<GenerationChunk> processTurn(ProcessTurnRequest request) async* {
+    // 1. 获取 Session Context
+    final session = await _dataEngine.getSession(request.sessionId);
+    final history = await _dataEngine.getTurnHistory(request.sessionId);
+    
+    // 2. 组装 PromptBundle (MVP 简化版)
+    final bundle = await _assemblePrompt(session, history, request.userInput);
+    
+    // 3. 调用 LLM
+    await for (final chunk in _llmService.streamCompletion(bundle)) {
+      // 4. 实时解析 Filament
+      final parsed = _parser.parse(chunk);
+      yield GenerationChunk(
+        content: parsed.content,
+        isComplete: parsed.isComplete,
+      );
+    }
+    
+    // 5. 保存 Turn
+    await _saveTurn(request.sessionId, request.userInput, parsed);
+  }
+  
+  /// 组装 PromptBundle
+  Future<PromptBundle> _assemblePrompt(
+    Session session,
+    List<Turn> history,
+    String userInput,
+  ) async {
+    final persona = await _dataEngine.getPersona(session.personaId);
+    
+    return PromptBundle(
+      systemBlocks: [
+        PromptBlock.system(persona.systemPrompt),
+      ],
+      historyBlocks: history.expand((t) => t.messages).map((m) => 
+        PromptBlock.fromMessage(m)
+      ).toList(),
+      userBlock: PromptBlock.user(userInput),
+    );
+  }
+}
+```
 
-2. **LLM Invoker**
+1. **PromptAssembler (简化版)**
+   - 从 Mnemosyne 获取 TurnHistory
+   - 组装基础 PromptBundle（System Prompt + History + User Input）
+   - **MVP 简化**: 无 Floating Block 注入、无深度注入
+
+2. **LLMInvoker**
    - 调用 LLM API
    - 处理流式响应 (SSE)
-   - **异常处理**: GenerationTimeoutException, GenerationCanceledException
+   - **异常处理**: `GenerationTimeoutException`, `GenerationCanceledException`
 
-3. **Filament Parser (简化版)**
+3. **FilamentParser**
    - 解析 `<think>` 标签（思维链，默认隐藏）
    - 解析 `<content>` 标签（回复内容）
-   - **MVP 简化**: 仅支持 Core 标签，不支持 Extension 标签
+   - **MVP 简化**: 仅支持 Core 标签
 
-4. **State Updater (简化版)**
+4. **StateUpdater (简化版)**
    - 保存 Message 到 Mnemosyne
-   - **MVP 简化**: 不处理 `<variable_update>` 状态变更
+   - **MVP 简化**: 不处理状态变更
 
-#### 4.4.2 Mnemosyne Lite (简化版数据层)
+#### 4.5.2 Mnemosyne (数据层)
 
 **核心能力**:
+
+```dart
+// lib/mnemosyne/mnemosyne_data_engine.dart
+class MnemosyneDataEngine {
+  final SessionRepository _sessionRepo;
+  final TurnRepository _turnRepo;
+  final PersonaRepository _personaRepo;
+  
+  /// 获取 Session 及其 Context
+  Future<SessionContext> getSessionContext(String sessionId) async {
+    final session = await _sessionRepo.getById(sessionId);
+    final turns = await _turnRepo.getBySession(sessionId);
+    final persona = await _personaRepo.getById(session.personaId);
+    
+    return SessionContext(
+      session: session,
+      turns: turns,
+      persona: persona,
+    );
+  }
+  
+  /// 获取 Persona
+  Future<Persona> getPersona(String personaId) async {
+    return await _personaRepo.getById(personaId);
+  }
+  
+  /// 获取 TurnHistory
+  Future<List<Turn>> getTurnHistory(String sessionId) async {
+    return await _turnRepo.getBySession(sessionId);
+  }
+  
+  /// 创建新 Turn
+  Future<Turn> createTurn(String sessionId, List<Message> messages) async {
+    final lastTurn = await _turnRepo.getLastTurn(sessionId);
+    final nextIndex = (lastTurn?.index ?? 0) + 1;
+    
+    final turn = Turn(
+      id: _generateId(),
+      sessionId: sessionId,
+      index: nextIndex,
+      createdAt: DateTime.now(),
+      messages: messages,
+    );
+    
+    return await _turnRepo.create(turn);
+  }
+}
+```
 
 1. **Turn-Centric 存储**
    - 线性存储对话 Turns
@@ -241,30 +517,64 @@ graph TD
    - 按 `index` 排序
 
 2. **历史记录查询**
-   - 返回指定 Tapestry 的所有历史 Turns
+   - 返回指定 Session 的所有历史 Turns
    - **MVP 简化**: 无 OpLog、无 State Snapshot
 
 3. **数据模型简化**
    - 不支持 VWD (Value With Description)
    - 不支持 `$meta` 元数据
-   - 不支持 Patches
+   - 不支持 StatePatch
 
-#### 4.4.3 ClothoNexus (事件总线)
+#### 4.5.3 ClothoNexus (事件总线)
 
 **核心能力**:
 
-1. **事件发布订阅**
-   - `MessageEvent`: 新消息事件
-   - `TurnCompletedEvent`: 回合完成事件
-   - `GenerationStartedEvent`: 生成开始事件
+```dart
+// lib/core/services/clotho_nexus.dart
+abstract class ClothoNexus {
+  /// 发布事件
+  void publish(ClothoEvent event);
+  
+  /// 订阅特定类型的事件
+  Stream<T> on<T extends ClothoEvent>();
+  
+  /// 释放资源
+  void dispose();
+}
 
-2. **状态同步**
-   - UI 层通过 Stream 监听事件
-   - 不直接暴露 Mnemosyne 状态
+// 事件定义
+class GenerationStartedEvent extends ClothoEvent {
+  final String sessionId;
+  final String turnId;
+  
+  GenerationStartedEvent({required this.sessionId, required this.turnId});
+}
 
-### 4.5 Filament 协议支持 (v2.4)
+class MessageReceivedEvent extends ClothoEvent {
+  final String sessionId;
+  final String turnId;
+  final String content;
+  final bool isFinal;
+  
+  MessageReceivedEvent({
+    required this.sessionId,
+    required this.turnId,
+    required this.content,
+    required this.isFinal,
+  });
+}
 
-#### 4.5.1 输入格式 (Prompt 组装)
+class TurnCompletedEvent extends ClothoEvent {
+  final String sessionId;
+  final String turnId;
+  
+  TurnCompletedEvent({required this.sessionId, required this.turnId});
+}
+```
+
+### 4.6 Filament 协议支持 (v2.4)
+
+#### 4.6.1 输入格式 (Prompt 组装)
 
 ```xml
 <!-- System Chain -->
@@ -284,7 +594,7 @@ graph TD
 </user>
 ```
 
-#### 4.5.2 输出格式 (LLM 响应)
+#### 4.6.2 输出格式 (LLM 响应)
 
 **Core 标签** (MVP 支持):
 
@@ -321,17 +631,17 @@ graph TD
 
 | 任务 | 描述 | 交付物 | 参考文档 |
 |------|------|--------|----------|
-| **2.1 Repository 实现** | 实现 TurnRepository, SessionRepository | 数据访问层 | [抽象数据结构](../00_active_specs/mnemosyne/abstract-data-structures.md) |
-| **2.2 Mnemosyne Lite** | 实现简化版数据引擎 | 数据存储模块 | [Mnemosyne README](../00_active_specs/mnemosyne/README.md) |
-| **2.3 Pattern 加载** | 实现 Pattern 解析与加载 | Pattern 管理模块 | [Pattern 导入](../00_active_specs/workflows/character-import-migration.md) |
+| **2.1 Repository 实现** | 实现 TurnRepository, SessionRepository, PersonaRepository | 数据访问层 | [抽象数据结构](../00_active_specs/mnemosyne/abstract-data-structures.md) |
+| **2.2 MnemosyneDataEngine** | 实现简化版数据引擎 | 数据存储模块 | [Mnemosyne README](../00_active_specs/mnemosyne/README.md) |
+| **2.3 Persona 加载** | 实现 Persona 解析与加载 | Persona 管理模块 | [Persona 导入](../00_active_specs/workflows/character-import-migration.md) |
 
 ### 5.3 Phase 3: 编排层实现 (Week 4)
 
 | 任务 | 描述 | 交付物 | 参考文档 |
 |------|------|--------|----------|
-| **3.1 Skein Builder** | 实现简化的 Prompt 组装逻辑 | Prompt 组装模块 | [Skein 编织](../00_active_specs/jacquard/skein-and-weaving.md) |
-| **3.2 LLM Invoker** | 集成 LLM API，支持流式响应 | LLM 调用模块 | [Muse 集成](../00_active_specs/muse/muse-provider-adapters.md) |
-| **3.3 Filament Parser** | 实现 Core 标签解析 | 解析器模块 | [输出格式](../00_active_specs/protocols/filament-output-format.md) |
+| **3.1 PromptAssembler** | 实现简化的 Prompt 组装逻辑 | Prompt 组装模块 | [Skein 编织](../00_active_specs/jacquard/skein-and-weaving.md) |
+| **3.2 LLMService** | 集成 LLM API，支持流式响应 | LLM 调用模块 | [Muse 集成](../00_active_specs/muse/muse-provider-adapters.md) |
+| **3.3 FilamentParser** | 实现 Core 标签解析 | 解析器模块 | [输出格式](../00_active_specs/protocols/filament-output-format.md) |
 | **3.4 UseCase 实现** | 实现 GenerateResponseUseCase, CreateTurnUseCase | 业务逻辑层 | [接口定义](../00_active_specs/protocols/interface-definitions.md) |
 
 ### 5.4 Phase 4: 表现层实现 (Week 5)
@@ -382,7 +692,7 @@ graph TD
 | **运行时** | Dart (纯 Flutter) | 客户端内嵌，无独立后端 |
 | **数据库** | SQLite (drift) | 单文件数据库，ORM 支持 |
 | **XML 解析** | xml | Filament 协议解析 |
-| **YAML 解析** | yaml | Pattern 解析 |
+| **YAML 解析** | yaml | Persona 解析 |
 | **LLM SDK** | OpenAI 官方 Dart SDK | LLM API 集成 |
 
 ### 6.3 开发工具
@@ -416,7 +726,7 @@ graph TD
 - [x] 历史记录可以正确显示和滚动
 - [x] Filament `<content>` 标签可以正确解析
 - [x] Filament `<think>` 标签可以正确解析（默认折叠）
-- [x] Pattern 可以正确加载并影响 AI 回复风格
+- [x] Persona 可以正确加载并影响 AI 回复风格
 
 ### 8.2 性能指标
 
@@ -431,6 +741,7 @@ graph TD
 - 代码审查通过率 100%
 - 无严重 Bug
 - 符合 [文档标准](../00_active_specs/reference/documentation_standards.md)
+- 符合 [命名规范](../00_active_specs/naming-convention.md)
 
 ---
 
@@ -471,28 +782,85 @@ graph TD
 </content>
 ```
 
-### 9.2 预设 Pattern 示例
+### 9.2 预设 Persona 示例
 
 ```yaml
-# patterns/seraphina.yaml
-id: "pat_seraphina_001"
+# personas/seraphina.yaml
+id: "per_seraphina_001"
 name: "Seraphina"
 description: "来自森林的精灵，擅长治疗魔法"
-system_prompt: |
+systemPrompt: |
   你是 Seraphina，一名来自森林的精灵。你性格温和，乐于助人。
   你擅长治疗魔法，可以帮助受伤的冒险者。
-first_message: |
+firstMessage: |
   你好，旅行者。我是 Seraphina，这片森林的守护者。
   你看起来有些疲惫，需要我为你治疗吗？
 version: "1.0.0"
 ```
 
-### 9.3 相关文档索引
+### 9.3 项目目录结构
+
+```
+lib/
+├── core/                          # 基础设施层
+│   ├── exceptions/                # 异常定义
+│   │   ├── clotho_exception.dart
+│   │   ├── generation_exception.dart
+│   │   └── domain_exception.dart
+│   └── services/                  # 核心服务
+│       └── clotho_nexus.dart
+│
+├── config/                        # L0 配置层
+│   └── default_prompt_template.dart
+│
+├── mnemosyne/                     # 数据引擎 (Mnemosyne)
+│   ├── models/                    # 数据模型
+│   │   ├── persona.dart           # L2: 角色设定
+│   │   ├── session.dart           # 会话实例
+│   │   ├── turn.dart              # 回合
+│   │   ├── message.dart           # 消息
+│   │   └── session_context.dart   # 会话上下文
+│   ├── repositories/              # 数据访问
+│   │   ├── persona_repository.dart
+│   │   ├── session_repository.dart
+│   │   └── turn_repository.dart
+│   └── mnemosyne_data_engine.dart # 数据引擎主类
+│
+├── jacquard/                      # 编排引擎 (Jacquard)
+│   ├── models/                    # 内部模型
+│   │   ├── prompt_bundle.dart     # 提示词包
+│   │   └── prompt_block.dart
+│   ├── services/                  # 核心服务
+│   │   ├── prompt_assembler.dart
+│   │   ├── llm_service.dart
+│   │   └── filament_parser.dart
+│   └── jacquard_orchestrator.dart # 编排器主类
+│
+├── domain/                        # 领域层 (UseCases)
+│   └── use_cases/
+│       ├── generate_response_use_case.dart
+│       └── create_turn_use_case.dart
+│
+├── stage/                         # 表现层 (Stage)
+│   ├── screens/
+│   │   └── chat_screen.dart
+│   ├── widgets/
+│   │   ├── message_list.dart
+│   │   ├── message_bubble.dart
+│   │   └── input_area.dart
+│   └── providers/
+│       └── chat_provider.dart
+│
+└── main.dart                      # 应用入口
+```
+
+### 9.4 相关文档索引
 
 | 文档 | 描述 |
 |------|------|
 | [架构原则](../00_active_specs/architecture-principles.md) | Clotho 核心设计原则 |
 | [愿景与哲学](../00_active_specs/vision-and-philosophy.md) | 凯撒原则与混合代理 |
+| [命名规范](../00_active_specs/naming-convention.md) | **代码命名标准** |
 | [隐喻术语表](../00_active_specs/metaphor-glossary.md) | 纺织隐喻术语定义 |
 | [分层运行时架构](../00_active_specs/runtime/layered-runtime-architecture.md) | L0-L3 架构详解 |
 | [Filament 协议概述](../00_active_specs/protocols/filament-protocol-overview.md) | 协议设计理念 |
