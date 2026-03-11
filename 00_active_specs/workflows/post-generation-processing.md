@@ -1,7 +1,7 @@
 # 生成后处理工作流 (Post-Generation Processing Workflow)
 
-**版本**: 1.0.0
-**日期**: 2026-02-11
+**版本**: 1.1.0
+**日期**: 2026-03-11
 **状态**: Active
 **关联文档**:
 
@@ -10,6 +10,18 @@
 - Schema 注入器 [`../jacquard/schema-injector.md`](../jacquard/schema-injector.md)
 - Jacquard 编排层 [`../jacquard/README.md`](../jacquard/README.md)
 - Mnemosyne 存储架构 [`../mnemosyne/sqlite-architecture.md`](../mnemosyne/sqlite-architecture.md)
+
+---
+
+## 📖 术语使用说明
+
+本文档混合使用**隐喻术语**和**技术术语**：
+
+| 隐喻术语 (架构概念) | 技术术语 (代码实现) | 说明 |
+|-------------------|-------------------|------|
+| Pattern (织谱) | **Persona** (角色设定) | 静态蓝图 |
+
+在代码实现时，请使用 [`../naming-convention.md`](../naming-convention.md) 中定义的技术术语。
 
 ---
 
