@@ -16,10 +16,27 @@ export '../../jacquard/jacquard_orchestrator.dart' show ProcessTurnRequest;
 final llmConfigProvider = Provider<LLMServiceConfig>((ref) {
   // MVP 简化：使用环境变量或硬编码配置
   // 实际项目中应从配置文件或环境变量读取
+  //
+  // ⚠️ CORS 配置说明 ⚠️
+  // 如果使用 Web 运行 (flutter run -d chrome)，需要确保 LLM 服务器启用 CORS
+  //
+  // LM Studio 用户：
+  //   1. 打开 LM Studio → Settings → Local Server
+  //   2. 勾选 "Enable CORS (Cross-Origin Resource Sharing)"
+  //   3. 重启 Local Server
+  //
+  // Ollama 用户：
+  //   设置环境变量：OLLAMA_ORIGINS="*"
+  //   然后重启 Ollama 服务
+  //
+  // 或者使用桌面平台运行（无 CORS 限制）：
+  //   flutter run -d windows
+  //   flutter run -d macos
+  //
   return const LLMServiceConfig(
-    baseUrl: 'https://open.bigmodel.cn/api/coding/paas/v4',
-    apiKey: '3a3ca3ae82f24e1094ffc070f384ad4c.EunL3fOC64UyF1tC', // TODO: 替换为实际 API Key
-    model: 'GLM-4.7',
+    baseUrl: 'http://127.0.0.1:1234/v1',
+    apiKey: 'sk-lm-LVckXXTr:KgYMA2Gd7gWUp4IrUt1x', // TODO: 替换为实际 API Key
+    model: 'qwen/qwen3.5-9b',
   );
 });
 

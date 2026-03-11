@@ -48,8 +48,8 @@ class FilamentParser {
       if (contentElement != null) {
         content = contentElement.text.trim();
       } else {
-        // 如果没有 content 标签，使用根元素文本
-        content = document.rootElement.text.trim();
+        // 如果没有 content 标签，移除 thought 标签后的剩余内容作为 content
+        content = _removeThoughtTag(input).trim();
       }
     } catch (e) {
       // XML 解析失败，尝试使用正则表达式提取
@@ -61,6 +61,26 @@ class FilamentParser {
       content: content,
       isComplete: true,
     );
+  }
+
+  /// 移除 thought 标签及其内容
+  String _removeThoughtTag(String input) {
+    // 尝试 XML 方式移除
+    try {
+      final document = XmlDocument.parse(input);
+      final thoughtElement = document.getElement(_thoughtTag);
+      if (thoughtElement != null) {
+        // 移除 thought 元素
+        thoughtElement.remove();
+        return document.toXmlString();
+      }
+    } catch (_) {
+      // XML 解析失败，使用正则
+    }
+    
+    // 使用正则表达式移除 thought 标签
+    final thoughtRegex = RegExp(r'<thought>[\s\S]*?</thought>', multiLine: true);
+    return input.replaceAll(thoughtRegex, '').trim();
   }
 
   /// 使用正则表达式解析（备用方案）
