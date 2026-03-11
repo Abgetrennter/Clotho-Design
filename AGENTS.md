@@ -1,45 +1,101 @@
-# AGENTS.md
+# Clotho AI Agents Context & Navigation Map (Mission Control)
 
-This file provides guidance to agents when working with code in this repository.
+This file serves as the **Supreme Navigation Hub** and **Directive Manual** for all AI agents (Cline, Roo, Cursor, Claude, etc.) operating within the Clotho project.
 
-## Project Overview
+**BEFORE YOU WRITE ANY CODE OR PROPOSE ANY ARCHITECTURE, YOU MUST READ AND COMPLY WITH THIS DOCUMENT.**
 
-Clotho 是一个面向 AI 角色扮演（RPG）的 Flutter 客户端设计文档仓库。当前阶段主要是设计文档，`08_demo/` 包含可运行的 Flutter UI 演示。
+---
 
-## 核心规则
+## 1. 🌟 The North Star: Single Source of Truth (SSOT)
 
-**SSOT**: `00_active_specs/` 是唯一权威文档源。回答架构/功能/数据结构问题前，**必须**先查阅该目录。
+- **`00_active_specs/` is the absolute SSOT.**
+- Do not hallucinate or guess implementation details, architecture, or data structures. If you are unsure, **STOP** and read the corresponding files in `00_active_specs/`.
+- Legacy references (e.g., `10_references/`, `99_archive/`) are for historical context only and must never override `00_active_specs/`.
 
-**术语**: 使用纺织隐喻体系（Pattern/Tapestry/Threads/Jacquard/Mnemosyne），禁止使用 "Character Card/Chat History" 等旧术语。详见 [`00_active_specs/metaphor-glossary.md`](00_active_specs/metaphor-glossary.md)。
+---
 
-**文档标准**: 创建/更新文档时必须遵循 [`00_active_specs/reference/documentation_standards.md`](00_active_specs/reference/documentation_standards.md)。
+## 2. 🛡️ The Prime Directives (AI Behavior Rules)
 
-## 命令
+When generating code or proposing solutions, you MUST pass these self-checks:
+
+1.  **The Caesar Principle Check**:
+    *   *Question*: "Am I putting business logic/math/state management into an LLM prompt?"
+    *   *Rule*: **NEVER**. Deterministic logic belongs to Code (Jacquard/Mnemosyne). LLMs are strictly for semantic understanding, roleplay, and creative text generation.
+2.  **The Filament Protocol Check**:
+    *   *Question*: "How am I structuring data sent to or received from the LLM?"
+    *   *Rule*: You MUST use the **Filament Protocol** (`XML+YAML` for input, `XML+JSON` for output). Do not invent custom markdown or JSON-only formats. See [`00_active_specs/protocols/filament-protocol-overview.md`](00_active_specs/protocols/filament-protocol-overview.md).
+3.  **The Uni-Directional Data Flow Check**:
+    *   *Question*: "Is the UI directly modifying the Mnemosyne database or state tree?"
+    *   *Rule*: **NEVER**. The Presentation Layer (UI) is read-only. It must dispatch `Intents` via `JacquardUIAdapter` or ClothoNexus. State is uniquely managed by Mnemosyne. See [`00_active_specs/protocols/interface-definitions.md`](00_active_specs/protocols/interface-definitions.md).
+
+---
+
+## 3. 🗺️ Mission Control (Context Graph)
+
+Before starting a task, identify your domain and **load the required context path** into your memory.
+
+### Domain A: Orchestration & Logic (Jacquard / The Loom)
+*   **Tasks**: Building Prompt pipelines, creating plugins (Shuttles), handling LLM requests.
+*   **Required Context Path**:
+    1.  [`00_active_specs/jacquard/README.md`](00_active_specs/jacquard/README.md) (Core Loom Architecture)
+    2.  [`00_active_specs/jacquard/plugin-architecture.md`](00_active_specs/jacquard/plugin-architecture.md) (If writing a plugin)
+    3.  [`00_active_specs/protocols/interface-definitions.md`](00_active_specs/protocols/interface-definitions.md) (Interface Contracts)
+
+### Domain B: Data & State Management (Mnemosyne / The Memory)
+*   **Tasks**: Modifying database schemas, managing Context/Threads, state patching, snapshots.
+*   **Required Context Path**:
+    1.  [`00_active_specs/mnemosyne/README.md`](00_active_specs/mnemosyne/README.md) (Core Data Engine Architecture)
+    2.  [`00_active_specs/mnemosyne/sqlite-architecture.md`](00_active_specs/mnemosyne/sqlite-architecture.md) (Physical Schema)
+    3.  [`00_active_specs/mnemosyne/abstract-data-structures.md`](00_active_specs/mnemosyne/abstract-data-structures.md) (In-Memory State)
+
+### Domain C: UI & Presentation (The Stage)
+*   **Tasks**: Building Flutter widgets, parsing SDUI, rendering Markdown, handling user interactions.
+*   **Required Context Path**:
+    1.  [`00_active_specs/presentation/README.md`](00_active_specs/presentation/README.md) (UI Principles: No Business Logic)
+    2.  [`00_active_specs/presentation/clotho-nexus-integration.md`](00_active_specs/presentation/clotho-nexus-integration.md) (Event listening)
+    3.  [`00_active_specs/protocols/interface-definitions.md`](00_active_specs/protocols/interface-definitions.md) -> Check `JacquardUIAdapter`
+
+---
+
+## 4. 🔤 The Rosetta Stone (Terminology Bridge)
+
+Clotho uses a dual-terminology system.
+- Use **Metaphor** terms when writing/updating *Architecture Documents*.
+- Use **Technical** terms when writing *Code, Class Names, or Variables*.
+- **NEVER** use legacy terms like "Character Card" or "Chat History".
+
+| Metaphor (Architecture) | Technical (Code) | Legacy (DO NOT USE) | Definition |
+| :--- | :--- | :--- | :--- |
+| **Tapestry** (织卷) | `Session` | Chat / Save | The complete runtime instance. |
+| **Pattern** (织谱) | `Persona` | Character Card | Static read-only definition blueprint. |
+| **Threads** (丝络) | `Context` / `State` | Message History | Dynamic, read-write state and history. |
+| **Punchcards** (穿孔卡)| `Snapshot` | Save File | Serialized static slice of the Tapestry. |
+| **Skein** (绞纱) | `PromptBundle` | Prompt Array | Structured container for Prompt assembly. |
+| **Lore / Texture** | `Worldbook` | World Info | Background knowledge base. |
+| **Shuttle** (梭子) | `Plugin` | Extension | Execution module in Jacquard pipeline. |
+
+*Full Definitions:*
+- [`00_active_specs/metaphor-glossary.md`](00_active_specs/metaphor-glossary.md)
+- [`00_active_specs/naming-convention.md`](00_active_specs/naming-convention.md) (Strict naming rules for code)
+
+---
+
+## 5. 🛠️ Daily Operations & Commands
+
+The active codebase is primarily located in `08_demo/` (Flutter UI Prototype).
 
 ```bash
-# Flutter 演示应用 (08_demo/)
+# General Setup
 cd 08_demo && flutter pub get
-cd 08_demo && flutter run -d chrome  # 运行 Web 版
-cd 08_demo && flutter test          # 运行测试
-cd 08_demo && flutter analyze       # 代码分析
+
+# Run the App (Web is preferred for fast iteration)
+cd 08_demo && flutter run -d chrome
+
+# Code Quality (Run these before attempting completion)
+cd 08_demo && flutter test
+cd 08_demo && flutter analyze
 ```
 
-## 架构速查
-
-| 层级 | 名称 | 职责 |
-|------|------|------|
-| L0 | Infrastructure | 依赖注入、日志、事件总线 |
-| L1 | Environment | 全局 Lore、User Persona |
-| L2 | Pattern | 静态定义（原角色卡） |
-| L3 | Threads | 动态状态（历史记录、变量） |
-
-## 现有规则
-
-- **Cline 规则**: [`.clinerules`](.clinerules) - 文档引用和目录映射
-- **Roo 技能**: [`.roo/skills/clotho-documentation-author/SKILL.md`](.roo/skills/clotho-documentation-author/SKILL.md) - 文档标准验证
-
-## 关键文档入口
-
-1. [`00_active_specs/README.md`](00_active_specs/README.md) - 架构文档索引
-2. [`00_active_specs/vision-and-philosophy.md`](00_active_specs/vision-and-philosophy.md) - 凯撒原则
-3. [`00_active_specs/protocols/interface-definitions.md`](00_active_specs/protocols/interface-definitions.md) - 公共接口定义
+## 6. 📝 Documentation Standards
+When asked to update or create documentation, you MUST adhere to the standards defined in:
+[`00_active_specs/reference/documentation_standards.md`](00_active_specs/reference/documentation_standards.md).
