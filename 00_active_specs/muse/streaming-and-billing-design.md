@@ -1,7 +1,7 @@
 # Muse 流式响应与计费设计规范
 
-**版本**: 1.0.0
-**日期**: 2026-02-12
+**版本**: 1.1.0
+**日期**: 2026-03-11
 **状态**: Active
 **作者**: Clotho 架构团队
 
@@ -9,6 +9,20 @@
 - [Muse 智能服务架构](README.md) - Muse 服务概览
 - [Filament 解析流程](../protocols/filament-parsing-workflow.md) - Filament 协议解析
 - [架构原则](../architecture-principles.md) - 凯撒原则与缪斯原则
+
+---
+
+## 📖 术语使用说明
+
+本文档使用**技术语义术语**：
+
+| 术语 | 说明 |
+|------|------|
+| **MuseService** | 智能服务层 |
+| **Jacquard** | 编排层 |
+| **Session** | 会话实例 |
+
+在代码实现时，请使用 [`../naming-convention.md`](../naming-convention.md) 中定义的技术术语。
 
 ---
 

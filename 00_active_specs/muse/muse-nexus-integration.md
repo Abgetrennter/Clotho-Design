@@ -1,7 +1,7 @@
 # Muse 与 ClothoNexus 事件总线集成规范
 
-**版本**: 1.0.0
-**日期**: 2026-02-26
+**版本**: 1.1.0
+**日期**: 2026-03-11
 **状态**: Active
 **作者**: Clotho 架构团队
 **关联文档**:
@@ -9,6 +9,20 @@
 - [ClothoNexus 事件总线](../infrastructure/clotho-nexus-events.md) - 核心事件系统
 - [流式响应与计费设计](streaming-and-billing-design.md) - 流式处理流程
 - [Provider 适配器规范](muse-provider-adapters.md) - Provider 适配器实现
+
+---
+
+## 📖 术语使用说明
+
+本文档使用**技术语义术语**：
+
+| 术语 | 说明 |
+|------|------|
+| **MuseService** | 智能服务层 |
+| **Jacquard** | 编排层 |
+| **Session** | 会话实例 |
+
+在代码实现时，请使用 [`../naming-convention.md`](../naming-convention.md) 中定义的技术术语。
 
 ---
 

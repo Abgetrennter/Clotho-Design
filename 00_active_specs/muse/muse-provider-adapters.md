@@ -1,13 +1,26 @@
 # Muse Provider 适配器规范
 
-**版本**: 1.0.0
-**日期**: 2026-02-26
+**版本**: 1.1.0
+**日期**: 2026-03-11
 **状态**: Active
 **作者**: Clotho 架构团队
 **关联文档**:
 - [Muse 智能服务架构](README.md) - Muse 服务概览
 - [流式响应与计费设计](streaming-and-billing-design.md) - LLMIterator 接口定义
 - [ClothoNexus 事件总线](../infrastructure/clotho-nexus-events.md) - 事件集成
+
+---
+
+## 📖 术语使用说明
+
+本文档使用**技术语义术语**：
+
+| 术语 | 说明 |
+|------|------|
+| **MuseService** | 智能服务层 |
+| **Provider** | LLM 服务提供商 |
+
+在代码实现时，请使用 [`../naming-convention.md`](../naming-convention.md) 中定义的技术术语。
 
 ---
 
