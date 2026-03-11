@@ -26,4 +26,14 @@ cd 08_demo && flutter analyze    # 代码分析
 
 ### 术语
 
-使用纺织隐喻体系，详见 [`metaphor-glossary.md`](../../00_active_specs/metaphor-glossary.md)。
+代码实现使用**技术语义体系**，详见 [`naming-convention.md`](../../00_active_specs/naming-convention.md)。
+
+| 隐喻术语 | 代码术语 | 示例 |
+|---------|---------|------|
+| Tapestry (织卷) | **Session** | `session`, `sessionId` |
+| Pattern (织谱) | **Persona** | `persona`, `personaId` |
+| Threads (丝络) | **Context** | `context`, `state` |
+| Punchcards | **Snapshot** | `snapshot` |
+| Skein | **PromptBundle** | `bundle` |
+
+架构概念理解可参考 [`metaphor-glossary.md`](../../00_active_specs/metaphor-glossary.md)。

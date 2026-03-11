@@ -24,7 +24,8 @@
 
 ### 术语查询
 
-- [`metaphor-glossary.md`](../../00_active_specs/metaphor-glossary.md) - 纺织隐喻术语表
+- [`metaphor-glossary.md`](../../00_active_specs/metaphor-glossary.md) - 纺织隐喻术语表（架构概念）
+- [`naming-convention.md`](../../00_active_specs/naming-convention.md) - 技术命名规范（代码实现）
 
 ### 历史文档
 

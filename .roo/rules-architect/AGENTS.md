@@ -22,6 +22,7 @@
 3. [`00_active_specs/architecture-principles.md`](../../00_active_specs/architecture-principles.md) - 架构原则
 4. [`00_active_specs/protocols/interface-definitions.md`](../../00_active_specs/protocols/interface-definitions.md) - 接口定义
 5. [`00_active_specs/reference/architecture-audit-report.md`](../../00_active_specs/reference/architecture-audit-report.md) - 架构审计报告
+6. [`00_active_specs/naming-convention.md`](../../00_active_specs/naming-convention.md) - 技术命名规范（代码实现参考）
 
 ### 文档标准
 

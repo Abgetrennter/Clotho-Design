@@ -26,3 +26,7 @@
 - Flutter DevTools
 - `flutter analyze` 代码分析
 - `flutter test` 单元测试
+
+### 参考文档
+
+- [`naming-convention.md`](../../00_active_specs/naming-convention.md) - 技术命名规范（模块/类名参考）
