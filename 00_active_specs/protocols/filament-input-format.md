@@ -1,15 +1,28 @@
 # 输入格式：XML+YAML (Input Format: XML+YAML)
 
-**版本**: 2.3.0  
-**日期**: 2025-12-28  
-**状态**: Draft  
-**作者**: 资深系统架构师 (Architect Mode)  
+**版本**: 2.4.0
+**日期**: 2026-03-11
+**状态**: Active
+**作者**: 资深系统架构师 (Architect Mode)
 **关联文档**:
 
 - 概述 [`filament-protocol-overview.md`](filament-protocol-overview.md)
 - Jinja2 宏系统 [`jinja2-macro-system.md`](jinja2-macro-system.md)
 - 输出格式 [`filament-output-format.md`](filament-output-format.md)
 - 解析流程 [`filament-parsing-workflow.md`](filament-parsing-workflow.md)
+
+---
+
+## 📖 术语使用说明
+
+本文档使用**隐喻术语**进行架构描述：
+
+| 隐喻术语 | 技术术语 | 说明 |
+|---------|---------|------|
+| Pattern (织谱) | **Persona** (角色设定) | 静态蓝图 |
+| Skein (绞纱) | **PromptBundle** (提示词包) | Prompt 组装容器 |
+
+在代码实现时，请使用 [`../naming-convention.md`](../naming-convention.md) 中定义的技术术语。
 
 ---
 
@@ -135,7 +148,7 @@ graph TD
 ## 最佳实践 (Best Practices)
 
 1. **保持 YAML 简洁**: YAML 应专注于描述数据，避免复杂的嵌套结构。
-2. **使用 Schema Library**: 避免将复杂的逻辑规则（如 `<UpdateVariable>` 的具体格式）直接写在 System Prompt 中，应使用 [Schema 库规范](schema-library.md) 进行管理，通过 Character Card 的 `protocols` 字段引用。
+2. **使用 Schema Library**: 避免将复杂的逻辑规则（如 `<UpdateVariable>` 的具体格式）直接写在 System Prompt 中，应使用 [Schema 库规范](schema-library.md) 进行管理，通过 Pattern (织谱) 的 `protocols` 字段引用。
 3. **善用 `<use_protocol>`**: 仅在运行时动态需要某种模式时使用此标签。
 4. **标签语义化**: 使用有意义的标签名称，如 `<location_forest>` 而非 `<entry>`。
 5. **缩进一致**: 统一使用 2 空格缩进，确保 YAML 的可读性。

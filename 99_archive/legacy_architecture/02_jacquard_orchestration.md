@@ -146,12 +146,13 @@ Jacquard 编排层作为 Filament 协议的主要使用者和分发者：
 
 ### 4.3 详细文档
 
-Filament 协议的完整规范、标签体系、解析流程、版本演进等内容请参阅 **[第九章：Filament 统一交互协议](doc/architecture/09_filament_protocol.md)**。
+Filament 协议的完整规范、标签体系、解析流程、版本演进等内容请参阅 **[Filament 协议概述](../protocols/filament-protocol-overview.md)**。
 
 **关键章节索引**:
 
-* **输入协议**: 第九章第2节 - 提示词构建
-* **输出协议**: 第九章第3节 - 指令与响应
-* **解析流程**: 第九章第4节 - 协议解析流程
-* **最佳实践**: 第九章第6节 - 最佳实践与约束
-* **性能优化**: 第九章第9节 - 性能优化
+* **输入协议**: [Filament 输入格式](../protocols/filament-input-format.md) - 提示词构建
+* **输出协议**: [Filament 输出格式](../protocols/filament-output-format.md) - 指令与响应
+* **Jinja2 宏系统**: [Jinja2 宏系统](../protocols/jinja2-macro-system.md) - 动态提示词构建
+* **解析流程**: [Filament 解析流程](../protocols/filament-parsing-workflow.md) - 协议解析流程
+* **最佳实践与约束**: 请参阅输出格式文档中的最佳实践章节
+* **性能优化**: 请参阅解析流程文档中的性能优化章节

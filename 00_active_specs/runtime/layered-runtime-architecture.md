@@ -1,10 +1,25 @@
 # 分层运行时环境架构 (Layered Runtime Architecture)
 
-**版本**: 1.1.0
-**日期**: 2025-12-30
-**状态**: Draft
+**版本**: 1.2.0
+**日期**: 2026-03-11
+**状态**: Active
 **作者**: 资深系统架构师 (Architect Mode)
 **源文档**: `doc/architecture/00_architecture_panorama.md`
+
+---
+
+## 📖 术语使用说明
+
+本文档混合使用**隐喻术语**和**技术术语**：
+
+| 隐喻术语 (架构概念) | 技术术语 (代码实现) | 说明 |
+|-------------------|-------------------|------|
+| Tapestry (织卷) | **Session** (会话) | 运行时实例 |
+| Pattern (织谱) | **Persona** (角色设定) | 静态蓝图 |
+| Threads (丝络) | **Context** (上下文) | 动态状态 |
+| Punchcards (穿孔卡) | **Snapshot** (快照) | 状态快照 |
+
+在代码实现时，请使用 [`../naming-convention.md`](../naming-convention.md) 中定义的技术术语。
 
 ---
 
@@ -70,7 +85,7 @@ graph TD
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **L0** | **Infrastructure** | **骨架** | 定义与 LLM 的通信协议和 Prompt 结构。 | Read-Only | Prompt Template, API Config |
 | **L1** | **Environment** | **环境** | 定义跨角色共享的世界规则与用户身份。 | Read-Only | User Persona, Global Lorebooks |
-| **L2** | **The Pattern (织谱)** | **蓝图** | 定义角色的初始设定、固有特质与潜在逻辑。**(原 Character Card)** | Read-Only | **Pattern Data** (Name, Desc, First Mes), Base Lorebooks, Regex Scripts |
+| **L2** | **The Pattern (织谱)** | **蓝图** | 定义角色的初始设定、固有特质与潜在逻辑。**(原 "Character Card")** | Read-Only | **Pattern Data** (Name, Desc, First Mes), Base Lorebooks, Regex Scripts |
 | **L3** | **The Threads (丝络)** | **状态** | 记录角色的成长、记忆与状态变更。 | **Read-Write** | **Patches**, History Chain, VWD State Tree |
 
 ---
@@ -86,7 +101,7 @@ Mnemosyne 在 **上下文加载 (Context Load)** 阶段执行一次性的 **Deep
 1.  **Fast Path (Head State)**: 尝试从 `active_states` 表读取最新的完整状态树。如果命中，直接跳过 OpLog 重放过程，仅需将状态树中的 `patches` 应用于 L2 基底。
 2.  **Slow Path (Reconstruction)**: 如果 Head State 缺失，则回退到 "Snapshot + OpLog" 机制，重建出最新的状态树。
 3.  **Hydrate (注水)**: 将重建/加载的状态树（包含变量与 Patch）应用到 L2 静态基底上，生成最终的 `Projected State`。
-4.  **Runtime Modification (运行时修改)**: 此后所有的属性变更直接作用于内存对象，并同步触发 **Write-Back (回写)**，同时更新 `active_states` (热缓存) 和 `oplogs` (历史记录)。
+4.  **Runtime Modification (运行时修改)**: 此后所有的属性变更直接作用于内存对象，并同步触发 **Write-Back (回写)**，同时更新 `active_states` (热缓存) 和 `oplogs` (变更日志)。
 
 `patches` 字典采用 **"路径-值"** 结构，例如：
 
@@ -195,5 +210,5 @@ MnemosyneContext {
 
 ## 6. 关联文档
 
-* **核心架构**: [`../core/mnemosyne-data-engine.md`](../core/mnemosyne-data-engine.md)
+* **数据引擎**: [`../mnemosyne/README.md`](../mnemosyne/README.md)
 * **工作流**: [`../workflows/character-import-migration.md`](../workflows/character-import-migration.md)

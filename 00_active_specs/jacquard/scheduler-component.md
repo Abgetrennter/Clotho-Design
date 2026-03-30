@@ -1,11 +1,23 @@
 # Jacquard 调度穿梭机 (Scheduler Shuttle) 组件规范
 
-**版本**: 1.0.0
-**日期**: 2026-01-15
-**状态**: Draft
+**版本**: 1.1.0
+**日期**: 2026-03-11
+**状态**: Active
 **关联文档**:
 - `../mnemosyne/abstract-data-structures.md` (L3 状态定义)
 - `README.md` (Jacquard 概览)
+
+---
+
+## 📖 术语使用说明
+
+本文档混合使用**隐喻术语**和**技术术语**：
+
+| 隐喻术语 (架构概念) | 技术术语 (代码实现) | 说明 |
+|-------------------|-------------------|------|
+| Shuttle (梭子) | **Plugin** (插件) | 流水线功能单元 |
+
+在代码实现时，请使用 [`../naming-convention.md`](../naming-convention.md) 中定义的技术术语。
 
 ---
 
@@ -29,8 +41,8 @@ Scheduler Shuttle 作为 Jacquard 流水线的一环，与 Event Bus 和 Mnemosy
 ```mermaid
 graph TD
     subgraph "Jacquard Pipeline"
-        Input[User Input] --> PreFlash[Pre-Flash Planner]
-        PreFlash --> EventBus{Event Bus}
+        Input[User Input] --> Planner[Planning Phase Planner]
+        Planner --> EventBus{Event Bus}
         
         subgraph "Scheduler Shuttle"
             EventBus -- "OnMessageReceived" --> CounterUpdate[Update Counters]
@@ -92,7 +104,7 @@ Scheduler 维护以下核心计数器，存储于 Mnemosyne 的 `scheduler_conte
 
 ## 4. 配置规范 (Configuration Spec)
 
-调度规则作为 **元数据 (Metadata)** 存在于 `World Info` 或 `Character Card` 中。
+调度规则作为 **元数据 (Metadata)** 存在于 `Lore` 或 `Pattern` 中。
 
 **JSON 结构**:
 
@@ -141,7 +153,95 @@ Scheduler 维护以下核心计数器，存储于 Mnemosyne 的 `scheduler_conte
 
 ---
 
-## 6. 安全与限制 (Safety & Limits)
+## 6. 与 Skein Builder 的集成
+
+Scheduler 通过 **Blackboard 模式** 向 Skein Builder 传递注入内容。
+
+### 6.1 数据流接口
+
+```dart
+// lib/models/scheduler_output.dart
+/// SchedulerOutput - Scheduler 执行后写入 blackboard 的输出
+class SchedulerOutput {
+  /// 定时任务注入的 PromptBlock 列表
+  final List<PromptBlock> schedulerInjects;
+  
+  const SchedulerOutput({
+    required this.schedulerInjects,
+  });
+}
+
+// 使用示例：Skein Builder 消费阶段读取
+// final injects = context.blackboard['scheduler_injects'] ?? [];
+```
+
+### 6.2 注入规则
+
+| 动作类型 | Blackboard Key | 处理方式 | 优先级 |
+|----------|----------------|----------|--------|
+| `inject_system` | `scheduler_injects` | 合并入 System Chain 末尾 | 150 |
+| `inject_user` | `scheduler_injects` | 作为 User PromptBlock 插入 History Chain 末尾 | 动态 |
+| `force_thought` | `scheduler_injects` | 标记为 `type: 'thought'` 的 PromptBlock | 120 |
+
+> **注意**: Scheduler 不直接修改 Skein，仅在 blackboard 中写入注入请求。Skein Builder 在构建阶段统一读取并合并。
+
+## 7. 与 RAG Retriever 的职责分工
+
+Scheduler 与 RAG Retriever 都是**数据准备阶段**的组件，但职责不同：
+
+| 维度 | Scheduler | RAG Retriever |
+|------|-----------|---------------|
+| **触发逻辑** | 时间/事件驱动（楼层计数器、变量变更） | 语义相关驱动（用户输入相似度） |
+| **产物类型** | `PromptBlock`（即时指令） | `FloatingAsset`（上下文资产） |
+| **优先级** | 200（默认），可动态调整 | 250（默认），可动态调整 |
+| **执行顺序** | 通常在 RAG 之前 | 通常在 Scheduler 之后 |
+
+### 7.1 动态优先级调整
+
+通过 [动态优先级编排](../plugin-architecture.md#43-动态优先级编排)，可根据运行时状态调整执行顺序：
+
+```yaml
+# 默认配置：Scheduler 先于 RAG
+scheduler:
+  phase: "preparation"
+  ordering:
+    after: ["planner"]
+    before: ["rag_retriever"]
+  priority:
+    base: 200
+
+rag_retriever:
+  phase: "preparation"
+  ordering:
+    after: ["scheduler"]
+    before: ["builder"]
+  priority:
+    base: 250
+```
+
+```yaml
+# L2 Pattern 覆盖：RAG 先于 Scheduler（如 Deep Research 角色）
+overrides:
+  rag_retriever:
+    ordering:
+      after: ["planner"]
+      before: ["scheduler"]
+    priority:
+      base: 190  # 提升到 Scheduler 之前
+```
+
+### 7.2 Blackboard 协作契约
+
+两者通过 Blackboard 向 Builder 传递产物：
+
+| Blackboard Key | 写入者 | 产物类型 | 说明 |
+|----------------|--------|----------|------|
+| `scheduler_injects` | Scheduler | `List<PromptBlock>` | 定时任务注入的即时指令 |
+| `rag_assets` | RAG Retriever | `List<FloatingAsset>` | 检索到的长期记忆 |
+
+Builder 统一消费并合并，按 [Weaving 规则](../skein-and-weaving.md) 处理优先级和冲突。
+
+## 8. 安全与限制 (Safety & Limits)
 
 为了防止死循环和资源滥用，Scheduler 实施以下限制：
 

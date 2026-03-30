@@ -1,0 +1,140 @@
+<mxfile host="Electron" modified="2024-05-15T12:00:00.000Z" agent="5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/24.0.0 Chrome/120.0.6099.109 Electron/28.1.0 Safari/537.36" etag="database_erd" version="24.0.0" type="device">
+  <diagram id="ClothoERD" name="SQLite Database Schema">
+    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Entity: sessions -->
+        <mxCell id="sessions" value="会话表 (sessions)" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=#dae8fc;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="220" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="sessions_pk" value="PK id (TEXT) - 会话ID" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontStyle=1" vertex="1" parent="sessions">
+          <mxGeometry y="26" width="220" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="sessions_cols" value="title (TEXT) - 标题&#xa;active_character_id (TEXT) - 当前角色&#xa;created_at (INT) - 创建时间&#xa;meta_json (TEXT) - 元数据" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="sessions">
+          <mxGeometry y="52" width="220" height="78" as="geometry" />
+        </mxCell>
+
+        <!-- Entity: turns -->
+        <mxCell id="turns" value="回合表 (turns)" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=#dae8fc;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="320" y="40" width="240" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="turns_pk" value="PK id (TEXT) - 回合ID" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontStyle=1" vertex="1" parent="turns">
+          <mxGeometry y="26" width="240" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="turns_cols" value="FK session_id (TEXT) - 会话ID&#xa;turn_index (INT) - 全局序号&#xa;created_at (INT) - 创建时间&#xa;summary (TEXT) - 回合摘要 [v1.1]&#xa;vector_id (TEXT) - 向量ID [v1.1]" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="turns">
+          <mxGeometry y="52" width="240" height="98" as="geometry" />
+        </mxCell>
+
+        <!-- Entity: messages -->
+        <mxCell id="messages" value="消息表 (messages)" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=#ffe6cc;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="600" y="40" width="220" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="messages_pk" value="PK id (TEXT) - 消息ID" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontStyle=1" vertex="1" parent="messages">
+          <mxGeometry y="26" width="220" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="messages_cols" value="FK turn_id (TEXT) - 回合ID&#xa;role (TEXT) - 角色 (user/ai)&#xa;content (TEXT) - 内容&#xa;msg_type (TEXT) - 类型" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="messages">
+          <mxGeometry y="52" width="220" height="78" as="geometry" />
+        </mxCell>
+
+        <!-- Entity: active_states (Head State) -->
+        <mxCell id="active_states" value="活跃状态/Head (active_states)" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=#d5e8d4;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="40" y="240" width="220" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="as_pk" value="PK session_id (TEXT) - 会话ID" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontStyle=1" vertex="1" parent="active_states">
+          <mxGeometry y="26" width="220" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="as_cols" value="FK turn_id (TEXT) - 最新回合&#xa;state_json (TEXT) - 完整VWD树" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="active_states">
+          <mxGeometry y="52" width="220" height="58" as="geometry" />
+        </mxCell>
+
+        <!-- Entity: state_snapshots -->
+        <mxCell id="snapshots" value="状态快照 (state_snapshots)" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=#d5e8d4;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="320" y="240" width="240" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="ss_pk" value="PK FK turn_id (TEXT) - 关键帧回合" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontStyle=1" vertex="1" parent="snapshots">
+          <mxGeometry y="26" width="240" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="ss_cols" value="state_json (TEXT) - 快照数据" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="snapshots">
+          <mxGeometry y="52" width="240" height="38" as="geometry" />
+        </mxCell>
+
+        <!-- Entity: state_oplogs -->
+        <mxCell id="oplogs" value="操作日志 (state_oplogs)" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=#d5e8d4;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="600" y="240" width="220" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="op_pk" value="PK id (INT) - 日志ID" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontStyle=1" vertex="1" parent="oplogs">
+          <mxGeometry y="26" width="220" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="op_cols" value="FK turn_id (TEXT) - 关联回合&#xa;op (TEXT) - 操作 (add/replace)&#xa;path (TEXT) - JSON路径&#xa;value_json (TEXT) - 变更值" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="oplogs">
+          <mxGeometry y="52" width="220" height="78" as="geometry" />
+        </mxCell>
+
+        <!-- Entity: events -->
+        <mxCell id="events" value="事件表 (events)" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=#e1d5e7;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="320" y="440" width="240" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="ev_pk" value="PK id (TEXT) - 事件ID" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontStyle=1" vertex="1" parent="events">
+          <mxGeometry y="26" width="240" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="ev_cols" value="FK turn_id (TEXT) - 触发回合&#xa;event_type (TEXT) - 类型&#xa;participants_json (TEXT) - 参与者&#xa;payload_json (TEXT) - 载荷数据" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="events">
+          <mxGeometry y="52" width="240" height="78" as="geometry" />
+        </mxCell>
+
+        <!-- Entity: macro_narratives -->
+        <mxCell id="macro" value="宏观叙事 (macro_narratives)" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=#e1d5e7;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="600" y="440" width="220" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="mn_pk" value="PK id (TEXT) - 叙事ID" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontStyle=1" vertex="1" parent="macro">
+          <mxGeometry y="26" width="220" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="mn_cols" value="period_start (INT) - 起始回合&#xa;period_end (INT) - 结束回合&#xa;content (TEXT) - 内容摘要&#xa;vector_id (TEXT) - 向量ID" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="macro">
+          <mxGeometry y="52" width="220" height="78" as="geometry" />
+        </mxCell>
+
+        <!-- Relations -->
+        <!-- sessions to turns -->
+        <mxCell id="rel1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;" edge="1" parent="1" source="sessions" target="turns">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- sessions to active_states -->
+        <mxCell id="rel2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;startArrow=ERone;startFill=0;endArrow=ERone;endFill=0;" edge="1" parent="1" source="sessions" target="active_states">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- turns to messages -->
+        <mxCell id="rel3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;" edge="1" parent="1" source="turns" target="messages">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- turns to snapshots -->
+        <mxCell id="rel4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;startArrow=ERone;startFill=0;endArrow=ERzeroToOne;endFill=0;" edge="1" parent="1" source="turns" target="snapshots">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- turns to oplogs -->
+        <mxCell id="rel5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;" edge="1" parent="1" source="turns" target="oplogs">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="430" y="210" />
+              <mxPoint x="700" y="210" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- turns to events -->
+        <mxCell id="rel6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;" edge="1" parent="1" source="turns" target="events">
+          <mxGeometry relative="1" as="geometry">
+             <Array as="points">
+              <mxPoint x="430" y="420" />
+              <mxPoint x="430" y="420" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

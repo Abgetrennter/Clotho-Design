@@ -1,14 +1,27 @@
 # 协议与格式文档目录
 
-**定位**: 系统间通信的标准化协议  
-**目标读者**: 协议开发者、集成工程师  
-**文档状态**: 已重组 (2025-12-30)
+**定位**: 系统间通信的标准化协议
+**目标读者**: 协议开发者、集成工程师
+**文档状态**: Active (2026-03-11)
+
+---
+
+## 📖 术语使用说明
+
+本文档目录混合使用**隐喻术语**和**技术术语**：
+
+| 隐喻术语 (架构概念) | 技术术语 (代码实现) | 说明 |
+|-------------------|-------------------|------|
+| Pattern (织谱) | **Persona** (角色设定) | 静态蓝图 |
+| Skein (绞纱) | **PromptBundle** (提示词包) | Prompt 组装容器 |
+
+在代码实现时，请使用 [`../naming-convention.md`](../naming-convention.md) 中定义的技术术语。
 
 ---
 
 ## 📖 目录简介
 
-本目录包含 Clotho 系统的通信协议和数据格式规范。核心是 **Filament 统一交互协议**，它贯穿于系统的所有交互环节，从提示词构建、逻辑控制到界面渲染，实现了统一的语义表达和确定性通信。
+本目录包含 Clotho 系统的通信协议和数据格式规范。核心是 **Filament 协议**——专为 LLM 设计的专用通信语言，用于规范化 LLM 的输入（XML+YAML）和输出（XML+JSON）。需要注意的是，Filament **仅作用于与 LLM 的边界接口**，系统内部组件之间使用 Dart 原生对象直接通信，不经过 Filament 转换。
 
 ## 📚 文档列表
 
@@ -34,7 +47,7 @@
 - **简介**: 协议库的存储、引用和注入机制，旨在解决 Prompt 复用和维护问题。
 - **核心内容**: L1/L2 分层架构、Schema YAML 存储格式、静态与动态引用机制
 - **阅读建议**: 了解如何标准化管理和注入复杂的逻辑规则（如变量更新、直播间格式）
-- **关联文档**: Jacquard 编排层 [`../core/jacquard-orchestration.md`](../core/jacquard-orchestration.md)
+- **关联文档**: Jacquard 编排层 [`../jacquard/README.md`](../jacquard/README.md)
 
 ### 4. Jinja2 宏系统
 
@@ -50,7 +63,7 @@
 - **简介**: Filament 协议的输出端规范，包括 LLM 输出标签体系和状态更新格式。
 - **核心内容**: 认知与表达标签 (`<thought>`, `<content>`)、逻辑与状态标签 (`<variable_update>`)、表现与交互标签 (`<status_bar>`, `<choice>`)
 - **阅读建议**: 了解 LLM 应如何格式化输出，以及系统如何解析这些输出
-- **关联文档**: 解析流程 [`filament-parsing-workflow.md`](filament-parsing-workflow.md)，核心架构 [`../core/`](../core/)
+- **关联文档**: 解析流程 [`filament-parsing-workflow.md`](filament-parsing-workflow.md)，Jacquard 编排层 [`../jacquard/README.md`](../jacquard/README.md)
 
 ### 6. 解析流程
 
@@ -58,7 +71,7 @@
 - **简介**: Filament 协议的实时流式解析机制，包括路由分发和错误处理。
 - **核心内容**: 流式解析架构、路由分发表、输出结构鲁棒性、容错降级
 - **阅读建议**: 了解系统如何实时解析 LLM 的流式输出并分发到相应处理器
-- **关联文档**: 输出格式 [`filament-output-format.md`](filament-output-format.md)，核心架构 [`../core/`](../core/)
+- **关联文档**: 输出格式 [`filament-output-format.md`](filament-output-format.md)，Jacquard 编排层 [`../jacquard/README.md`](../jacquard/README.md)
 
 ## 🔗 协议架构关系
 
@@ -94,7 +107,8 @@ graph LR
 
 ### 相邻目录
 
-- **核心架构** ([`../core/`](../core/)): 协议在系统中的应用实现
+- **Jacquard 编排层** ([`../jacquard/`](../jacquard/)): 协议在编排层中的应用
+- **Mnemosyne 数据引擎** ([`../mnemosyne/`](../mnemosyne/)): 协议在数据引擎中的应用
 - **工作流与处理** ([`../workflows/`](../workflows/)): 使用协议的具体业务流程
 - **运行时环境** ([`../runtime/`](../runtime/)): 协议在运行时环境中的应用
 - **参考文档** ([`../reference/`](../reference/)): 协议相关的技术参考

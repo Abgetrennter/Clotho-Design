@@ -1,4 +1,10 @@
+# ===========================================
+# Clotho-Design Project .gitignore
+# ===========================================
 
+# ===========================================
+# Legacy References (数据库分析参考文件)
+# ===========================================
 参考文件/数据库/11js-split/
 参考文件/数据库/12js-split/
 参考文件/数据库/21js-split/
@@ -8,6 +14,17 @@
 参考文件/数据库/41js-split/
 参考文件/数据库/42js-split/
 
+# ===========================================
+# Prototype & Demo Exclusions
+# ===========================================
+04_prototype/*
+!04_prototype/.gitkeep
+08_demo/*
+!08_demo/.gitkeep
+
+# ===========================================
+# General File Types (按项目需求排除)
+# ===========================================
 *.js
 *.json
 *.zip
@@ -27,4 +44,94 @@ COPYRIGHT
 *.mtn
 *.vrm
 *.ico
+*.cmake
+*.cc
+
+# ===========================================
+# Third-party References
+# ===========================================
 10_references/PeroCore-tauri/*
+
+# ===========================================
+# Roo IDE & Agent Skills
+# ===========================================
+.roo/rules-*/
+.roomodes
+
+# ===========================================
+# Flutter/Dart (09_mvp)
+# ===========================================
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Build outputs
+09_mvp/build/
+09_mvp/.dart_tool/
+09_mvp/.flutter-plugins
+09_mvp/.flutter-plugins-dependencies
+09_mvp/.packages
+09_mvp/.pub-cache/
+09_mvp/.pub/
+
+# Platform directories (entire)
+09_mvp/android/
+09_mvp/ios/
+09_mvp/linux/
+09_mvp/macos/
+09_mvp/windows/
+09_mvp/linux/flutter/generated_plugin_registrant.h
+09_mvp/linux/runner/generated_plugin_registrant.cc
+09_mvp/linux/runner/generated_plugin_registrant.h
+
+# macOS
+09_mvp/macos/Flutter/ephemeral/
+09_mvp/macos/Flutter/GeneratedPluginRegistrant.swift
+09_mvp/macos/Pods/
+
+# Windows
+09_mvp/windows/flutter/ephemeral/
+09_mvp/windows/flutter/generated_plugin_registrant.cc
+09_mvp/windows/flutter/generated_plugin_registrant.h
+09_mvp/windows/runner/generated_plugin_registrant.cc
+09_mvp/windows/runner/generated_plugin_registrant.h
+
+# Web
+09_mvp/web/
+
+# Environment & Config
+09_mvp/.env
+09_mvp/.env.*
+09_mvp/local.properties
+
+# Coverage
+09_mvp/coverage/
+
+# Logs
+09_mvp/*.log
+09_mvp/npm-debug.log*
+09_mvp/yarn-debug.log*
+09_mvp/yarn-error.log*
+
+# OS
+09_mvp/.DS_Store
+09_mvp/Thumbs.db
+
+# ===========================================
+# Assets (Persona 配置文件保留)
+# ===========================================
+!09_mvp/assets/personas/*.yaml
+!09_mvp/assets/personas/*.yml
+
+# ===========================================
+# Source Code (保留 MVP 源代码)
+# ===========================================
+!09_mvp/lib/
+!09_mvp/test/
+!09_mvp/pubspec.yaml
+!09_mvp/pubspec.lock
+!09_mvp/analysis_options.yaml
+!09_mvp/README.md
+!09_mvp/devtools_options.yaml

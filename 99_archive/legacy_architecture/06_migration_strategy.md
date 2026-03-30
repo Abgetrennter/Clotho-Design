@@ -1,9 +1,9 @@
-# 第六章：遗留生态迁移与扩展 (Migration & Ecosystem)
+# 遗留生态迁移与扩展 (Migration & Ecosystem)
 
-**版本**: 1.0.0
-**日期**: 2025-12-23
-**状态**: Draft
-**作者**: 资深系统架构师 (Architect Mode)
+**版本**: 1.0.0  
+**日期**: 2025-12-23  
+**状态**: Draft  
+**作者**: 资深系统架构师 (Architect Mode)  
 **源文档**: `st_prompt_template_analysis.md`, `st_prompt_template_migration_design.md`, `st_prompt_template_integration_plan.md`
 
 ---
@@ -87,17 +87,31 @@ graph TD
 
 ## 5. 角色卡导入与迁移系统 (Character Card Import & Migration)
 
-**详细架构**: 角色卡导入与迁移系统的完整设计与实现细节请参阅 **[第八章：角色卡导入与迁移系统](doc/architecture/08_character_import_and_migration.md)**。
+**详细架构**: 角色卡导入与迁移系统的完整设计与实现细节请参阅 **[角色卡导入与迁移指南](character-import-migration.md)**。
 
 ### 5.1 本模块定位
 
-本模块（第六章）专注于 **ST-Prompt-Template (EJS)** 的迁移策略与流程设计。对于完整的角色卡解析、导入、分诊、转换等实现，请参考第八章的详细文档。
+本模块专注于 **ST-Prompt-Template (EJS)** 的迁移策略与流程设计。对于完整的角色卡解析、导入、分诊、转换等实现，请参考角色卡导入指南的详细文档。
 
 ### 5.2 相关章节索引
 
-- **核心分析引擎**: 参见第八章第3节
-* **世界书分诊策略**: 参见第八章第4节
-* **正则脚本分诊策略**: 参见第八章第5节
-* **内嵌状态提取**: 参见第八章第6节
-* **交互流程设计**: 参见第八章第7节
-* **Prompt 格式规范化**: 参见第八章第10节
+- **核心分析引擎**: 参见角色卡导入指南第3节
+- **世界书分诊策略**: 参见角色卡导入指南第4节
+- **正则脚本分诊策略**: 参见角色卡导入指南第5节
+- **内嵌状态提取**: 参见角色卡导入指南第6节
+- **交互流程设计**: 参见角色卡导入指南第7节
+- **Prompt 格式规范化**: 参见角色卡导入指南第11节
+
+---
+
+## 6. 相关文档
+
+- **[角色卡导入与迁移指南](character-import-migration.md)**: 完整的角色卡导入系统设计
+- **[Jinja2 宏系统](../protocols/jinja2-macro-system.md)**: EJS 到 Jinja2 的转换规则和宏映射
+- **[Filament 协议](../protocols/filament-protocol-overview.md)**: 输入/输出格式规范
+- **[核心架构](../core/README.md)**: 迁移策略在系统架构中的位置
+
+---
+
+**最后更新**: 2025-12-23  
+**维护者**: Clotho 迁移团队

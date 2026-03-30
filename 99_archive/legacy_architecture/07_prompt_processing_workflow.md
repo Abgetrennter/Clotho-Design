@@ -1,9 +1,12 @@
-# 第七章：提示词处理工作流 (Prompt Processing Workflow)
+# 提示词处理工作流 (Prompt Processing Workflow)
 
-**版本**: 1.0.0
-**日期**: 2025-12-27
-**状态**: Draft
-**关联文档**: `02_jacquard_orchestration.md`, `03_mnemosyne_data_engine.md`, `macro_system_spec.md`
+**版本**: 1.0.0  
+**日期**: 2025-12-27  
+**状态**: Draft  
+**关联文档**: 
+- 核心架构 [`../core/jacquard-orchestration.md`](../core/jacquard-orchestration.md)
+- 核心架构 [`../core/mnemosyne-data-engine.md`](../core/mnemosyne-data-engine.md)
+- 协议目录 [`../protocols/jinja2-macro-system.md`](../protocols/jinja2-macro-system.md)
 
 ---
 
@@ -121,3 +124,14 @@ graph TD
 
 3. **Structured Container (结构化容器)**:
     * 使用 `Skein` 而非长字符串传递数据，允许我们在 Pipeline 的任何阶段对特定部分（如 System Prompt）进行独立修改、替换或调试。
+
+## 相关阅读
+
+- **[核心架构](../core/README.md)**: 了解工作流的架构支撑
+- **[协议目录](../protocols/README.md)**: 了解工作流中使用的数据格式
+- **[运行时环境](../runtime/README.md)**: 了解工作流的执行环境
+
+---
+
+**最后更新**: 2025-12-27  
+**维护者**: Clotho 工作流团队

@@ -1,0 +1,121 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/27.0.9 Chrome/134.0.6998.205 Electron/35.4.0 Safari/537.36" version="27.0.9">
+  <diagram id="ClothoHighLevelArch" name="High Level Architecture">
+    <mxGraphModel dx="1800" dy="764" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="2" value="运行时环境 (织卷 / The Tapestry)" style="swimlane;whiteSpace=wrap;html=1;startSize=30;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;" parent="1" vertex="1">
+          <mxGeometry x="40" y="40" width="760" height="600" as="geometry" />
+        </mxCell>
+        <mxCell id="3" value="L0: 基础设施 (骨架)" style="swimlane;whiteSpace=wrap;html=1;startSize=25;fillColor=#e1d5e7;strokeColor=#9673a6;fontColor=#000000;" parent="2" vertex="1">
+          <mxGeometry x="20" y="40" width="160" height="540" as="geometry" />
+        </mxCell>
+        <mxCell id="3a" value="提示词模板&#xa;(Prompt Template)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;" parent="3" vertex="1">
+          <mxGeometry x="10" y="40" width="140" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="3b" value="API 配置&#xa;(API Config)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;" parent="3" vertex="1">
+          <mxGeometry x="10" y="90" width="140" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="4" value="L1: 环境 (全局上下文)" style="swimlane;whiteSpace=wrap;html=1;startSize=25;fillColor=#dae8fc;strokeColor=#6c8ebf;fontColor=#000000;" parent="2" vertex="1">
+          <mxGeometry x="200" y="40" width="160" height="540" as="geometry">
+            <mxRectangle x="200" y="40" width="160" height="30" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="4a" value="全局世界书&#xa;(Global Lore)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;" parent="4" vertex="1">
+          <mxGeometry x="10" y="40" width="140" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="4b" value="用户身份&#xa;(User Persona)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;" parent="4" vertex="1">
+          <mxGeometry x="10" y="90" width="140" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="5" value="L2: 织谱 (角色蓝图)" style="swimlane;whiteSpace=wrap;html=1;startSize=25;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#000000;" parent="2" vertex="1">
+          <mxGeometry x="380" y="40" width="160" height="540" as="geometry" />
+        </mxCell>
+        <mxCell id="5a" value="静态角色数据&#xa;(Static Data)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;" parent="5" vertex="1">
+          <mxGeometry x="10" y="40" width="140" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="5b" value="基础世界书&#xa;(Base Lorebooks)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;" parent="5" vertex="1">
+          <mxGeometry x="10" y="90" width="140" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="5c" value="静态资源 (图片)&#xa;(Assets)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;" parent="5" vertex="1">
+          <mxGeometry x="10" y="140" width="140" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="5_note" value="只读基底 (Read-Only)" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontStyle=2;fontSize=10;" parent="5" vertex="1">
+          <mxGeometry x="10" y="190" width="120" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="6" value="L3: 丝络 (动态状态)" style="swimlane;whiteSpace=wrap;html=1;startSize=25;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#000000;" parent="2" vertex="1">
+          <mxGeometry x="560" y="40" width="180" height="540" as="geometry" />
+        </mxCell>
+        <mxCell id="6a" value="历史链&#xa;(History Chain)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;" parent="6" vertex="1">
+          <mxGeometry x="10" y="40" width="160" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="6b" value="VWD 状态树&#xa;(State Tree)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;" parent="6" vertex="1">
+          <mxGeometry x="10" y="90" width="160" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="6c" value="动态修补 (补丁)&#xa;(Patches)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;" parent="6" vertex="1">
+          <mxGeometry x="10" y="160" width="160" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="6d" value="规划器上下文&#xa;(Planner Context)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;" parent="6" vertex="1">
+          <mxGeometry x="10" y="210" width="160" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="6_note" value="读写层 (Mutable)" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontStyle=2;fontSize=10;" parent="6" vertex="1">
+          <mxGeometry x="10" y="260" width="120" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="7" value="表现层 (舞台 / The Stage)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1" parent="1" vertex="1">
+          <mxGeometry x="40" y="660" width="760" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="8" value="Jacquard 编排层 (织机 / The Loom)" style="swimlane;whiteSpace=wrap;html=1;startSize=30;fillColor=#fff2cc;strokeColor=#d6b656;fontColor=#333333;" parent="1" vertex="1">
+          <mxGeometry x="840" y="40" width="280" height="300" as="geometry" />
+        </mxCell>
+        <mxCell id="8a" value="Pre-Flash 规划器&#xa;(Planner)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d6b656;" parent="8" vertex="1">
+          <mxGeometry x="20" y="50" width="240" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="8b" value="Skein 构建器&#xa;(Builder)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d6b656;" parent="8" vertex="1">
+          <mxGeometry x="20" y="110" width="240" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="8c" value="模板渲染器 (Jinja2)&#xa;(Renderer)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d6b656;" parent="8" vertex="1">
+          <mxGeometry x="20" y="170" width="240" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="8d" value="Post-Flash 记忆整合&#xa;(Consolidation)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d6b656;" parent="8" vertex="1">
+          <mxGeometry x="20" y="230" width="240" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="9" value="Mnemosyne 数据引擎 (记忆 / The Memory)" style="swimlane;whiteSpace=wrap;html=1;startSize=30;fillColor=#e1d5e7;strokeColor=#9673a6;fontColor=#333333;" parent="1" vertex="1">
+          <mxGeometry x="840" y="360" width="280" height="280" as="geometry" />
+        </mxCell>
+        <mxCell id="9a" value="上下文投影&#xa;(Context Projection)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;" parent="9" vertex="1">
+          <mxGeometry x="20" y="50" width="240" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="9b" value="SQLite 混合存储&#xa;(Hybrid Storage)" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#ffffff;strokeColor=#9673a6;" parent="9" vertex="1">
+          <mxGeometry x="60" y="110" width="160" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="9c" value="向量存储 (RAG)&#xa;(Vector Store)" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#ffffff;strokeColor=#9673a6;" parent="9" vertex="1">
+          <mxGeometry x="60" y="210" width="160" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" value="用户输入" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="7" target="8" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="820" y="690" />
+              <mxPoint x="820" y="190" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e2" value="读取状态 / 写入更新" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="8" target="9" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" value="加载与修补" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;dashed=1;" parent="1" source="9" target="6" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;dashed=1;" parent="1" source="9" target="5" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="820" y="500" />
+              <mxPoint x="820" y="310" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e5" value="更新历史/规划" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.25;entryDx=0;entryDy=0;strokeColor=#CC0000;" parent="1" source="8" target="6" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

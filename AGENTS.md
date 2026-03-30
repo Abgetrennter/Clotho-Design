@@ -1,99 +1,101 @@
-  # Clotho 项目 AI 助手指南
+# Clotho AI Agents Context & Navigation Map (Mission Control)
 
-**项目类型**: 设计/文档仓库
-**主要语言**: 简体中文 (zh-CN)
+This file serves as the **Supreme Navigation Hub** and **Directive Manual** for all AI agents (Cline, Roo, Cursor, Claude, etc.) operating within the Clotho project.
 
-## 1. 项目概述
+**BEFORE YOU WRITE ANY CODE OR PROPOSE ANY ARCHITECTURE, YOU MUST READ AND COMPLY WITH THIS DOCUMENT.**
 
-Clotho 是一个面向下一代 AI 角色扮演（RPG）的高性能、确定性客户端的设计文档仓库。本仓库包含系统架构、设计规范、协议定义和技术分析文档。我们致力于解决现有方案（如 SillyTavern）在逻辑处理、上下文管理和性能上的痛点。
+---
 
-## 2. 单一事实来源 (SSOT)
+## 1. 🌟 The North Star: Single Source of Truth (SSOT)
 
-`00_active_specs/` 目录是项目的唯一权威文档源。在回答任何关于项目架构、功能、数据结构或工作流的问题前，**必须**先查阅该目录下的相关文档。
+- **`00_active_specs/` is the absolute SSOT.**
+- Do not hallucinate or guess implementation details, architecture, or data structures. If you are unsure, **STOP** and read the corresponding files in `00_active_specs/`.
+- Legacy references (e.g., `10_references/`, `99_archive/`) are for historical context only and must never override `00_active_specs/`.
 
-## 3. 目录结构
+---
 
+## 2. 🛡️ The Prime Directives (AI Behavior Rules)
 
-### 3.1 核心文档 (00_active_specs/)
-- `README.md` - 架构文档索引（入口点）
-- `vision-and-philosophy.md` - 愿景与哲学（凯撒原则）
-- `architecture-principles.md` - 架构原则
-- `metaphor-glossary.md` - 术语表与隐喻体系
+When generating code or proposing solutions, you MUST pass these self-checks:
 
-### 3.2 子系统
-- `infrastructure/` - 基础设施层
-- `jacquard/` - 编排层（The Loom）
-- `mnemosyne/` - 数据引擎
-- `presentation/` - 表现层（The Stage）
-- `muse/` - 智能服务
+1.  **The Caesar Principle Check**:
+    *   *Question*: "Am I putting business logic/math/state management into an LLM prompt?"
+    *   *Rule*: **NEVER**. Deterministic logic belongs to Code (Jacquard/Mnemosyne). LLMs are strictly for semantic understanding, roleplay, and creative text generation.
+2.  **The Filament Protocol Check**:
+    *   *Question*: "How am I structuring data sent to or received from the LLM?"
+    *   *Rule*: You MUST use the **Filament Protocol** (`XML+YAML` for input, `XML+JSON` for output). Do not invent custom markdown or JSON-only formats. See [`00_active_specs/protocols/filament-protocol-overview.md`](00_active_specs/protocols/filament-protocol-overview.md).
+3.  **The Uni-Directional Data Flow Check**:
+    *   *Question*: "Is the UI directly modifying the Mnemosyne database or state tree?"
+    *   *Rule*: **NEVER**. The Presentation Layer (UI) is read-only. It must dispatch `Intents` via `JacquardUIAdapter` or ClothoNexus. State is uniquely managed by Mnemosyne. See [`00_active_specs/protocols/interface-definitions.md`](00_active_specs/protocols/interface-definitions.md).
 
-### 3.3 协议与格式
-- `protocols/` - Filament 协议、输入/输出格式、宏系统
+---
 
-### 3.4 工作流
-- `workflows/` - 提示词处理、角色卡迁移
+## 3. 🗺️ Mission Control (Context Graph)
 
-### 3.5 参考文档
-- `reference/documentation_standards.md` - 文档编写规范
+Before starting a task, identify your domain and **load the required context path** into your memory.
 
-### 3.6 工作目录
-- `01_drafts/` - 设计草稿（工作进行中）
-- `02_active_plans/` - 活跃计划（具体功能的规范）
-- `03_actvie_craft/` - 详细规范（组件设计与分析）
-- `10_references/` - 外部参考资料与分析
-- `15_meta_crital/` - 元批判分析（设计审计与审查）
-- `99_archive/` - 历史归档（已弃用的设计）
+### Domain A: Orchestration & Logic (Jacquard / The Loom)
+*   **Tasks**: Building Prompt pipelines, creating plugins (Shuttles), handling LLM requests.
+*   **Required Context Path**:
+    1.  [`00_active_specs/jacquard/README.md`](00_active_specs/jacquard/README.md) (Core Loom Architecture)
+    2.  [`00_active_specs/jacquard/plugin-architecture.md`](00_active_specs/jacquard/plugin-architecture.md) (If writing a plugin)
+    3.  [`00_active_specs/protocols/interface-definitions.md`](00_active_specs/protocols/interface-definitions.md) (Interface Contracts)
 
-## 4. 文档标准
+### Domain B: Data & State Management (Mnemosyne / The Memory)
+*   **Tasks**: Modifying database schemas, managing Context/Threads, state patching, snapshots.
+*   **Required Context Path**:
+    1.  [`00_active_specs/mnemosyne/README.md`](00_active_specs/mnemosyne/README.md) (Core Data Engine Architecture)
+    2.  [`00_active_specs/mnemosyne/sqlite-architecture.md`](00_active_specs/mnemosyne/sqlite-architecture.md) (Physical Schema)
+    3.  [`00_active_specs/mnemosyne/abstract-data-structures.md`](00_active_specs/mnemosyne/abstract-data-structures.md) (In-Memory State)
 
-所有文档必须遵循 `00_active_specs/documentation_standards.md` 中的规范。
+### Domain C: UI & Presentation (The Stage)
+*   **Tasks**: Building Flutter widgets, parsing SDUI, rendering Markdown, handling user interactions.
+*   **Required Context Path**:
+    1.  [`00_active_specs/presentation/README.md`](00_active_specs/presentation/README.md) (UI Principles: No Business Logic)
+    2.  [`00_active_specs/presentation/clotho-nexus-integration.md`](00_active_specs/presentation/clotho-nexus-integration.md) (Event listening)
+    3.  [`00_active_specs/protocols/interface-definitions.md`](00_active_specs/protocols/interface-definitions.md) -> Check `JacquardUIAdapter`
 
-### 4.1 语言
-- **默认语言**：简体中文 (zh-CN)
-- **专有名词**：首次使用 "中文 (English)" 格式，之后保持一致
+---
 
-### 4.2 术语与隐喻
-必须严格遵守 `00_active_specs/metaphor-glossary.md` 定义的纺织隐喻体系：
+## 4. 🔤 The Rosetta Stone (Terminology Bridge)
 
-| 术语 (EN) | 术语 (CN) | 含义 |
-| :--- | :--- | :--- |
-| **Clotho** | **Clotho** | 整个系统 |
-| **Jacquard** | **Jacquard** | 编排层/引擎 (The Loom) |
-| **Mnemosyne** | **Mnemosyne** | 数据引擎 (The Memory) |
-| **The Pattern** | **织谱** | 静态定义集 (原 Character Card) |
-| **The Tapestry** | **织卷** | 运行时实例/存档 |
-| **Threads** | **丝络** | 动态状态流/历史记录 |
+Clotho uses a dual-terminology system.
+- Use **Metaphor** terms when writing/updating *Architecture Documents*.
+- Use **Technical** terms when writing *Code, Class Names, or Variables*.
+- **NEVER** use legacy terms like "Character Card" or "Chat History".
 
-### 4.3 语调
-- **专业 (Professional)**：保持技术文档的严肃性
-- **直接 (Direct)**：直入主题
-- **禁止**：使用 "Great", "Sure", "Certainly" 等对话式填充词
+| Metaphor (Architecture) | Technical (Code) | Legacy (DO NOT USE) | Definition |
+| :--- | :--- | :--- | :--- |
+| **Tapestry** (织卷) | `Session` | Chat / Save | The complete runtime instance. |
+| **Pattern** (织谱) | `Persona` | Character Card | Static read-only definition blueprint. |
+| **Threads** (丝络) | `Context` / `State` | Message History | Dynamic, read-write state and history. |
+| **Punchcards** (穿孔卡)| `Snapshot` | Save File | Serialized static slice of the Tapestry. |
+| **Skein** (绞纱) | `PromptBundle` | Prompt Array | Structured container for Prompt assembly. |
+| **Lore / Texture** | `Worldbook` | World Info | Background knowledge base. |
+| **Shuttle** (梭子) | `Plugin` | Extension | Execution module in Jacquard pipeline. |
 
-### 4.4 格式
-- 使用标准 Markdown 标题 (#, ##, ###)
-- 文件头部必须包含 YAML/Frontmatter 元数据：
-  ```markdown
-  # 文档标题
-  **版本**: x.x.x
-  **日期**: YYYY-MM-DD
-  **状态**: Draft/Active/Deprecated
-  ```
-- 代码块必须指定语言类型
-- Mermaid 图表中避免在 `[]` 内使用双引号 `""` 或括号 `()`
+*Full Definitions:*
+- [`00_active_specs/metaphor-glossary.md`](00_active_specs/metaphor-glossary.md)
+- [`00_active_specs/naming-convention.md`](00_active_specs/naming-convention.md) (Strict naming rules for code)
 
-## 5. AI 审查清单 (Review Checklist)
+---
 
-在提交任何文档更改前，必须执行以下自我审查：
+## 5. 🛠️ Daily Operations & Commands
 
-- [ ] **SSOT 检查**: 内容是否与 `00_active_specs/` 中的规范冲突？
-- [ ] **重复性检查**: 内容是否已在其他文件中存在？如果是，是否应该改为引用？
-- [ ] **链接有效性**: 所有新增的 `[Link](path)` 相对路径是否真实存在且正确？
-- [ ] **术语一致性**: 是否使用了 "Pattern", "Tapestry", "Jacquard" 等标准术语？
-- [ ] **目录位置**: 文件是否放置在正确的子目录下？
-- [ ] **语调检查**: 是否去除了 "Great", "Sure" 等对话式填充词？
+The active codebase is primarily located in `08_demo/` (Flutter UI Prototype).
 
-## 6. 自动引用指令
+```bash
+# General Setup
+cd 08_demo && flutter pub get
 
-1.  **始终先查阅规范**：回答架构、功能、数据结构或工作流问题时，必须先查阅 `00_active_specs/` 中的相关文件。
-2.  **不要猜测**：如果 `00_active_specs/` 中已定义实现细节，不要凭空猜测。
-3.  **上下文意识**：`00_active_specs/` 是活跃上下文，需要"记住"模块工作方式时，应阅读相应文件。
+# Run the App (Web is preferred for fast iteration)
+cd 08_demo && flutter run -d chrome
+
+# Code Quality (Run these before attempting completion)
+cd 08_demo && flutter test
+cd 08_demo && flutter analyze
+```
+
+## 6. 📝 Documentation Standards
+When asked to update or create documentation, you MUST adhere to the standards defined in:
+[`00_active_specs/reference/documentation_standards.md`](00_active_specs/reference/documentation_standards.md).

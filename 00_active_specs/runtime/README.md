@@ -1,9 +1,27 @@
 # 运行时环境导读 (Runtime Environment Guide)
 
-**版本**: 1.0.0
-**日期**: 2025-12-30
+**版本**: 1.1.0
+**日期**: 2026-03-11
+**状态**: Active
 
-本目录包含 Clotho 系统的动态运行时架构文档。不同于 `core/` 目录下的静态组件设计，本目录关注系统在运行过程中的状态变化、数据流转和生命周期管理。
+---
+
+## 📖 术语使用说明
+
+本文档目录混合使用**隐喻术语**和**技术术语**：
+
+| 隐喻术语 (架构概念) | 技术术语 (代码实现) | 说明 |
+|-------------------|-------------------|------|
+| Tapestry (织卷) | **Session** (会话) | 运行时实例 |
+| Pattern (织谱) | **Persona** (角色设定) | 静态蓝图 |
+| Threads (丝络) | **Context** / **StateTree** | 动态状态/状态树 |
+| Punchcards (穿孔卡) | **Snapshot** (快照) | 状态快照 |
+
+在代码实现时，请使用 [`../naming-convention.md`](../naming-convention.md) 中定义的技术术语。
+
+---
+
+本目录包含 Clotho 系统的动态运行时架构文档。不同于子系统目录下的静态组件设计，本目录关注系统在运行过程中的状态变化、数据流转和生命周期管理。
 
 ## 文档索引
 
@@ -22,5 +40,5 @@
 
 ## 关联阅读
 
-*   **数据引擎**: [Mnemosyne Data Engine](../core/mnemosyne-data-engine.md) - 负责执行 Patching 和快照生成的组件。
-*   **编排层**: [Jacquard Orchestration](../core/jacquard-orchestration.md) - 负责驱动运行时状态流转的调度器。
+*   **数据引擎**: [Mnemosyne 数据引擎](../mnemosyne/README.md) - 负责执行 Patching 和快照生成的组件。
+*   **编排层**: [Jacquard 编排层](../jacquard/README.md) - 负责驱动运行时状态流转的调度器。

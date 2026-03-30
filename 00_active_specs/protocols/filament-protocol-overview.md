@@ -1,25 +1,43 @@
 # Filament 协议概述 (Filament Protocol Overview)
 
-**版本**: 2.3.0  
-**日期**: 2025-12-28  
-**状态**: Draft  
-**作者**: 资深系统架构师 (Architect Mode)  
+**版本**: 2.4.0
+**日期**: 2026-03-11
+**状态**: Active
+**作者**: 资深系统架构师 (Architect Mode)
 **关联文档**:
 
 - 输入格式 [`filament-input-format.md`](filament-input-format.md)
 - 输出格式 [`filament-output-format.md`](filament-output-format.md)
 - Jinja2 宏系统 [`jinja2-macro-system.md`](jinja2-macro-system.md)
 - 解析流程 [`filament-parsing-workflow.md`](filament-parsing-workflow.md)
-- 核心架构 [`../core/`](../core/)
+- Jacquard 编排层 [`../jacquard/README.md`](../jacquard/README.md)
+- Mnemosyne 数据引擎 [`../mnemosyne/README.md`](../mnemosyne/README.md)
+
+---
+
+## 📖 术语使用说明
+
+本文档使用**隐喻术语**进行架构描述：
+
+| 隐喻术语 | 技术术语 | 说明 |
+|---------|---------|------|
+| Skein (绞纱) | **PromptBundle** (提示词包) | Prompt 组装容器 |
+| Pattern (织谱) | **Persona** (角色设定) | 静态蓝图 |
+| Tapestry (织卷) | **Session** (会话) | 运行时实例 |
+
+在代码实现时，请使用 [`../naming-convention.md`](../naming-convention.md) 中定义的技术术语。
 
 ---
 
 ## 协议定位 (Protocol Positioning)
 
-**Filament 协议**是 Clotho 系统的通用交互语言，旨在消除“自然语言”与“机器指令”之间的模糊地带。它贯穿于系统的所有交互环节，从提示词构建、逻辑控制到界面渲染，实现了统一的语义表达和确定性通信。
+**Filament 协议**是 Clotho 系统LLM 的专用母语交互语言，旨在消除“自然语言”与“机器指令”之间的模糊地带。它贯穿于系统的所有交互环节，从提示词构建、逻辑控制到界面渲染，实现了统一的语义表达和确定性通信。
 
 > **适用范围声明**:
-> Filament 协议的**强制规范性仅限于 LLM 的输入与输出 (IO)** 环节。对于系统内部组件之间的通信、数据库存储或其他非 LLM 相关的交互场景，Filament 仅作为**推荐性参考**，并非强制约束。
+> Filament 协议是**专属于 LLM 的通信语言**，而非系统内部组件的通用交互语言。
+> - **LLM 通信**: Filament 强制规范 LLM 的输入 (XML+YAML) 和输出 (XML+JSON)
+> - **内部组件**: 系统内部各层之间使用 Dart 对象直接通信，不经过 Filament 协议转换
+> - **数据持久化**: 数据库和存储层使用原生数据结构，与 Filament 格式解耦
 
 ## 核心设计哲学 (Core Design Philosophy)
 
@@ -41,12 +59,14 @@ Filament 遵循以下两大设计哲学：
 
 ## 协议在系统中的应用范畴
 
-Filament 不仅是 LLM 的输出协议，更是系统的通用语言，统一管理：
+Filament 是**专门针对 LLM 设计的通信协议**，其应用范畴严格限定于：
 
-1. **提示词格式 (Prompt Engineering)**: 所有的 Character Card、World Info 均通过 Filament 结构化注入。
-2. **标签类型 (Tag System)**: 定义一套标准化的 XML 标签集，用于控制流程。
-3. **嵌入式前端 (Embedded UI)**: 允许 LLM 通过协议直接请求渲染原生的嵌入式网页组件（Mini-Apps），实现交互维度的升维。
-4. **状态管理 (State Management)**: 统一的状态更新指令格式。
+1. **提示词组装 (Prompt Assembly)**: 通过 XML+YAML 结构化注入 Pattern (织谱)、Lore (纹理) 等上下文。
+2. **LLM 输出解析 (Output Parsing)**: 解析 XML+JSON 格式的响应，提取思考过程、内容、状态更新等指令。
+3. **标签语义体系 (Tag Semantics)**: 定义标准化的 XML 标签集，明确表达 LLM 的意图（如 `<thought>`, `<content>`, `<variable_update>`）。
+4. **嵌入式 UI 指令 (Embedded UI)**: 允许 LLM 通过协议标签（如 `<mini_app>`）请求渲染原生组件。
+
+> **重要区分**: Filament 仅作用于与 LLM 的**边界接口**（如图所示的 Assembler 和 Parser 之间）。系统内部组件（Jacquard、Mnemosyne、Stage）之间使用 Dart 原生对象直接通信，不经过 Filament 转换。
 
 ## 文档导航
 
@@ -64,10 +84,11 @@ Filament 不仅是 LLM 的输出协议，更是系统的通用语言，统一管
 |------|------|----------|------|
 | v1.0 | 初始版本 | 使用重复的 XML 标签表示状态更新 | 已废弃 |
 | v2.0 | 结构化版本 | 引入 `<state_update>` 和 JSON 数组三元组 | 兼容 |
-| v2.1 | 混合扩展版本 | 标签重命名、交互标准化、UI 灵活性 | **当前版本** |
-| v2.3 | 宏系统增强 | 增强 Jinja2 宏系统支持，完善 HTML 安全过滤 | 草案 |
+| v2.1 | 混合扩展版本 | 标签重命名、交互标准化、UI 灵活性 | 兼容 |
+| v2.3 | 宏系统增强 | 增强 Jinja2 宏系统支持，完善 HTML 安全过滤 | 兼容 |
+| v2.4 | 智能容错版本 | 引入 ESR v2.0 与 DFA 流式修正器 | **当前版本** |
 
-**注意**: 本系列文档基于 v2.3 草案撰写，但大部分内容兼容 v2.1。
+**注意**: 本系列文档基于 v2.4 撰写，完全兼容 v2.1/v2.3。
 
 ## 协议架构关系
 
@@ -84,9 +105,10 @@ graph LR
 
 ## 相关阅读
 
-- **[架构核心](../core/README.md)**: 协议在系统核心架构中的应用
+- **[Jacquard 编排层](../jacquard/README.md)**: 协议在编排层中的应用
+- **[Mnemosyne 数据引擎](../mnemosyne/README.md)**: 协议在数据引擎中的应用
 - **[工作流与处理](../workflows/README.md)**: 使用协议的具体业务流程
-- **[迁移指南](../migration/README.md)**: 从遗留系统迁移到 Filament 协议的实践指导
+- **[Pattern (织谱) 导入与迁移](../workflows/character-import-migration.md)**: 从遗留系统迁移到 Filament 协议的实践指导
 
 ---
 

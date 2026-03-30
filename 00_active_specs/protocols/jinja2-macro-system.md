@@ -1,15 +1,28 @@
 # Jinja2 宏系统 (Jinja2 Macro System)
 
-**版本**: 2.3.0  
-**日期**: 2025-12-28  
-**状态**: Draft  
-**作者**: 资深系统架构师 (Architect Mode)  
+**版本**: 2.4.0
+**日期**: 2026-03-11
+**状态**: Active
+**作者**: 资深系统架构师 (Architect Mode)
 **关联文档**:
 
 - 输入格式 [`filament-input-format.md`](filament-input-format.md)
 - 输出格式 [`filament-output-format.md`](filament-output-format.md)
 - 解析流程 [`filament-parsing-workflow.md`](filament-parsing-workflow.md)
 - 宏系统规范 [`../../EvaluationDoc/macro_system_spec.md`](../../EvaluationDoc/macro_system_spec.md)
+
+---
+
+## 📖 术语使用说明
+
+本文档使用**隐喻术语**进行架构描述：
+
+| 隐喻术语 | 技术术语 | 说明 |
+|---------|---------|------|
+| Pattern (织谱) | **Persona** (角色设定) | 静态蓝图 |
+| Tapestry (织卷) | **Session** (会话) | 运行时实例 |
+
+在代码实现时，请使用 [`../naming-convention.md`](../naming-convention.md) 中定义的技术术语。
 
 ---
 
@@ -200,7 +213,7 @@ Mnemosyne 的状态树以只读字典形式注入 Jinja2 上下文。
 
 | SillyTavern Macro | Clotho (Jinja2) | 说明 |
 |-------------------|-----------------|------|
-| `{{outlet::name}}` | `{{ outlet(name) }}` | World Info Outlet |
+| `{{outlet::name}}` | `{{ outlet(name) }}` | Lore Outlet |
 | `{{maxPrompt}}` | `{{ config.max_context }}` | 最大 Context Size |
 | `{{pipe}}` | `{{ pipe_result }}` | Slash Command 管道 |
 | `{{anchorBefore}}` | `{{ anchor_before }}` | WI 插入锚点（前） |

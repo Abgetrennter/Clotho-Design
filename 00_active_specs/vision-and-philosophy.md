@@ -1,10 +1,25 @@
 # 第一章：宏观愿景与设计哲学 (Vision & Philosophy)
 
-**版本**: 1.0.0
-**日期**: 2025-12-23
-**状态**: Draft
+**版本**: 1.1.0
+**日期**: 2026-03-11
+**状态**: Active
 **作者**: 资深系统架构师 (Architect Mode)
 **源文档**: `project_core_blueprint.md`, `system_architecture.md`
+
+---
+
+## 📖 术语使用说明
+
+本文档使用**隐喻术语**进行架构描述：
+
+| 隐喻术语 | 技术术语 | 说明 |
+|---------|---------|------|
+| Tapestry (织卷) | **Session** (会话) | 运行时实例 |
+| Pattern (织谱) | **Persona** (角色设定) | 静态蓝图 |
+| Threads (丝络) | **Context** (上下文) | 动态状态 |
+| Stage (舞台) | **Stage** (舞台区) | UI 主显示区域 (保留隐喻) |
+
+在代码实现时，请使用 [`naming-convention.md`](naming-convention.md) 中定义的技术术语。
 
 ---
 
@@ -87,6 +102,6 @@ Clotho 旨在重新定义 AI 角色扮演（RPG）的交互体验，构建一个
   * **IN (Context)**: 使用 XML 定义结构，YAML 描述数据。YAML 的高可读性与低 Token 消耗使其成为 Prompt 上下文的最佳载体。
   * **OUT (Instruction)**: 使用 XML 定义意图，JSON 描述参数。JSON 的严格语法确保了状态变更与工具调用的确定性。
 * **统一范畴**: Filament 不仅是 LLM 的输出协议，更是系统的通用语言，统一管理：
-    1. **提示词格式 (Prompt Engineering)**: 所有的 Character Card、World Info 均通过 Filament 结构化注入。
+    1. **提示词格式 (Prompt Engineering)**: 所有的 Pattern (织谱)、Lore (纹理) 均通过 Filament 结构化注入。
     2. **标签类型 (Tag System)**: 定义一套标准化的 XML 标签集，用于控制流程。
     3. **嵌入式前端 (Embedded UI)**: 允许 LLM 通过协议直接请求渲染原生的嵌入式网页组件（Mini-Apps），实现交互维度的升维。

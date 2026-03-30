@@ -1,10 +1,23 @@
 # 织谱导入与迁移系统 (Pattern Import & Migration)
 
-**版本**: 2.1.0 (Metaphor Update)
-**日期**: 2026-01-10
+**版本**: 2.2.0
+**日期**: 2026-03-11
 **状态**: Active
 **作者**: 资深系统架构师 (Architect Mode)
 **源文档**: `plans/character-card-import-migration-design.md`
+
+---
+
+## 📖 术语使用说明
+
+本文档使用**隐喻术语**进行架构描述：
+
+| 隐喻术语 | 技术术语 | 说明 |
+|---------|---------|------|
+| Pattern (织谱) | **Persona** (角色设定) | 静态蓝图 |
+| Character Card (角色卡) | **Persona** (角色设定) | 静态蓝图 (旧称) |
+
+在代码实现时，请使用 [`../naming-convention.md`](../naming-convention.md) 中定义的技术术语。
 
 ---
 
@@ -305,7 +318,7 @@ graph TD
 
 ## 12. 相关文档
 
-* **[迁移策略](../core/migration-strategy.md)**: 了解 ST 生态迁移的整体策略
+* **[迁移策略](migration-strategy.md)**: 了解 ST 生态迁移的整体策略
 * **[Filament 协议](../protocols/filament-protocol-overview.md)**: 了解输入/输出格式规范
 * **[Jinja2 宏系统](../protocols/jinja2-macro-system.md)**: 了解 EJS 到 Jinja2 的转换规则
 * **[运行时环境](../runtime/layered-runtime-architecture.md)**: 了解导入后角色卡在运行时环境中的分层管理

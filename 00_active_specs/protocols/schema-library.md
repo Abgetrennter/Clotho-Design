@@ -1,14 +1,26 @@
 # Schema 库规范 (Schema Library Specification)
 
-**版本**: 1.0.0
-**日期**: 2025-12-30
-**状态**: Draft
+**版本**: 1.1.0
+**日期**: 2026-03-11
+**状态**: Active
 **作者**: 资深系统架构师 (Architect Mode)
 **关联文档**:
 
 - Filament 协议概述 [`filament-protocol-overview.md`](filament-protocol-overview.md)
-- Jacquard 编排层 [`../core/jacquard-orchestration.md`](../core/jacquard-orchestration.md)
+- Jacquard 编排层 [`../jacquard/README.md`](../jacquard/README.md)
 - 输入格式 [`filament-input-format.md`](filament-input-format.md)
+
+---
+
+## 📖 术语使用说明
+
+本文档使用**隐喻术语**进行架构描述：
+
+| 隐喻术语 | 技术术语 | 说明 |
+|---------|---------|------|
+| Character Card (角色卡) | **Persona** (角色设定) | 静态蓝图 |
+
+在代码实现时，请使用 [`../naming-convention.md`](../naming-convention.md) 中定义的技术术语。
 
 ---
 
@@ -59,21 +71,30 @@ graph TD
 
 ### 3.1 目录结构
 
-建议在项目根目录下建立 `data/schemas` (或 `protocols`) 目录：
+建议在项目根目录下建立 `data/schemas` 目录：
 
 ```text
-e:/Code/MyST/design/
+project_root/
 ├── data/
 │   ├── schemas/              # Schema 库根目录
-│   │   ├── core/             # 系统内置核心协议
-│   │   │   ├── filament_v2.yaml    # Filament 标准协议
-│   │   │   └── chain_of_thought.yaml
-│   │   ├── extensions/       # 扩展功能
-│   │   │   ├── variable_update.yaml # 变量更新规则
-│   │   │   └── rpg_combat.yaml
-│   │   └── modes/            # 全局模式覆盖
-│   │       ├── live_stream.yaml     # 直播模式
-│   │       └── text_adventure.yaml
+│   │   ├── core/             # 核心协议（系统内置，无需配置）
+│   │   │   └── filament_minimal.yaml   # 仅包含 think, content
+│   │   ├── extensions/       # 扩展协议（需显式启用）
+│   │   │   ├── variable_update.yaml    # 变量更新
+│   │   │   ├── choice.yaml             # 选择菜单
+│   │   │   ├── status_bar.yaml         # 状态栏
+│   │   │   ├── tool_call.yaml          # 工具调用
+│   │   │   ├── details.yaml            # 折叠摘要
+│   │   │   ├── ui_component.yaml       # 嵌入式UI
+│   │   │   ├── media.yaml              # 媒体资源
+│   │   │   └── chain_of_thought.yaml   # 强制思维链格式
+│   │   ├── modes/            # 模式协议（全局风格，互斥）
+│   │   │   ├── live_stream.yaml        # 直播模式
+│   │   │   ├── text_adventure.yaml     # 文字冒险
+│   │   │   └── json_mode.yaml          # JSON输出模式
+│   │   └── overrides/        # 覆盖协议（替换Extension实现）
+│   │       ├── options_format.yaml     # 九选项格式（覆盖choice）
+│   │       └── json_variable_update.yaml # JSON变量更新格式
 │   └── ...
 ```
 
@@ -81,22 +102,44 @@ e:/Code/MyST/design/
 
 使用 YAML 作为存储格式，利用其多行字符串处理能力（Block Scalars `|`）。
 
-#### 3.2.1 Schema 定义模板
+#### 3.2.1 Schema 类型定义
 
+**Core Schema**（系统内置，无需配置）:
+```yaml
+# data/schemas/core/filament_minimal.yaml
+meta:
+  id: "filament_minimal"
+  name: "Filament 最小协议"
+  version: "2.5.0"
+  schema_type: "core"        # 固定值：core
+  
+tags:
+  - name: "think"            # Core 标签 1
+    category: "cognition"
+  - name: "content"          # Core 标签 2
+    category: "expression"
+```
+
+**Extension Schema**（需显式启用）:
 ```yaml
 # data/schemas/extensions/variable_update.yaml
 
 meta:
-  id: "variable_update_v1"
-  name: "通用变量更新规则"
+  id: "variable_update"
+  name: "变量更新规则"
   version: "1.0.0"
   author: "System"
-  description: "定义了基于 <UpdateVariable> 的状态变更逻辑"
-  type: "augmentation" # 枚举: augmentation (增强), override (覆盖)
+  description: "定义状态变更逻辑"
+  schema_type: "extension"   # 枚举: extension | mode | override
+  
+# 启用后，Parser 才会识别此标签
+parser_hints:
+  root_tag: "variable_update"
 
-# 注入配置：定义这段 Prompt 应该插入到 System Prompt 的哪个位置
+# 注入配置
 injection:
-  target: "system_instruction" # system_instruction, post_history, etc.
+  position: "system_end"     # 注入位置
+  priority: 100
   priority: 100 # 优先级，越高越靠后（越接近末尾）
 
 # 核心指令 (Prompt)
@@ -177,20 +220,69 @@ User: 进入直播模式！
 *   如果多个 Schema 定义了相同的 `parser_hints.root_tag`，优先级高的覆盖优先级低的。
 *   如果同时激活了多个 `type: override` 的 Schema，系统应发出警告或仅使用优先级最高的一个。
 
-## 6. 核心库定义 (Standard Library Definitions)
+## 6. 标准库定义 (Standard Library Definitions)
 
-以下是系统建议内置的核心 Schema：
+### 6.1 Core（始终启用，无需配置）
 
-| ID | 类型 | 描述 | 适用场景 |
-|----|------|------|----------|
-| `filament_v2` | Core | 基础的 Filament 协议定义 | 默认启用 |
-| `variable_update` | Extension | 状态变更规则 (L1) | 需要 RPG 系统的角色 |
-| `chain_of_thought` | Extension | 强制思维链 `<thought>` | 需要复杂逻辑推理的场景 |
-| `live_stream` | Mode | 直播间格式输出 | 模拟主播 |
-| `text_adventure` | Mode | 文字冒险游戏格式 | 跑团、D&D |
+| ID | 标签 | 描述 |
+|----|------|------|
+| `filament_minimal` | `<think>`, `<content>` | 最小 Filament 协议，所有角色卡默认支持 |
 
-## 7. 下一步行动
+### 6.2 Extension（需显式启用）
+
+| ID | 提供的标签 | 描述 | 适用场景 |
+|----|-----------|------|----------|
+| `variable_update` | `<variable_update>` | 状态变更规则 | RPG 系统 |
+| `choice` | `<choice>` | 选择菜单 | 交互叙事 |
+| `status_bar` | `<status_bar>` | 自定义状态栏 | 状态展示 |
+| `tool_call` | `<tool_call>` | 工具调用 | 外部工具集成 |
+| `details` | `<details>` | 折叠摘要 | 辅助信息 |
+| `ui_component` | `<ui_component>` | 嵌入式 UI | 复杂交互 |
+| `media` | `<media>` | 媒体资源 | 富媒体内容 |
+| `chain_of_thought` | - | 强制思维链格式 | 复杂推理 |
+
+### 6.3 Mode（互斥，仅选一个）
+
+| ID | 描述 | 覆盖范围 |
+|----|------|----------|
+| `live_stream` | 直播间格式 | 全局输出风格 |
+| `text_adventure` | 文字冒险游戏格式 | 全局输出风格 |
+| `json_mode` | 强制 JSON 输出 | 全局输出格式 |
+
+### 6.4 Override（替换 Extension 实现）
+
+| ID | 描述 | 覆盖目标 |
+|----|------|----------|
+| `options_format` | 九选项格式 | 替换 `choice` 实现 |
+| `json_variable_update` | JSON 变量更新 | 替换 `variable_update` 格式 |
+
+## 7. 配置示例
+
+### 极简对话角色（仅 Core）
+```yaml
+configuration:
+  protocols: []  # 空列表，只使用 Core 标签
+```
+
+### RPG 角色（启用 Extension）
+```yaml
+configuration:
+  protocols:
+    - variable_update    # 状态管理
+    - choice             # 选择菜单
+    - status_bar         # 状态展示
+```
+
+### 工具助手（选择性启用）
+```yaml
+configuration:
+  protocols:
+    - tool_call          # 只需要工具调用
+    # 不启用 variable_update
+```
+
+## 8. 下一步行动
 
 1.  在项目根目录下创建 `data/schemas` 目录结构。
 2.  将常用 Prompt 模式迁移为 Schema 文件。
-3.  更新 Jacquard 插件以支持 `SchemaLoader`。
+3.  更新 Jacquard 插件以支持 `SchemaLoader` 和 ESR 构建。

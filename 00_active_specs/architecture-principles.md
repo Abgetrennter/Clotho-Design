@@ -1,38 +1,39 @@
 # 架构原则
 
-**版本**: 1.0.0
-**日期**: 2026-01-10
-**状态**: Draft
+**版本**: 1.1.0
+**日期**: 2026-03-11
+**状态**: Active
 **作者**: Clotho 架构团队
+
+---
+
+## 📖 术语使用说明
+
+本文档使用**隐喻术语**进行架构描述：
+
+| 隐喻术语 | 技术术语 | 说明 |
+|---------|---------|------|
+| Tapestry (织卷) | **Session** (会话) | 运行时实例 |
+| Pattern (织谱) | **Persona** (角色设定) | 静态蓝图 |
+| Threads (丝络) | **Context** (上下文) | 动态状态 |
+| Skein (绞纱) | **PromptBundle** (提示词包) | Prompt 容器 |
+| Shuttle (梭子) | **Plugin** (插件) | 功能单元 |
+
+在代码实现时，请使用 [`naming-convention.md`](naming-convention.md) 中定义的技术术语。
 
 ---
 
 ## 1. 核心设计原则
 
-### 1.1 凯撒原则 (The Caesar Principle)
+### 1.1 凯撒原则与混合代理 (The Caesar Principle & Hybrid Agency)
 
-> **"Render unto Caesar the things that are Caesar's, and unto God the things that are God's."**  
-> **（凯撒的归凯撒，上帝的归上帝）**
+> **"Render unto Caesar the things that are Caesar's, and unto God the things that are God's."**
 
-#### 1.1.1 凯撒的归凯撒 (Code's Domain)
+Clotho 的核心设计哲学遵循 **凯撒原则** 和 **混合代理** 模型。代码（凯撒）负责确定性逻辑，LLM（上帝）负责语义与创意，两者通过严格的协议协作，绝不混淆职责。
 
-- **确定性逻辑**: 逻辑判断、数值计算、状态管理、流程控制必须由确定性代码严密掌控
-- **绝不外包**: 严禁将此类逻辑外包给 LLM
-- **代码权威**: Jacquard（编排层）和 Mnemosyne（数据层）拥有最终决策权
+*详细定义请参阅 👉 **[愿景与哲学: 凯撒原则](vision-and-philosophy.md#2-设计哲学-凯撒原则-the-caesar-principle)**。*
 
-#### 1.1.2 上帝的归上帝 (LLM's Domain)
-
-- **语义理解**: LLM 专注于语义理解、情感演绎、剧情生成、文本润色
-- **神性保留**: 不分散 LLM 注意力于琐碎的逻辑计算
-- **拒绝全权接管**: 不相信 LLM 能在处理复杂逻辑的同时保持高质量角色扮演
-
-### 1.2 混合代理 (Hybrid Agency)
-
-- **分工明确**: 人类提供意图，代码提供逻辑，LLM 提供语义
-- **协同工作**: 三者各司其职，通过严格定义的协议交互
-- **能力互补**: 发挥各自优势，避免短板效应
-
-### 1.3 缪斯原则 (The Muses Principle)
+### 1.2 缪斯原则 (The Muses Principle)
 
 > **"凯撒掌管律法，上帝掌管灵魂，而缪斯掌管灵感与技艺。"**
 
@@ -67,7 +68,60 @@
 - **逻辑 → UI**: 逻辑层通过 Stream 广播状态变更，UI 被动接收并重绘
 - **数据权威**: Mnemosyne 是唯一的状态权威源
 
-### 2.3 协议统一化 (Filament Unification)
+### 2.3 状态管理分层 (State Management Layers)
+
+为解决状态管理职责的清晰划分，Clotho 采用三层状态管理架构：
+
+| 层级 | 名称 | 负责组件 | 职责 | 技术实现 |
+|------|------|----------|------|----------|
+| **L1** | 持久化层 | Mnemosyne | 状态存储、快照生成、历史回溯 | SQLite + OpLog |
+| **L2** | 通知层 | ClothoNexus | 状态变更事件广播、生命周期通知 | Stream + Event Bus |
+| **L3** | 展示层 | Riverpod | UI 状态投影与缓存、组件重绘 | StateNotifier + Provider |
+
+**核心原则**:
+
+1. **状态存储唯一性**: Mnemosyne 是唯一的状态存储权威源 (SSOT for State Storage)
+2. **状态通知解耦**: ClothoNexus 是状态变更通知总线 (State Change Notification Bus)，不存储状态
+3. **状态投影局部性**: Riverpod 管理 UI 层的状态投影，数据来源于 ClothoNexus 事件流
+
+**数据流示意图**:
+
+```mermaid
+graph TB
+    subgraph "L1 持久化层"
+        M[Mnemosyne SQLite]
+    end
+    
+    subgraph "L2 通知层"
+        CN[ClothoNexus Event Bus]
+    end
+    
+    subgraph "L3 展示层"
+        R[Riverpod Providers]
+        UI[Flutter Widgets]
+    end
+    
+    M -->|状态变更事件 | CN
+    CN -->|Stream<Event>| R
+    R -->|ref.watch| UI
+    
+    style M fill:#e3f2fd
+    style CN fill:#fff3e0
+    style R fill:#f3e5f5
+```
+
+**职责边界说明**:
+
+| 操作 | 负责组件 | 说明 |
+|------|----------|------|
+| 状态持久化 | Mnemosyne | 将状态变更写入 SQLite，生成 OpLog |
+| 快照生成 | Mnemosyne | 按需生成 Punchcards 快照 |
+| 历史回溯 | Mnemosyne | 应用 OpLog 回滚到历史状态 |
+| 事件广播 | ClothoNexus | 将状态变更事件广播给订阅者 |
+| 状态投影 | Riverpod | 将事件流转换为 UI 可读状态 |
+| 组件重绘 | Flutter | 根据 Riverpod 状态变化重建 Widget |
+
+### 2.4 协议统一化 (Filament Unification)
 
 - **统一格式**: "XML + YAML IN, XML + JSON OUT"
 - **统一范畴**: 贯穿提示词格式、标签类型、嵌入式前端、状态管理
@@ -148,7 +202,7 @@
 ## 6. 关联文档
 
 - **[愿景与哲学](vision-and-philosophy.md)**: 项目根本指导思想
-- **[核心架构](../core/README.md)**: 具体组件实现原则
+- **[架构索引](../README.md)**: 核心组件架构索引
 - **[Filament 协议](../protocols/filament-protocol-overview.md)**: 协议设计原则
 - **[分层运行时架构](../runtime/layered-runtime-architecture.md)**: 运行时设计原则
 

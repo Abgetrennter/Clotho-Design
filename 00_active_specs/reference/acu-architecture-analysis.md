@@ -4,7 +4,7 @@
 **日期**: 2026-01-04
 **状态**: Reference
 **源文档**: `10_references/数据库/js-split-merged/AI_REFERENCE_README.md`, `10_references/数据库/ACU_Architecture_Analysis.md`
-**关联文档**: [`../core/mnemosyne-data-engine.md`](../core/mnemosyne-data-engine.md)
+**关联文档**: [`../mnemosyne/README.md`](../mnemosyne/README.md)
 
 ---
 

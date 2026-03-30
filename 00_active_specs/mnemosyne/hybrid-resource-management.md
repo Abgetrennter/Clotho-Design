@@ -1,13 +1,26 @@
 # Mnemosyne 混合资源管理规范 (Hybrid Resource Management Specification)
 
-**版本**: 1.0.0
-**日期**: 2026-01-10
+**版本**: 1.1.0
+**日期**: 2026-03-11
 **状态**: Active
 **作者**: 资深系统架构师 (Architect Mode)
 **关联文档**:
 - `sqlite-architecture.md` (L3 存储)
-- `../core/infrastructure-layer.md` (资源服务)
+- `../mnemosyne/README.md` (资源服务)
 - `../workflows/character-import-migration.md` (导入逻辑)
+
+---
+
+## 📖 术语使用说明
+
+本文档混合使用**隐喻术语**和**技术术语**：
+
+| 隐喻术语 (架构概念) | 技术术语 (代码实现) | 说明 |
+|-------------------|-------------------|------|
+| Tapestry (织卷) | **Session** (会话) | 运行时实例 |
+| Pattern (织谱) | **Persona** (角色设定) | 静态蓝图 |
+
+在代码实现时，请使用 [`../naming-convention.md`](../naming-convention.md) 中定义的技术术语。
 
 ---
 
@@ -22,7 +35,7 @@ Mnemosyne 的存储架构遵循 **“动静分离，逻辑聚合 (Separate Physi
 1.  **Library (L2 Static)**: 存放 **织谱 (Patterns)**。
     *   **隐喻**: “游戏卡带”或“安装目录”。
     *   **特性**: 只读、可替换、版本化、易于分享。
-    *   **内容**: 角色卡元数据、默认立绘、背景音乐、世界观设定 (Lorebook)。
+    *   **内容**: Pattern (织谱) 元数据、默认立绘、背景音乐、世界观设定 (Lorebook)。
 2.  **Session Data (L3 Dynamic)**: 存放 **会话 (Sessions/Tapestries)**。
     *   **隐喻**: “游戏存档”。
     *   **特性**: 读写频繁、私有、依赖 L2 但不包含 L2。
@@ -125,7 +138,7 @@ L2 层的资源被封装为 **Pattern (织谱)**。它是 Mnemosyne 的基本分
 为了解决多媒体资源在不同织谱和会话之间的高频复用问题，以及网络下载的不确定性，引入 "藏宝阁 (The Vault)"。
 
 ### 4.1 设计原则
-1.  **只存一份 (Single Instance Storage)**: 无论多少个角色卡引用同一张图，磁盘上只存一份。
+1.  **只存一份 (Single Instance Storage)**: 无论多少个 Pattern (织谱) 引用同一张图，磁盘上只存一份。
 2.  **惰性加载 (Lazy Loading)**: 仅在渲染时下载/加载。
 3.  **内容寻址**: 文件名即内容的 SHA-256 哈希。
 
