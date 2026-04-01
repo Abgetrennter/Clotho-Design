@@ -48,9 +48,9 @@ COPYRIGHT
 *.cc
 
 # ===========================================
-# Third-party References
+# Third-party References (managed via git submodules)
 # ===========================================
-10_references/PeroCore-tauri/*
+# Submodules are tracked by git directly — no gitignore rules needed
 
 # ===========================================
 # Roo IDE & Agent Skills

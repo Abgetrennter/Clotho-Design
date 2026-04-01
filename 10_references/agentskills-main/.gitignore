@@ -1,6 +1,5 @@
-# macOS
 .DS_Store
-
-# IDEs
+__pycache__/
 .idea/
 .vscode/
+

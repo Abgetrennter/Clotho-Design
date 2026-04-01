@@ -7,3 +7,6 @@
 [submodule "10_references/LittleWhiteBox"]
 	path = 10_references/LittleWhiteBox
 	url = https://github.com/RT15548/LittleWhiteBox
+[submodule "10_references/character-card-spec-v3-main"]
+	path = 10_references/character-card-spec-v3-main
+	url = https://github.com/kwaroran/character-card-spec-v3
