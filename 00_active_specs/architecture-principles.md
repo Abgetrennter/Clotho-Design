@@ -7,21 +7,7 @@
 
 ---
 
-## 📖 术语使用说明
-
-本文档使用**隐喻术语**进行架构描述：
-
-| 隐喻术语 | 技术术语 | 说明 |
-|---------|---------|------|
-| Tapestry (织卷) | **Session** (会话) | 运行时实例 |
-| Pattern (织谱) | **Persona** (角色设定) | 静态蓝图 |
-| Threads (丝络) | **Context** (上下文) | 动态状态 |
-| Skein (绞纱) | **PromptBundle** (提示词包) | Prompt 容器 |
-| Shuttle (梭子) | **Plugin** (插件) | 功能单元 |
-
-在代码实现时，请使用 [`naming-convention.md`](naming-convention.md) 中定义的技术术语。
-
----
+> 术语体系参见 [naming-convention.md](naming-convention.md)
 
 ## 1. 核心设计原则
 
@@ -127,13 +113,9 @@ graph TB
 - **统一范畴**: 贯穿提示词格式、标签类型、嵌入式前端、状态管理
 - **统一解析**: 实时流式解析，路由分发
 
-### 2.4 数据与表现解耦 (Decoupling Data from Presentation)
+### 2.5 数据与表现解耦 (Decoupling Data from Presentation)
 
-**原则**: 上下文格式化 (Context Formatting) 是编排层的职责，而非数据层的职责。
-
-*   **数据层 (Mnemosyne)**: 专注数据的存储与检索，只提供纯净的结构化数据对象 (Native Objects)，**绝对不包含**任何针对特定 LLM 优化的 Prompt 模板或格式化逻辑（如 Markdown/YAML 转换）。
-*   **编排层 (Jacquard)**: 负责将 Mnemosyne 提供的原始数据对象转换为适合 LLM 阅读的格式（如 YAML），组装成 Filament 协议的 Prompt。
-*   **优势**: 这种解耦允许我们在不修改底层存储逻辑的情况下，灵活调整对 LLM 的输入格式。
+上下文格式化是编排层的职责，非数据层。Mnemosyne 只提供纯净的结构化数据对象，不含任何 LLM 格式化逻辑；Jacquard 负责将原始数据转换为 LLM 格式并组装 Prompt。
 
 ## 3. 开发与维护原则
 

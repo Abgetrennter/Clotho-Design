@@ -6,18 +6,7 @@
 **作者**: 资深系统架构师 (Architect Mode)
 **源文档**: `plans/character-card-import-migration-design.md`
 
----
-
-## 📖 术语使用说明
-
-本文档使用**隐喻术语**进行架构描述：
-
-| 隐喻术语 | 技术术语 | 说明 |
-|---------|---------|------|
-| Pattern (织谱) | **Persona** (角色设定) | 静态蓝图 |
-| Character Card (角色卡) | **Persona** (角色设定) | 静态蓝图 (旧称) |
-
-在代码实现时，请使用 [`../naming-convention.md`](../naming-convention.md) 中定义的技术术语。
+> 术语体系参见 [naming-convention.md](../naming-convention.md)
 
 ---
 

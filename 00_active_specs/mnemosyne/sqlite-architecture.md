@@ -4,20 +4,7 @@
 **日期**: 2026-03-11
 **状态**: Active
 
----
-
-## 📖 术语使用说明
-
-本文档混合使用**隐喻术语**和**技术术语**：
-
-| 隐喻术语 (架构概念) | 技术术语 (代码实现) | 说明 |
-|-------------------|-------------------|------|
-| Tapestry (织卷) | **Session** (会话) | 运行时实例 |
-| Pattern (织谱) | **Persona** (角色设定) | 静态蓝图 |
-| Threads (丝络) | **Context** / **StateTree** / **HistoryChain** | 动态状态/状态树/历史链 |
-| Punchcards (穿孔卡) | **Snapshot** (快照) | 状态快照 |
-
-在代码实现时，请使用 [`../naming-convention.md`](../naming-convention.md) 中定义的技术术语。
+> 术语体系参见 [naming-convention.md](../naming-convention.md)
 
 ---
 

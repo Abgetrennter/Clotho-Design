@@ -11,19 +11,7 @@
 
 ---
 
-## 📖 术语使用说明
-
-本文档使用**隐喻术语**进行架构描述：
-
-| 隐喻术语 | 技术术语 | 说明 |
-|---------|---------|------|
-| Skein (绞纱) | **PromptBundle** (提示词包) | Prompt 组装容器 |
-| Weaving (编织) | **Assemble** (组装) | Prompt 构建过程 |
-| Shuttle (梭子) | **Plugin** (插件) | 流水线功能单元 |
-
-在代码实现时，请使用 [`../naming-convention.md`](../naming-convention.md) 中定义的技术术语。
-
----
+> 术语体系参见 [naming-convention.md](../naming-convention.md)
 
 ## 1. 核心概念 (Core Concepts)
 

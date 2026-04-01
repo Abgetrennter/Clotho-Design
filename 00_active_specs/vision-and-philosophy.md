@@ -8,20 +8,7 @@
 
 ---
 
-## 📖 术语使用说明
-
-本文档使用**隐喻术语**进行架构描述：
-
-| 隐喻术语 | 技术术语 | 说明 |
-|---------|---------|------|
-| Tapestry (织卷) | **Session** (会话) | 运行时实例 |
-| Pattern (织谱) | **Persona** (角色设定) | 静态蓝图 |
-| Threads (丝络) | **Context** (上下文) | 动态状态 |
-| Stage (舞台) | **Stage** (舞台区) | UI 主显示区域 (保留隐喻) |
-
-在代码实现时，请使用 [`naming-convention.md`](naming-convention.md) 中定义的技术术语。
-
----
+> 术语体系参见 [naming-convention.md](naming-convention.md)
 
 ## 1. 核心价值主张
 

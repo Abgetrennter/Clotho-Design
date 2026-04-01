@@ -9,18 +9,7 @@
 - [流式响应与计费设计](streaming-and-billing-design.md) - LLMIterator 接口定义
 - [ClothoNexus 事件总线](../infrastructure/clotho-nexus-events.md) - 事件集成
 
----
-
-## 📖 术语使用说明
-
-本文档使用**技术语义术语**：
-
-| 术语 | 说明 |
-|------|------|
-| **MuseService** | 智能服务层 |
-| **Provider** | LLM 服务提供商 |
-
-在代码实现时，请使用 [`../naming-convention.md`](../naming-convention.md) 中定义的技术术语。
+> 术语体系参见 [naming-convention.md](../naming-convention.md)
 
 ---
 

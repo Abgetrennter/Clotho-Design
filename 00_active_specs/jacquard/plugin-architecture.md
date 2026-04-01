@@ -11,18 +11,7 @@
 
 ---
 
-## 📖 术语使用说明
-
-本文档混合使用**隐喻术语**和**技术术语**：
-
-| 隐喻术语 (架构概念) | 技术术语 (代码实现) | 说明 |
-|-------------------|-------------------|------|
-| Shuttle (梭子) | **Plugin** (插件) | 流水线功能单元 |
-| Skein (绞纱) | **PromptBundle** (提示词包) | Prompt 组装容器 |
-
-在代码实现时，请使用 [`../naming-convention.md`](../naming-convention.md) 中定义的技术术语。
-
----
+> 术语体系参见 [naming-convention.md](../naming-convention.md)
 
 ## 1. 概述 (Overview)
 

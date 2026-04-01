@@ -5,19 +5,7 @@
 **状态**: Active
 **所属模块**: Infrastructure (L0)
 
----
-
-## 📖 术语使用说明
-
-本文档使用**技术语义术语**：
-
-| 术语 | 说明 |
-|------|------|
-| **Jacquard** | 编排层 |
-| **Mnemosyne** | 数据引擎 |
-| **Session** | 会话实例 |
-
-在代码实现时，请使用 [`../naming-convention.md`](../naming-convention.md) 中定义的技术术语。
+> 术语体系参见 [naming-convention.md](../naming-convention.md)
 
 ---
 

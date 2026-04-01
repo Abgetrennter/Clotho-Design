@@ -10,19 +10,7 @@
 - [流式响应与计费设计](streaming-and-billing-design.md) - 流式处理流程
 - [Provider 适配器规范](muse-provider-adapters.md) - Provider 适配器实现
 
----
-
-## 📖 术语使用说明
-
-本文档使用**技术语义术语**：
-
-| 术语 | 说明 |
-|------|------|
-| **MuseService** | 智能服务层 |
-| **Jacquard** | 编排层 |
-| **Session** | 会话实例 |
-
-在代码实现时，请使用 [`../naming-convention.md`](../naming-convention.md) 中定义的技术术语。
+> 术语体系参见 [naming-convention.md](../naming-convention.md)
 
 ---
 

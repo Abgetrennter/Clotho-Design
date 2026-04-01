@@ -6,18 +6,7 @@
 **作者**: 资深系统架构师 (Architect Mode)
 **源文档**: `ui_layout_design.md`, `ui_subsystem_design.md`
 
----
-
-## 📖 术语使用说明
-
-本文档混合使用**隐喻术语**和**技术术语**：
-
-| 隐喻术语 (架构概念) | 技术术语 (代码实现) | 说明 |
-|-------------------|-------------------|------|
-| Tapestry (织卷) | **Session** (会话) | 运行时实例 |
-| Stage (舞台) | **Stage** (舞台区) | UI 主显示区域 (保留隐喻) |
-
-在代码实现时，请使用 [`../naming-convention.md`](../naming-convention.md) 中定义的技术术语。
+> 术语体系参见 [naming-convention.md](../naming-convention.md)
 
 ---
 

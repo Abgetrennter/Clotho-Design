@@ -10,17 +10,7 @@
 - 输入格式 [`filament-input-format.md`](filament-input-format.md)
 - 解析流程 [`filament-parsing-workflow.md`](filament-parsing-workflow.md)
 
----
-
-## 📖 术语使用说明
-
-本文档使用**隐喻术语**进行架构描述：
-
-| 隐喻术语 | 技术术语 | 说明 |
-|---------|---------|------|
-| Pattern (织谱) | **Persona** (角色设定) | 静态蓝图 |
-
-在代码实现时，请使用 [`../naming-convention.md`](../naming-convention.md) 中定义的技术术语。
+> 术语体系参见 [naming-convention.md](../naming-convention.md)
 
 ---
 

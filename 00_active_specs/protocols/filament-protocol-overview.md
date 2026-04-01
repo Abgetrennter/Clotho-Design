@@ -13,19 +13,7 @@
 - Jacquard 编排层 [`../jacquard/README.md`](../jacquard/README.md)
 - Mnemosyne 数据引擎 [`../mnemosyne/README.md`](../mnemosyne/README.md)
 
----
-
-## 📖 术语使用说明
-
-本文档使用**隐喻术语**进行架构描述：
-
-| 隐喻术语 | 技术术语 | 说明 |
-|---------|---------|------|
-| Skein (绞纱) | **PromptBundle** (提示词包) | Prompt 组装容器 |
-| Pattern (织谱) | **Persona** (角色设定) | 静态蓝图 |
-| Tapestry (织卷) | **Session** (会话) | 运行时实例 |
-
-在代码实现时，请使用 [`../naming-convention.md`](../naming-convention.md) 中定义的技术术语。
+> 术语体系参见 [naming-convention.md](../naming-convention.md)
 
 ---
 

@@ -11,17 +11,7 @@
 - [模型路由配置](muse-router-config.md) - 路由策略与配置规范 (P0)
 - [Nexus 事件集成](muse-nexus-integration.md) - 与 ClothoNexus 事件总线集成 (P0)
 
----
-
-## 📖 术语使用说明
-
-本文档使用**隐喻术语**进行架构描述：
-
-| 隐喻术语 | 技术术语 | 说明 |
-|---------|---------|------|
-| Gateway (网关) | **MuseService** (智能服务) | LLM 访问网关 |
-
-在代码实现时，请使用 [`../naming-convention.md`](../naming-convention.md) 中定义的技术术语。
+> 术语体系参见 [naming-convention.md](../naming-convention.md)
 
 ---
 
