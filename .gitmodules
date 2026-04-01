@@ -1,0 +1,9 @@
+[submodule "10_references/agentskills-main"]
+	path = 10_references/agentskills-main
+	url = https://github.com/anthropics/skills
+[submodule "10_references/PeroCore-tauri"]
+	path = 10_references/PeroCore-tauri
+	url = https://github.com/YoKONCy/PeroCore
+[submodule "10_references/LittleWhiteBox"]
+	path = 10_references/LittleWhiteBox
+	url = https://github.com/RT15548/LittleWhiteBox
