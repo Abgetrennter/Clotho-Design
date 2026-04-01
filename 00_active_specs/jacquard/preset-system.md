@@ -487,62 +487,19 @@ capability_patches:
 
 ## 5. 能力系统架构 (Capability System Architecture)
 
-### 5.1 能力命名空间
+> 相关定义参见 [capability-system-spec.md](capability-system-spec.md)
+>
+> 能力命名空间、配置合并算法 (L1→L2→L3)、依赖关系验证 (Requires/Recommends/Conflicts) 等完整定义
+> 均在 [`capability-system-spec.md`](capability-system-spec.md) 中详细描述。本节仅保留与预设系统直接相关的引用说明。
 
-能力采用分层命名空间，清晰表达所属领域：
+预设层通过以下方式与能力系统交互：
 
-```
-{domain}.{component}.{feature}.{subfeature}
+- **L1 Infrastructure** 定义能力的基础默认值
+- **L2 Pattern** 通过 `required_capabilities` 声明必需能力，通过 `capability_overrides` 覆盖配置
+- **L3 Session** 通过 `capability_patches` 实现运行时动态调整
 
-jacquard.pipeline.planner              # Jacquard - 流水线 - 规划器
-jacquard.pipeline.scheduler            # Jacquard - 流水线 - 调度器
-jacquard.pipeline.rag_retriever        # Jacquard - 流水线 - RAG检索
-jacquard.skein_building.depth_injection # Jacquard - Skein构建 - 深度注入
-
-mnemosyne.state_management.mode        # Mnemosyne - 状态管理 - 模式
-mnemosyne.state_management.vwd_descriptions  # Mnemosyne - VWD描述
-mnemosyne.memory.turn_summary          # Mnemosyne - 记忆 - 回合摘要
-mnemosyne.retrieval.vector_storage     # Mnemosyne - 检索 - 向量存储
-mnemosyne.quest_system.enabled         # Mnemosyne - 任务系统 - 总开关
-```
-
-### 5.2 能力配置合并与验证
-
-运行时有效配置通过 **L1 → L2 → L3 三层合并** 生成。详见 [`capability-system-spec.md` 第5节](capability-system-spec.md#5-三层合并机制)。
-
-```dart
-// 高层概览
-final effective = CapabilityMerger.merge(
-  l1: infrastructurePreset.capabilities,
-  l2: patternPreset.requiredCapabilities,
-  l3: sessionPreset.capabilityPatches,
-);
-```
-
-**合并优先级** (后者覆盖前者):
-1. L1 Infrastructure - 基础默认值
-2. L2 Pattern - Pattern (织谱) 必需能力 + 覆盖配置
-3. L3 Session - 用户实时补丁
-4. Validation - 依赖验证与自动修复
-
-### 5.3 依赖关系与验证
-
-详见 [`capability-system-spec.md` 第4节](capability-system-spec.md#4-依赖关系系统)。
-
-| 能力 | 依赖 | 互斥 | 自动修复 | 说明 |
-|------|------|------|----------|------|
-| `semantic_search` | `vector_storage` | - | 是 | 语义搜索需要向量存储 |
-| `macro_narrative` | `turn_summary` | - | 是 | 宏观叙事依赖回合摘要 |
-| `spotlight_focus` | `planner` | - | 是 | 聚光灯聚焦需要规划器 |
-| `vwd_descriptions` | - | `mode: simple` | 否 | VWD需要标准或完整模式 |
-| `planner` | - | `mode: simple` | 否 | 规划器需要标准或完整模式 |
-| `scheduler` | - | `mode: simple` | 否 | 调度器需要标准或完整模式 |
-
-**依赖处理策略**：
-1. **自动启用依赖** (`autoFix: true`)：用户开启A时，自动开启A依赖的B
-2. **禁用保护**：用户尝试禁用B时，警告有A依赖它
-3. **强制覆盖**：L2 Pattern (织谱) 通过 `requiredCapabilities` 强制启用必需能力
-4. **互斥检测**：`simple` 模式与 `planner`, `scheduler` 等能力互斥
+合并后的有效配置由 `CapabilityMerger` 生成，详见 [`capability-system-spec.md` 第5节](capability-system-spec.md#5-三层合并机制)。
+依赖验证由 `CapabilityValidator` 执行，详见 [`capability-system-spec.md` 第4节](capability-system-spec.md#4-依赖关系系统)。
 
 ## 6. 运行时动态调整
 
@@ -754,29 +711,11 @@ capabilities:
 
 ## 附录 A: 能力命名规范
 
-### A.1 Jacquard 能力
-
-| 能力路径 | 类型 | 说明 |
-|----------|------|------|
-| `jacquard.pipeline.planner` | boolean | 智能规划器 |
-| `jacquard.pipeline.scheduler` | boolean | 调度器 |
-| `jacquard.pipeline.rag_retriever` | boolean | RAG检索器 |
-| `jacquard.pipeline.consolidation` | boolean | 记忆整理 |
-| `jacquard.skein_building.depth_injection` | boolean | 深度注入 |
-| `jacquard.skein_building.lorebook_routing` | boolean | 世界书路由 |
-
-### A.2 Mnemosyne 能力
-
-| 能力路径 | 类型 | 说明 |
-|----------|------|------|
-| `mnemosyne.state_management.mode` | enum | 状态管理模式 |
-| `mnemosyne.state_management.vwd_descriptions` | boolean | VWD描述 |
-| `mnemosyne.memory.turn_summary` | boolean | 回合摘要 |
-| `mnemosyne.memory.macro_narrative` | boolean | 宏观叙事 |
-| `mnemosyne.retrieval.vector_storage` | boolean | 向量存储 |
-| `mnemosyne.retrieval.semantic_search` | boolean | 语义搜索 |
-| `mnemosyne.quest_system.enabled` | boolean | 任务系统 |
-| `mnemosyne.scheduler.enabled` | boolean | 调度器 |
+> 相关定义参见 [capability-system-spec.md](capability-system-spec.md)
+>
+> 完整的能力命名空间定义（Jacquard 能力、Mnemosyne 能力等）请参阅
+> [`capability-system-spec.md` 第2节](capability-system-spec.md#2-能力命名空间-capability-namespace)
+> 及 [附录 9.1 完整能力清单](capability-system-spec.md#91-完整能力清单)。
 
 ---
 

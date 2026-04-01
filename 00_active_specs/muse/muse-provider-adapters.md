@@ -130,276 +130,83 @@ class MuseProviderException implements Exception {
 
 ## 3. OpenAI 适配器（参考实现）
 
-### 3.1 完整实现代码
+### 3.1 OpenAI 错误码映射表
+
+| OpenAI 错误码 | Muse 标准错误 | 可重试 | 说明 |
+|--------------|--------------|--------|------|
+| `rate_limit_exceeded` | `rateLimitExceeded` | Yes | 请求频率超限 |
+| `insufficient_quota` | `quotaExceeded` | No | API 配额已用尽 |
+| `invalid_api_key` | `invalidApiKey` | No | API Key 无效 |
+| `context_length_exceeded` | `contextLengthExceeded` | No | 上下文长度超限 |
+| 其他 | `providerServerError` | Yes | 兜底映射 |
+
+### 3.2 OpenAI FinishReason 映射
+
+| OpenAI FinishReason | Muse FinishReason | 说明 |
+|---------------------|-------------------|------|
+| `stop` | `completed` | 正常完成 |
+| `length` | `maxTokensReached` | 达到最大 Token 数 |
+| `content_filter` | `contentFiltered` | 内容被安全过滤 |
+
+### 3.3 OpenAI 适配器接口
 
 ```dart
 /// OpenAI Provider 适配器
+/// 实现 ProviderAdapter 接口，作为所有适配器的参考实现
 class OpenAIAdapter implements ProviderAdapter {
-  final OpenAIClient _client;
-  final ProviderConfig _config;
-  
-  OpenAIAdapter({
-    required OpenAIClient client,
-    required ProviderConfig config,
-  })  : _client = client,
-        _config = config;
-  
+  OpenAIAdapter({required OpenAIClient client, required ProviderConfig config});
+
   @override
-  String get providerType => 'openai';
-  
+  String get providerType; // => 'openai'
+
   @override
   LLMIterator createIterator({
     required ModelConfig modelConfig,
     required List<RawMessage> messages,
     GenerationOptions? options,
-  }) {
-    return OpenAIIterator(
-      client: _client,
-      config: modelConfig,
-      messages: messages,
-      options: options,
-    );
-  }
-  
-  @override
-  Future<LLMResponse> execute({
-    required ModelConfig modelConfig,
-    required List<RawMessage> messages,
-    GenerationOptions? options,
-  }) async {
-    try {
-      final response = await _client.createChatCompletion(
-        model: modelConfig.model,
-        messages: _convertMessages(messages),
-        temperature: options?.temperature ?? 0.7,
-        maxTokens: options?.maxTokens,
-        topP: options?.topP,
-        frequencyPenalty: options?.frequencyPenalty,
-        presencePenalty: options?.presencePenalty,
-      );
-      
-      return LLMResponse(
-        content: response.choices.first.message.content ?? '',
-        usage: TokenUsage(
-          promptTokens: response.usage?.promptTokens ?? 0,
-          completionTokens: response.usage?.completionTokens ?? 0,
-          totalTokens: response.usage?.totalTokens ?? 0,
-        ),
-        finishReason: _mapFinishReason(response.choices.first.finishReason),
-      );
-    } on OpenAIException catch (e) {
-      throw _mapOpenAIError(e);
-    }
-  }
-  
-  @override
-  Future<HealthStatus> checkHealth() async {
-    try {
-      await _client.listModels();
-      return HealthStatus.healthy;
-    } catch (e) {
-      return HealthStatus.unhealthy(e.toString());
-    }
-  }
-  
-  @override
-  Future<List<ModelInfo>> listModels() async {
-    final response = await _client.listModels();
-    return response.data
-        .where((m) => m.id.startsWith('gpt'))
-        .map((m) => ModelInfo(
-              id: m.id,
-              name: m.id,
-              provider: 'openai',
-              capabilities: _inferCapabilities(m.id),
-            ))
-        .toList();
-  }
-  
-  @override
-  Future<int> countTokens(String text, String model) async {
-    // OpenAI 返回实际使用量，无需预估
-    throw UnsupportedError('OpenAI 不需要本地 Token 计数');
-  }
-  
-  // 内部方法
-  List<OpenAIChatCompletionChoiceMessageModel> _convertMessages(
-    List<RawMessage> messages,
-  ) {
-    return messages.map((m) => OpenAIChatCompletionChoiceMessageModel(
-      role: _mapRole(m.role),
-      content: m.content,
-    )).toList();
-  }
-  
-  OpenAIChatMessageRole _mapRole(MessageRole role) {
-    return switch (role) {
-      MessageRole.system => OpenAIChatMessageRole.system,
-      MessageRole.user => OpenAIChatMessageRole.user,
-      MessageRole.assistant => OpenAIChatMessageRole.assistant,
-      MessageRole.tool => OpenAIChatMessageRole.tool,
-    };
-  }
-  
-  FinishReason _mapFinishReason(String? reason) {
-    return switch (reason) {
-      'stop' => FinishReason.completed,
-      'length' => FinishReason.maxTokensReached,
-      'content_filter' => FinishReason.contentFiltered,
-      _ => FinishReason.unknown,
-    };
-  }
-  
-  MuseProviderException _mapOpenAIError(OpenAIException error) {
-    final code = error.code;
-    return switch (code) {
-      'rate_limit_exceeded' => MuseProviderException(
-          code: MuseErrorCode.rateLimitExceeded,
-          message: '请求频率超限，请稍后重试',
-          providerErrorCode: code,
-          isRetryable: true,
-        ),
-      'insufficient_quota' => MuseProviderException(
-          code: MuseErrorCode.quotaExceeded,
-          message: 'API 配额已用尽',
-          providerErrorCode: code,
-          isRetryable: false,
-        ),
-      'invalid_api_key' => MuseProviderException(
-          code: MuseErrorCode.invalidApiKey,
-          message: 'API Key 无效',
-          providerErrorCode: code,
-          isRetryable: false,
-        ),
-      'context_length_exceeded' => MuseProviderException(
-          code: MuseErrorCode.contextLengthExceeded,
-          message: '上下文长度超过模型限制',
-          providerErrorCode: code,
-          isRetryable: false,
-        ),
-      _ => MuseProviderException(
-          code: MuseErrorCode.providerServerError,
-          message: error.message,
-          providerErrorCode: code,
-          isRetryable: true,
-        ),
-    };
-  }
-  
-  ModelCapabilities _inferCapabilities(String modelId) {
-    return ModelCapabilities(
-      streaming: true,
-      functionCalling: modelId.contains('gpt-4') || modelId.contains('gpt-3.5-turbo'),
-      vision: modelId.contains('vision') || modelId.contains('gpt-4-turbo'),
-      jsonMode: modelId.contains('gpt-4') || modelId.contains('gpt-3.5-turbo-1106'),
-    );
-  }
-}
+  }); // => OpenAIIterator(...)
 
-/// OpenAI 流式迭代器实现
+  @override
+  Future<LLMResponse> execute({...}); // 非流式生成，调用 createChatCompletion
+
+  @override
+  Future<HealthStatus> checkHealth(); // 通过 listModels 探测
+
+  @override
+  Future<List<ModelInfo>> listModels(); // 过滤 gpt-* 模型，推断能力
+
+  @override
+  Future<int> countTokens(String text, String model); // throw UnsupportedError
+
+  /// 消息格式转换: RawMessage -> OpenAIChatMessage
+  /// 角色映射: system/user/assistant/tool 一一对应
+  /// 错误映射: 见 3.1 映射表
+}
+```
+
+### 3.4 OpenAI 流式迭代器
+
+```dart
+/// OpenAI 流式迭代器
+/// 通过 SSE 流拉取 chunk，首个 next() 调用时惰性初始化流连接
 class OpenAIIterator implements LLMIterator {
-  final OpenAIClient _client;
-  final ModelConfig _config;
-  final List<RawMessage> _messages;
-  final GenerationOptions _options;
-  
-  Stream<OpenAIStreamChatCompletionChunk>? _stream;
-  StreamIterator<OpenAIStreamChatCompletionChunk>? _iterator;
-  bool _cancelled = false;
-  bool _ended = false;
-  int _chunkIndex = 0;
-  String _bufferedContent = '';
-  
   OpenAIIterator({
     required OpenAIClient client,
     required ModelConfig config,
     required List<RawMessage> messages,
     GenerationOptions? options,
-  })  : _client = client,
-        _config = config,
-        _messages = messages,
-        _options = options ?? const GenerationOptions();
-  
+  });
+
   @override
-  Future<LLMChunk?> next() async {
-    if (_cancelled || _ended) return null;
-    
-    try {
-      // 首次调用时初始化流
-      if (_stream == null) {
-        _stream = _client.createChatCompletionStream(
-          model: _config.model,
-          messages: _messages.map((m) => OpenAIChatCompletionChoiceMessageModel(
-            role: _mapRole(m.role),
-            content: m.content,
-          )).toList(),
-          temperature: _options.temperature,
-          maxTokens: _options.maxTokens,
-          topP: _options.topP,
-        );
-        _iterator = StreamIterator(_stream!);
-      }
-      
-      // 拉取下一个事件
-      final hasNext = await _iterator!.moveNext();
-      if (!hasNext) {
-        _ended = true;
-        return null;
-      }
-      
-      final chunk = _iterator!.current;
-      final delta = chunk.choices.first.delta;
-      
-      // 累积内容
-      if (delta.content != null) {
-        _bufferedContent += delta.content!;
-      }
-      
-      // 检查是否结束
-      final finishReason = chunk.choices.first.finishReason;
-      final isLast = finishReason != null;
-      
-      if (isLast) {
-        _ended = true;
-      }
-      
-      return LLMChunk(
-        content: delta.content ?? '',
-        index: _chunkIndex++,
-        isLast: isLast,
-        usage: isLast ? _estimateUsage() : null,
-        timestamp: DateTime.now(),
-      );
-    } on OpenAIException catch (e) {
-      throw _mapOpenAIError(e);
-    }
-  }
-  
+  Future<LLMChunk?> next(); // 拉取下一个 SSE chunk；最后一个 chunk 携带 usage
   @override
-  Future<void> cancel() async {
-    _cancelled = true;
-    await _iterator?.cancel();
-  }
-  
+  Future<void> cancel(); // 标记取消并关闭 StreamIterator
   @override
-  bool get hasNext => !_cancelled && !_ended;
-  
-  TokenUsage? _estimateUsage() {
-    // OpenAI 流式响应通常在最后一个 chunk 返回 usage
-    // 如果没有，则需要估算
-    return null;
-  }
-  
-  OpenAIChatMessageRole _mapRole(MessageRole role) {
-    return switch (role) {
-      MessageRole.system => OpenAIChatMessageRole.system,
-      MessageRole.user => OpenAIChatMessageRole.user,
-      MessageRole.assistant => OpenAIChatMessageRole.assistant,
-      MessageRole.tool => OpenAIChatMessageRole.tool,
-    };
-  }
+  bool get hasNext; // => !_cancelled && !_ended
 }
 ```
+
+> **设计说明**: OpenAI 流式响应在最后一个 chunk 的 `finishReason` 非空时标记结束。`usage` 通常由最终 chunk 返回，若缺失则需估算。具体实现见代码仓库。
 
 ---
 
@@ -414,328 +221,89 @@ Anthropic API 与 OpenAI 的主要差异：
 3. **Token 计数**: 在消息结束时通过 `message_stop` 事件返回
 4. **错误码**: 使用 `overloaded_error` 表示服务器负载过高
 
-### 4.2 实现代码
+### 4.2 Anthropic 错误码映射表
+
+| Anthropic 错误类型 | Muse 标准错误 | 可重试 | 说明 |
+|-------------------|--------------|--------|------|
+| `rate_limit_error` | `rateLimitExceeded` | Yes | 请求频率超限 |
+| `overloaded_error` | `providerServerError` | Yes | Anthropic 特有，服务器负载过高 |
+| `invalid_request_error` | `invalidConfiguration` | No | 请求参数无效 |
+| `authentication_error` | `invalidApiKey` | No | API Key 无效 |
+| 其他 | `providerServerError` | Yes | 兜底映射 |
+
+### 4.3 Anthropic FinishReason 映射
+
+| Anthropic StopReason | Muse FinishReason | 说明 |
+|----------------------|-------------------|------|
+| `end_turn` | `completed` | 正常完成 |
+| `max_tokens` | `maxTokensReached` | 达到最大 Token 数 |
+| `stop_sequence` | `completed` | 命中自定义停止序列 |
+
+### 4.4 Anthropic 适配器接口
 
 ```dart
 /// Anthropic Provider 适配器
 class AnthropicAdapter implements ProviderAdapter {
-  final AnthropicClient _client;
-  final ProviderConfig _config;
-  
-  AnthropicAdapter({
-    required AnthropicClient client,
-    required ProviderConfig config,
-  })  : _client = client,
-        _config = config;
-  
-  @override
-  String get providerType => 'anthropic';
-  
-  @override
-  LLMIterator createIterator({
-    required ModelConfig modelConfig,
-    required List<RawMessage> messages,
-    GenerationOptions? options,
-  }) {
-    return AnthropicIterator(
-      client: _client,
-      config: modelConfig,
-      messages: messages,
-      options: options,
-    );
-  }
-  
-  @override
-  Future<LLMResponse> execute({
-    required ModelConfig modelConfig,
-    required List<RawMessage> messages,
-    GenerationOptions? options,
-  }) async {
-    final (systemMessage, chatMessages) = _separateSystemMessage(messages);
-    
-    try {
-      final response = await _client.createMessage(
-        model: modelConfig.model,
-        maxTokens: options?.maxTokens ?? 4096,
-        messages: chatMessages.map((m) => AnthropicMessage(
-          role: _mapRole(m.role),
-          content: m.content,
-        )).toList(),
-        system: systemMessage,
-        temperature: options?.temperature,
-        topP: options?.topP,
-      );
-      
-      return LLMResponse(
-        content: response.content.first.text,
-        usage: TokenUsage(
-          promptTokens: response.usage.inputTokens,
-          completionTokens: response.usage.outputTokens,
-          totalTokens: response.usage.inputTokens + response.usage.outputTokens,
-        ),
-        finishReason: _mapFinishReason(response.stopReason),
-      );
-    } on AnthropicException catch (e) {
-      throw _mapAnthropicError(e);
-    }
-  }
-  
-  @override
-  Future<HealthStatus> checkHealth() async {
-    try {
-      // Anthropic 没有直接的 health check，尝试 list models
-      await listModels();
-      return HealthStatus.healthy;
-    } catch (e) {
-      return HealthStatus.unhealthy(e.toString());
-    }
-  }
-  
-  @override
-  Future<List<ModelInfo>> listModels() async {
-    // Anthropic 模型列表通常是固定的
-    return [
-      ModelInfo(
-        id: 'claude-3-opus-20240229',
-        name: 'Claude 3 Opus',
-        provider: 'anthropic',
-        capabilities: ModelCapabilities(
-          streaming: true,
-          functionCalling: true,
-          vision: true,
-          jsonMode: true,
-        ),
-      ),
-      ModelInfo(
-        id: 'claude-3-sonnet-20240229',
-        name: 'Claude 3 Sonnet',
-        provider: 'anthropic',
-        capabilities: ModelCapabilities(
-          streaming: true,
-          functionCalling: true,
-          vision: true,
-          jsonMode: true,
-        ),
-      ),
-      ModelInfo(
-        id: 'claude-3-haiku-20240307',
-        name: 'Claude 3 Haiku',
-        provider: 'anthropic',
-        capabilities: ModelCapabilities(
-          streaming: true,
-          functionCalling: true,
-          vision: true,
-          jsonMode: true,
-        ),
-      ),
-    ];
-  }
-  
-  @override
-  Future<int> countTokens(String text, String model) async {
-    // Anthropic 提供专门的 Token 计数 API
-    final response = await _client.countTokens(
-      model: model,
-      messages: [AnthropicMessage(role: 'user', content: text)],
-    );
-    return response.inputTokens;
-  }
-  
-  // 内部辅助方法
-  (String?, List<RawMessage>) _separateSystemMessage(List<RawMessage> messages) {
-    String? systemMessage;
-    final chatMessages = <RawMessage>[];
-    
-    for (final msg in messages) {
-      if (msg.role == MessageRole.system && systemMessage == null) {
-        systemMessage = msg.content;
-      } else {
-        chatMessages.add(msg);
-      }
-    }
-    
-    return (systemMessage, chatMessages);
-  }
-  
-  String _mapRole(MessageRole role) {
-    return switch (role) {
-      MessageRole.system => throw ArgumentError('System message should be separated'),
-      MessageRole.user => 'user',
-      MessageRole.assistant => 'assistant',
-      MessageRole.tool => throw ArgumentError('Anthropic does not support tool role in this format'),
-    };
-  }
-  
-  FinishReason _mapFinishReason(String? reason) {
-    return switch (reason) {
-      'end_turn' => FinishReason.completed,
-      'max_tokens' => FinishReason.maxTokensReached,
-      'stop_sequence' => FinishReason.completed,
-      _ => FinishReason.unknown,
-    };
-  }
-  
-  MuseProviderException _mapAnthropicError(AnthropicException error) {
-    final type = error.type;
-    return switch (type) {
-      'rate_limit_error' => MuseProviderException(
-          code: MuseErrorCode.rateLimitExceeded,
-          message: '请求频率超限',
-          providerErrorCode: type,
-          isRetryable: true,
-        ),
-      'overloaded_error' => MuseProviderException(
-          code: MuseErrorCode.providerServerError,
-          message: 'Anthropic 服务器负载过高',
-          providerErrorCode: type,
-          isRetryable: true,
-        ),
-      'invalid_request_error' => MuseProviderException(
-          code: MuseErrorCode.invalidConfiguration,
-          message: error.message,
-          providerErrorCode: type,
-          isRetryable: false,
-        ),
-      'authentication_error' => MuseProviderException(
-          code: MuseErrorCode.invalidApiKey,
-          message: 'API Key 无效',
-          providerErrorCode: type,
-          isRetryable: false,
-        ),
-      _ => MuseProviderException(
-          code: MuseErrorCode.providerServerError,
-          message: error.message,
-          providerErrorCode: type,
-          isRetryable: true,
-        ),
-    };
-  }
-}
+  AnthropicAdapter({required AnthropicClient client, required ProviderConfig config});
 
+  @override
+  String get providerType; // => 'anthropic'
+
+  @override
+  LLMIterator createIterator({...}); // => AnthropicIterator(...)
+
+  @override
+  Future<LLMResponse> execute({...});
+  // 关键行为: 调用前需将 system message 从 messages 中分离，
+  // 通过独立的 `system` 参数传递给 Anthropic API
+
+  @override
+  Future<HealthStatus> checkHealth(); // Anthropic 无独立 health API，通过 listModels 探测
+
+  @override
+  Future<List<ModelInfo>> listModels();
+  // 返回固定模型列表: claude-3-opus, claude-3-sonnet, claude-3-haiku
+  // 所有模型均支持: streaming, functionCalling, vision, jsonMode
+
+  @override
+  Future<int> countTokens(String text, String model);
+  // Anthropic 提供专用 Token 计数 API，可直接调用
+
+  /// 消息格式转换: 需将 system role 从 messages 中提取为独立参数
+  /// 角色映射: user/assistant 直接映射；system/tool 需特殊处理
+  /// 错误映射: 见 4.2 映射表
+}
+```
+
+### 4.5 Anthropic 流式迭代器
+
+```dart
 /// Anthropic 流式迭代器
+/// SSE 事件驱动：按事件类型分发处理
 class AnthropicIterator implements LLMIterator {
-  final AnthropicClient _client;
-  final ModelConfig _config;
-  final List<RawMessage> _messages;
-  final GenerationOptions _options;
-  
-  Stream<AnthropicStreamEvent>? _stream;
-  StreamIterator<AnthropicStreamEvent>? _iterator;
-  bool _cancelled = false;
-  bool _ended = false;
-  int _chunkIndex = 0;
-  TokenUsage? _finalUsage;
-  
   AnthropicIterator({
     required AnthropicClient client,
     required ModelConfig config,
     required List<RawMessage> messages,
     GenerationOptions? options,
-  })  : _client = client,
-        _config = config,
-        _messages = messages,
-        _options = options ?? const GenerationOptions();
-  
+  });
+
   @override
-  Future<LLMChunk?> next() async {
-    if (_cancelled || _ended) return null;
-    
-    try {
-      if (_stream == null) {
-        final (systemMessage, chatMessages) = _separateSystemMessage(_messages);
-        _stream = _client.createMessageStream(
-          model: _config.model,
-          maxTokens: _options.maxTokens ?? 4096,
-          messages: chatMessages.map((m) => AnthropicMessage(
-            role: _mapRole(m.role),
-            content: m.content,
-          )).toList(),
-          system: systemMessage,
-          temperature: _options.temperature,
-          topP: _options.topP,
-        );
-        _iterator = StreamIterator(_stream!);
-      }
-      
-      final hasNext = await _iterator!.moveNext();
-      if (!hasNext) {
-        _ended = true;
-        return null;
-      }
-      
-      final event = _iterator!.current;
-      
-      // Anthropic 流式事件类型处理
-      return switch (event.type) {
-        'content_block_delta' => _handleContentDelta(event),
-        'message_delta' => _handleMessageDelta(event),
-        'message_stop' => _handleMessageStop(),
-        'ping' => next(),  // 心跳包，递归获取下一个
-        _ => next(),  // 忽略其他事件类型
-      };
-    } on AnthropicException catch (e) {
-      throw _mapAnthropicError(e);
-    }
-  }
-  
-  LLMChunk _handleContentDelta(AnthropicStreamEvent event) {
-    final delta = event.delta;
-    return LLMChunk(
-      content: delta.text ?? '',
-      index: _chunkIndex++,
-      isLast: false,
-      usage: null,
-      timestamp: DateTime.now(),
-    );
-  }
-  
-  LLMChunk? _handleMessageDelta(AnthropicStreamEvent event) {
-    // 可能包含 usage 信息
-    if (event.usage != null) {
-      _finalUsage = TokenUsage(
-        promptTokens: event.usage!.inputTokens,
-        completionTokens: event.usage!.outputTokens,
-        totalTokens: event.usage!.inputTokens + event.usage!.outputTokens,
-      );
-    }
-    // message_delta 通常不包含内容，继续获取下一个
-    return next();
-  }
-  
-  LLMChunk _handleMessageStop() {
-    _ended = true;
-    return LLMChunk(
-      content: '',
-      index: _chunkIndex++,
-      isLast: true,
-      usage: _finalUsage,
-      timestamp: DateTime.now(),
-    );
-  }
-  
+  Future<LLMChunk?> next();
+  // SSE 事件类型分发:
+  //   'content_block_delta' -> 返回内容 chunk
+  //   'message_delta'       -> 提取 usage 信息，递归获取下一个
+  //   'message_stop'        -> 返回最终 chunk (携带累积 usage)
+  //   'ping' / 其他          -> 忽略，递归获取下一个
+
   @override
-  Future<void> cancel() async {
-    _cancelled = true;
-    await _iterator?.cancel();
-  }
-  
+  Future<void> cancel();
   @override
-  bool get hasNext => !_cancelled && !_ended;
-  
-  // 辅助方法（与 AnthropicAdapter 相同，省略）
-  (String?, List<RawMessage>) _separateSystemMessage(List<RawMessage> messages) {
-    // ...
-  }
-  
-  String _mapRole(MessageRole role) {
-    // ...
-  }
-  
-  MuseProviderException _mapAnthropicError(AnthropicException error) {
-    // ...
-  }
+  bool get hasNext; // => !_cancelled && !_ended
 }
 ```
+
+> **设计说明**: Anthropic 的 SSE 事件模型与 OpenAI 差异显著 — 不是每个事件都包含内容，需按 `type` 字段分发处理。`usage` 信息在 `message_delta` 事件中单独返回，需在 `message_stop` 时合并发出。具体实现见代码仓库。
 
 ---
 
@@ -749,256 +317,82 @@ Local LLM 的特殊性：
 - **模型发现**: 通过 `/api/tags` 动态发现本地模型
 - **无速率限制**: 但可能有并发限制
 
-### 5.2 实现代码
+### 5.2 Ollama 错误码映射表
+
+| Ollama HTTP 状态码 | Muse 标准错误 | 可重试 | 说明 |
+|-------------------|--------------|--------|------|
+| 404 | `modelNotFound` | No | 本地模型不存在，需先 `ollama pull` |
+| 500 | `providerServerError` | Yes | Ollama 服务内部错误 |
+| 其他 | `providerServerError` | Yes | 兜底映射 |
+
+### 5.3 Ollama 适配器接口
 
 ```dart
-/// Ollama Provider 适配器
+/// Ollama (Local LLM) Provider 适配器
+/// 特殊依赖: Tokenizer（Tiktoken 或 llama_tokenizer）用于本地 Token 估算
 class OllamaAdapter implements ProviderAdapter {
-  final OllamaClient _client;
-  final ProviderConfig _config;
-  final Tokenizer _tokenizer;  // Tiktoken 或类似实现
-  
   OllamaAdapter({
     required OllamaClient client,
     required ProviderConfig config,
-    required Tokenizer tokenizer,
-  })  : _client = client,
-        _config = config,
-        _tokenizer = tokenizer;
-  
-  @override
-  String get providerType => 'ollama';
-  
-  @override
-  LLMIterator createIterator({
-    required ModelConfig modelConfig,
-    required List<RawMessage> messages,
-    GenerationOptions? options,
-  }) {
-    return OllamaIterator(
-      client: _client,
-      tokenizer: _tokenizer,
-      config: modelConfig,
-      messages: messages,
-      options: options,
-    );
-  }
-  
-  @override
-  Future<LLMResponse> execute({
-    required ModelConfig modelConfig,
-    required List<RawMessage> messages,
-    GenerationOptions? options,
-  }) async {
-    try {
-      final promptTokens = await _countMessagesTokens(messages, modelConfig.model);
-      
-      final response = await _client.generate(
-        model: modelConfig.model,
-        messages: messages.map((m) => OllamaMessage(
-          role: m.role.name,
-          content: m.content,
-        )).toList(),
-        options: OllamaRequestOptions(
-          temperature: options?.temperature ?? 0.7,
-          numPredict: options?.maxTokens ?? 128,
-          topP: options?.topP ?? 0.9,
-        ),
-      );
-      
-      final completionTokens = await _tokenizer.encode(response.message.content);
-      
-      return LLMResponse(
-        content: response.message.content,
-        usage: TokenUsage(
-          promptTokens: promptTokens,
-          completionTokens: completionTokens.length,
-          totalTokens: promptTokens + completionTokens.length,
-        ),
-        finishReason: response.done ? FinishReason.completed : FinishReason.unknown,
-      );
-    } on OllamaException catch (e) {
-      throw _mapOllamaError(e);
-    }
-  }
-  
-  @override
-  Future<HealthStatus> checkHealth() async {
-    try {
-      final response = await _client.listModels();
-      return HealthStatus.healthy;
-    } catch (e) {
-      return HealthStatus.unhealthy(e.toString());
-    }
-  }
-  
-  @override
-  Future<List<ModelInfo>> listModels() async {
-    final response = await _client.listModels();
-    return response.models.map((m) => ModelInfo(
-      id: m.name,
-      name: m.name,
-      provider: 'ollama',
-      capabilities: ModelCapabilities(
-        streaming: true,
-        functionCalling: false,  // 取决于模型和 Ollama 版本
-        vision: m.details?.families?.contains('clip') ?? false,
-        jsonMode: false,
-      ),
-    )).toList();
-  }
-  
-  @override
-  Future<int> countTokens(String text, String model) async {
-    // 使用 Tiktoken 估算
-    final encoding = await _tokenizer.encode(text);
-    return encoding.length;
-  }
-  
-  Future<int> _countMessagesTokens(List<RawMessage> messages, String model) async {
-    int total = 0;
-    for (final msg in messages) {
-      // 消息格式开销估算
-      total += await countTokens(msg.content, model);
-      total += 4;  // 格式开销（<|im_start|> 等）
-    }
-    return total;
-  }
-  
-  MuseProviderException _mapOllamaError(OllamaException error) {
-    return switch (error.statusCode) {
-      404 => MuseProviderException(
-          code: MuseErrorCode.modelNotFound,
-          message: '本地模型不存在，请先执行 ollama pull',
-          providerErrorCode: 'model_not_found',
-          isRetryable: false,
-        ),
-      500 => MuseProviderException(
-          code: MuseErrorCode.providerServerError,
-          message: 'Ollama 服务内部错误: ${error.message}',
-          providerErrorCode: 'internal_error',
-          isRetryable: true,
-        ),
-      _ => MuseProviderException(
-          code: MuseErrorCode.providerServerError,
-          message: error.message,
-          providerErrorCode: error.statusCode?.toString(),
-          isRetryable: true,
-        ),
-    };
-  }
-}
+    required Tokenizer tokenizer,  // Tiktoken 或类似实现
+  });
 
+  @override
+  String get providerType; // => 'ollama'
+
+  @override
+  LLMIterator createIterator({...}); // => OllamaIterator(...)
+
+  @override
+  Future<LLMResponse> execute({...});
+  // 关键行为: Token 计数通过本地 Tokenizer 估算，非 API 返回
+  // 每条消息额外加 4 tokens 格式开销（如 <|im_start|> 标记）
+
+  @override
+  Future<HealthStatus> checkHealth(); // 通过 listModels 探测
+
+  @override
+  Future<List<ModelInfo>> listModels();
+  // 通过 Ollama /api/tags 动态发现本地模型
+  // 视觉能力根据模型 families 中是否包含 'clip' 推断
+  // functionCalling / jsonMode 默认 false（取决于模型和 Ollama 版本）
+
+  @override
+  Future<int> countTokens(String text, String model);
+  // 使用 Tiktoken 本地估算，非远程 API 调用
+
+  /// 消息格式: role 直接使用 .name 字符串（如 "user", "assistant"）
+  /// 错误映射: 见 5.2 映射表
+}
+```
+
+### 5.4 Ollama 流式迭代器
+
+```dart
 /// Ollama 流式迭代器
+/// 与远程 Provider 的关键区别: 首次 next() 时需预估算 prompt tokens
 class OllamaIterator implements LLMIterator {
-  final OllamaClient _client;
-  final Tokenizer _tokenizer;
-  final ModelConfig _config;
-  final List<RawMessage> _messages;
-  final GenerationOptions _options;
-  
-  Stream<OllamaGenerateResponse>? _stream;
-  StreamIterator<OllamaGenerateResponse>? _iterator;
-  bool _cancelled = false;
-  bool _ended = false;
-  int _chunkIndex = 0;
-  String _accumulatedContent = '';
-  int _promptTokens = 0;
-  
   OllamaIterator({
     required OllamaClient client,
     required Tokenizer tokenizer,
     required ModelConfig config,
     required List<RawMessage> messages,
     GenerationOptions? options,
-  })  : _client = client,
-        _tokenizer = tokenizer,
-        _config = config,
-        _messages = messages,
-        _options = options ?? const GenerationOptions();
-  
+  });
+
   @override
-  Future<LLMChunk?> next() async {
-    if (_cancelled || _ended) return null;
-    
-    try {
-      if (_stream == null) {
-        // 预估 prompt tokens
-        _promptTokens = await _countMessagesTokens();
-        
-        _stream = _client.generateStream(
-          model: _config.model,
-          messages: _messages.map((m) => OllamaMessage(
-            role: m.role.name,
-            content: m.content,
-          )).toList(),
-          options: OllamaRequestOptions(
-            temperature: _options.temperature ?? 0.7,
-            numPredict: _options.maxTokens ?? 128,
-            topP: _options.topP ?? 0.9,
-          ),
-        );
-        _iterator = StreamIterator(_stream!);
-      }
-      
-      final hasNext = await _iterator!.moveNext();
-      if (!hasNext) {
-        _ended = true;
-        return null;
-      }
-      
-      final response = _iterator!.current;
-      _accumulatedContent += response.message.content;
-      
-      final isLast = response.done;
-      if (isLast) {
-        _ended = true;
-      }
-      
-      return LLMChunk(
-        content: response.message.content,
-        index: _chunkIndex++,
-        isLast: isLast,
-        usage: isLast ? await _calculateFinalUsage() : null,
-        timestamp: DateTime.now(),
-      );
-    } on OllamaException catch (e) {
-      throw _mapOllamaError(e);
-    }
-  }
-  
-  Future<TokenUsage> _calculateFinalUsage() async {
-    final completionTokens = await _tokenizer.encode(_accumulatedContent);
-    return TokenUsage(
-      promptTokens: _promptTokens,
-      completionTokens: completionTokens.length,
-      totalTokens: _promptTokens + completionTokens.length,
-    );
-  }
-  
-  Future<int> _countMessagesTokens() async {
-    int total = 0;
-    for (final msg in _messages) {
-      total += (await _tokenizer.encode(msg.content)).length;
-      total += 4;
-    }
-    return total;
-  }
-  
+  Future<LLMChunk?> next();
+  // 行为: 累积所有 chunk 内容，最终 chunk 时通过 Tokenizer 估算完整 usage
+  // Ollama 的 response.done == true 标记流结束
+
   @override
-  Future<void> cancel() async {
-    _cancelled = true;
-    await _iterator?.cancel();
-  }
-  
+  Future<void> cancel();
   @override
-  bool get hasNext => !_cancelled && !_ended;
-  
-  MuseProviderException _mapOllamaError(OllamaException error) {
-    // 同 OllamaAdapter
-  }
+  bool get hasNext; // => !_cancelled && !_ended
 }
 ```
+
+> **设计说明**: Ollama 作为本地 LLM 不提供 Token 计数 API，需在流结束时对累积内容进行本地 Token 估算。成本始终为 0，但仍需记录使用量以支持用量统计。具体实现见代码仓库。
 
 ---
 
@@ -1008,180 +402,70 @@ class OllamaIterator implements LLMIterator {
 
 许多 Provider（如 Azure OpenAI、Groq、Together AI）提供 OpenAI 兼容的 API。此适配器通过配置化方式支持这些 Provider，无需为每个创建独立适配器。
 
-### 6.2 实现代码
+### 6.2 GenericOpenAIAdapter 接口
 
 ```dart
 /// 通用 OpenAI-Compatible 适配器
+/// 继承 OpenAIAdapter，通过配置化方式支持 Azure OpenAI、Groq、Together AI 等
 class GenericOpenAIAdapter extends OpenAIAdapter {
-  final ProviderConfig _config;
-  
-  GenericOpenAIAdapter({
-    required OpenAIClient client,
-    required ProviderConfig config,
-  })  : _config = config,
-        super(client: client, config: config);
-  
+  GenericOpenAIAdapter({required OpenAIClient client, required ProviderConfig config});
+
   @override
-  String get providerType => _config.providerId;  // 使用配置的 ID
-  
+  String get providerType; // => _config.providerId（使用配置中的自定义 ID）
+
   @override
-  Future<List<ModelInfo>> listModels() async {
-    // 如果配置中提供了固定模型列表，直接返回
-    if (_config.fixedModels != null) {
-      return _config.fixedModels!.map((m) => ModelInfo(
-        id: m.id,
-        name: m.name,
-        provider: providerType,
-        capabilities: m.capabilities,
-      )).toList();
-    }
-    
-    // 否则尝试从 API 获取
-    return super.listModels();
-  }
-  
-  @override
-  MuseProviderException _mapOpenAIError(OpenAIException error) {
-    // 可以添加 Provider 特定的错误码映射
-    final customMapping = _config.errorCodeMapping?[error.code];
-    if (customMapping != null) {
-      return MuseProviderException(
-        code: customMapping,
-        message: error.message,
-        providerErrorCode: error.code,
-        isRetryable: _isRetryable(customMapping),
-      );
-    }
-    
-    return super._mapOpenAIError(error);
-  }
-  
-  bool _isRetryable(MuseErrorCode code) {
-    return switch (code) {
-      MuseErrorCode.rateLimitExceeded ||
-      MuseErrorCode.networkTimeout ||
-      MuseErrorCode.providerServerError => true,
-      _ => false,
-    };
-  }
+  Future<List<ModelInfo>> listModels();
+  // 优先使用 config.fixedModels（固定模型列表），若无则 fallback 到 API 查询
+
+  /// 错误映射扩展: 先查 config.errorCodeMapping 自定义映射，
+  /// 未命中则 fallback 到父类 OpenAI 标准映射
 }
 ```
+
+> **设计说明**: 该适配器的核心价值在于通过 `ProviderConfig` 的 `fixedModels` 和 `errorCodeMapping` 两个字段，以配置化方式适配不同的 OpenAI 兼容 Provider，无需为每个 Provider 编写独立适配器类。具体实现见代码仓库。
 
 ---
 
 ## 7. 适配器工厂与注册
 
-### 7.1 工厂实现
+### 7.1 注册表接口
 
 ```dart
-/// Provider 适配器工厂
+/// Provider 适配器注册表
 class ProviderAdapterRegistry {
   final Map<String, ProviderAdapterFactory> _factories = {};
-  
-  /// 注册适配器工厂
-  void register(ProviderAdapterFactory factory) {
-    _factories[factory.providerType] = factory;
-  }
-  
-  /// 创建适配器
-  ProviderAdapter createAdapter(ProviderConfig config) {
-    final factory = _factories[config.type];
-    if (factory == null) {
-      throw MuseProviderException(
-        code: MuseErrorCode.invalidConfiguration,
-        message: 'Unknown provider type: ${config.type}',
-        isRetryable: false,
-      );
-    }
-    return factory.createAdapter(config);
-  }
-  
-  /// 检查是否支持某 Provider 类型
-  bool isSupported(String type) => _factories.containsKey(type);
-  
-  /// 获取支持的类型列表
-  List<String> get supportedTypes => _factories.keys.toList();
-}
 
+  void register(ProviderAdapterFactory factory);   // 注册工厂，key 为 providerType
+  ProviderAdapter createAdapter(ProviderConfig config); // 创建适配器，未知类型抛 invalidConfiguration
+  bool isSupported(String type);                   // 检查是否支持某类型
+  List<String> get supportedTypes;                 // 获取所有已注册类型
+}
+```
+
+### 7.2 各 Provider 工厂注册
+
+初始化时注册以下工厂（默认 baseUrl 和特殊参数）：
+
+| Factory 类 | providerType | 默认 Base URL | 特殊参数 |
+|------------|-------------|---------------|---------|
+| `OpenAIFactory` | `openai` | `https://api.openai.com/v1` | timeout: 60s |
+| `AnthropicFactory` | `anthropic` | `https://api.anthropic.com` | version: `2023-06-01` |
+| `OllamaFactory` | `ollama` | `http://localhost:11434` | 需注入 `TiktokenTokenizer` |
+| `GenericOpenAIFactory` | `openai-compatible` | 由 config.baseUrl 指定 | — |
+
+```dart
 /// 初始化注册表
 ProviderAdapterRegistry initializeAdapterRegistry() {
   final registry = ProviderAdapterRegistry();
-  
   registry.register(OpenAIFactory());
   registry.register(AnthropicFactory());
   registry.register(OllamaFactory());
   registry.register(GenericOpenAIFactory());
-  
   return registry;
 }
 ```
 
-### 7.2 各 Provider 工厂实现
-
-```dart
-class OpenAIFactory implements ProviderAdapterFactory {
-  @override
-  String get providerType => 'openai';
-  
-  @override
-  ProviderAdapter createAdapter(ProviderConfig config) {
-    final client = OpenAIClient(
-      apiKey: config.apiKey,
-      baseUrl: config.baseUrl ?? 'https://api.openai.com/v1',
-      timeout: config.timeout ?? const Duration(seconds: 60),
-    );
-    return OpenAIAdapter(client: client, config: config);
-  }
-}
-
-class AnthropicFactory implements ProviderAdapterFactory {
-  @override
-  String get providerType => 'anthropic';
-  
-  @override
-  ProviderAdapter createAdapter(ProviderConfig config) {
-    final client = AnthropicClient(
-      apiKey: config.apiKey,
-      baseUrl: config.baseUrl ?? 'https://api.anthropic.com',
-      version: '2023-06-01',
-    );
-    return AnthropicAdapter(client: client, config: config);
-  }
-}
-
-class OllamaFactory implements ProviderAdapterFactory {
-  @override
-  String get providerType => 'ollama';
-  
-  @override
-  ProviderAdapter createAdapter(ProviderConfig config) {
-    final client = OllamaClient(
-      baseUrl: config.baseUrl ?? 'http://localhost:11434',
-    );
-    final tokenizer = TiktokenTokenizer();  // 或 llama_tokenizer
-    return OllamaAdapter(
-      client: client,
-      config: config,
-      tokenizer: tokenizer,
-    );
-  }
-}
-
-class GenericOpenAIFactory implements ProviderAdapterFactory {
-  @override
-  String get providerType => 'openai-compatible';
-  
-  @override
-  ProviderAdapter createAdapter(ProviderConfig config) {
-    final client = OpenAIClient(
-      apiKey: config.apiKey,
-      baseUrl: config.baseUrl,
-      timeout: config.timeout ?? const Duration(seconds: 60),
-    );
-    return GenericOpenAIAdapter(client: client, config: config);
-  }
-}
-```
+> 具体工厂实现见代码仓库。
 
 ---
 
@@ -1274,45 +558,31 @@ class HealthStatus {
 ## 9. 使用示例
 
 ```dart
-void main() async {
-  // 1. 初始化适配器注册表
-  final registry = initializeAdapterRegistry();
-  
-  // 2. 创建 Provider 配置
-  final openaiConfig = ProviderConfig(
-    providerId: 'openai-primary',
-    type: 'openai',
-    apiKey: 'sk-xxx',
-  );
-  
-  final anthropicConfig = ProviderConfig(
-    providerId: 'anthropic-backup',
-    type: 'anthropic',
-    apiKey: 'sk-ant-xxx',
-  );
-  
-  // 3. 创建适配器
-  final openaiAdapter = registry.createAdapter(openaiConfig);
-  final anthropicAdapter = registry.createAdapter(anthropicConfig);
-  
-  // 4. 执行流式生成
-  final iterator = openaiAdapter.createIterator(
-    modelConfig: ModelConfig(model: 'gpt-4'),
-    messages: [
-      RawMessage(role: MessageRole.system, content: 'You are helpful.'),
-      RawMessage(role: MessageRole.user, content: 'Hello!'),
-    ],
-  );
-  
-  // 5. 消费流
-  while (iterator.hasNext) {
-    final chunk = await iterator.next();
-    if (chunk != null) {
-      print(chunk.content);
-      if (chunk.isLast) {
-        print('Usage: ${chunk.usage}');
-      }
-    }
+// 1. 初始化注册表
+final registry = initializeAdapterRegistry();
+
+// 2. 创建配置 & 适配器
+final adapter = registry.createAdapter(ProviderConfig(
+  providerId: 'openai-primary',
+  type: 'openai',
+  apiKey: 'sk-xxx',
+));
+
+// 3. 流式生成
+final iterator = adapter.createIterator(
+  modelConfig: ModelConfig(model: 'gpt-4'),
+  messages: [
+    RawMessage(role: MessageRole.system, content: 'You are helpful.'),
+    RawMessage(role: MessageRole.user, content: 'Hello!'),
+  ],
+);
+
+// 4. 消费流
+while (iterator.hasNext) {
+  final chunk = await iterator.next();
+  if (chunk != null) {
+    print(chunk.content);
+    if (chunk.isLast) print('Usage: ${chunk.usage}');
   }
 }
 ```
@@ -1328,5 +598,5 @@ void main() async {
 
 ---
 
-**最后更新**: 2026-02-26  
+**最后更新**: 2026-04-02
 **维护者**: Clotho 架构团队

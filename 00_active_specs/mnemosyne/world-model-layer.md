@@ -85,8 +85,6 @@ State Chain (L3 状态链)
 | **World 总计** | - | - | **~510KB** |
 | 完整 Snapshot | - | - | **< 1MB** |
 
-**结论**：中等规模世界 Snapshot < 1MB，现代设备完全可接受，**无需额外 Cache 或按需加载**。
-
 ### 2.3 状态树路径约定
 
 ```
@@ -477,49 +475,21 @@ Skein 只注入相关子集（如当前地点+邻近地点）
 
 ---
 
-## 7. 实现路线图
+## 7. 关键设计决策
 
-| 阶段 | 功能 | 优先级 | 依赖 |
-|------|------|--------|------|
-| Phase 1 | Timeline 系统 (基础回合 + 游戏内时间) | 高 | 现有 State Tree |
-| Phase 2 | Location Graph (地点 + 连接关系) | 高 | Phase 1 |
-| Phase 3 | Agent Social Graph (个人关系网络) | 高 | Phase 2 |
-| Phase 4 | Faction Web (势力关系) | 中 | Phase 3 |
-| Phase 5 | Economy System (基础市场) | 中 | Phase 2 |
-| Phase 6 | Information Flow (信息传播) | 低 | Phase 3 |
-| Phase 7 | Event Cascade (事件连锁) | 低 | Phase 1-4 |
-
----
-
-## 8. 与 KiMi 建议的对应关系
-
-| KiMi 指出的盲区 | 世界模型层的解决方案 |
-|----------------|---------------------|
-| "世界"概念薄弱 | State Tree 的 `/world` 节点，整合 Timeline/Location/Faction/Economy |
-| 地理空间缺失 | Location Graph 提供结构化空间模型 |
-| 时间线/日历缺失 | Timeline 系统的 Game Time 层级 |
-| 势力关系缺失 | Faction Web 的形式化外交模型 |
-| 经济系统缺失 | Economy System 的市场与资源流动 |
-| 社交维度缺失 | Social Graph + Information Flow 的双层社交模型 |
-| 信息传播缺失 | Information Flow 的谣言/新闻传播机制 |
-
----
-
-## 9. 关键设计决策
-
-### 9.1 为什么 World Model 是 State Chain 的子集？
+### 7.1 为什么 World Model 是 State Chain 的子集？
 
 - **复用现有机制**：VWD、OpLog、Snapshot、时间旅行无需重新实现
 - **统一持久化**：一份 Snapshot 保存完整状态（个人+世界）
 - **原子性保证**：世界状态变更与角色状态变更在同一事务中
 
-### 9.2 为什么不需要 Cache 层？
+### 7.2 为什么不需要 Cache 层？
 
-- **完整状态常驻内存**：中等规模世界 < 1MB，现代设备可接受
+- **完整状态常驻内存**：中等规模世界 Snapshot < 1MB
 - **启动时全量加载**：从 Snapshot 一次性加载，无需按需实例化
 - **L2 只作模板**：运行时只读 L3 State，不反向查询 L2
 
-### 9.3 为什么筛选不控制加载？
+### 7.3 为什么筛选不控制加载？
 
 - **内存中已有完整世界**：筛选只决定**什么进入 Prompt**
 - **Jacquard 负责注入策略**：基于视口、ACL、优先级动态选择

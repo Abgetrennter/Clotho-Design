@@ -357,187 +357,38 @@ metrics:
 
 ```dart
 /// 模型路由管理器
+///
+/// 核心路由流程：
+/// 1. _resolveCandidates(alias, requiredCaps) —— 解析模型别名为候选列表，过滤不满足能力要求的候选
+/// 2. _filterAvailable(candidates) —— 过滤不健康和配额已满的 Provider
+/// 3. _getStrategy(strategyName) —— 获取路由策略（默认为 priority）
+/// 4. strategy.select(availableCandidates, request) —— 按策略选择最优候选
+/// 5. _quotaTracker.checkQuota() —— 最终配额检查
+///
+/// 故障转移流程：
+/// - fallback(request, failedAttempt, error) → 检查是否应触发 fallback → 标记失败 Provider → 排除后重新路由
+///
+/// 接口签名：
 class ModelRouter {
   final RouterConfig _config;
   final ProviderAdapterRegistry _adapterRegistry;
   final HealthMonitor _healthMonitor;
   final QuotaTracker _quotaTracker;
   final LatencyTracker _latencyTracker;
-  
-  // Provider 实例缓存
-  final Map<String, ProviderInstance> _providers = {};
-  
-  ModelRouter({
-    required RouterConfig config,
-    required ProviderAdapterRegistry adapterRegistry,
-    required HealthMonitor healthMonitor,
-    required QuotaTracker quotaTracker,
-    required LatencyTracker latencyTracker,
-  })  : _config = config,
-        _adapterRegistry = adapterRegistry,
-        _healthMonitor = healthMonitor,
-        _quotaTracker = quotaTracker,
-        _latencyTracker = latencyTracker {
-    _initializeProviders();
-  }
-  
-  /// 路由请求到合适的 Provider
-  Future<RoutingResult> route(RoutingRequest request) async {
-    // 1. 解析模型别名
-    final candidates = _resolveCandidates(request.modelAlias, request.requiredCapabilities);
-    
-    // 2. 过滤不可用 Provider
-    final availableCandidates = await _filterAvailable(candidates);
-    
-    if (availableCandidates.isEmpty) {
-      throw RoutingException('No available provider for model: ${request.modelAlias}');
-    }
-    
-    // 3. 应用路由策略
-    final strategy = _getStrategy(request.strategy);
-    final selected = await strategy.select(availableCandidates, request);
-    
-    // 4. 检查配额
-    if (!_quotaTracker.checkQuota(selected.providerId, selected.modelId)) {
-      throw QuotaExceededException(selected.providerId);
-    }
-    
-    // 5. 记录路由决策
-    _logRoutingDecision(request, selected);
-    
-    return RoutingResult(
-      providerId: selected.providerId,
-      modelId: selected.modelId,
-      provider: _providers[selected.providerId]!.adapter,
-    );
-  }
-  
-  /// 处理故障转移
-  Future<RoutingResult> fallback(
-    RoutingRequest request,
-    RoutingResult failedAttempt,
-    MuseProviderException error,
-  ) async {
-    final fallbackConfig = _config.fallback;
-    
-    // 检查是否应该触发 fallback
-    if (!_shouldFallback(error, fallbackConfig)) {
-      rethrow;
-    }
-    
-    // 标记当前 Provider 为不健康（短暂）
-    _healthMonitor.recordFailure(failedAttempt.providerId, error);
-    
-    // 重新路由（排除失败的 Provider）
-    final blacklist = {failedAttempt.providerId};
-    final candidates = _resolveCandidates(request.modelAlias, request.requiredCapabilities)
-        .where((c) => !blacklist.contains(c.providerId))
-        .toList();
-    
-    if (candidates.isEmpty) {
-      throw RoutingException('No fallback provider available');
-    }
-    
-    // 延迟后重试
-    await Future.delayed(fallbackConfig.retryDelay);
-    
-    return route(request.copyWith(
-      excludedProviders: blacklist,
-    ));
-  }
-  
-  // 内部方法
-  List<ModelCandidate> _resolveCandidates(String alias, List<String>? requiredCaps) {
-    final aliasConfig = _config.modelAliases[alias];
-    if (aliasConfig == null) {
-      // 直接使用 model@provider 格式
-      return _parseDirectReference(alias);
-    }
-    
-    return aliasConfig.candidates.where((c) {
-      final model = _findModel(c.providerId, c.modelId);
-      if (model == null) return false;
-      
-      // 检查能力要求
-      if (requiredCaps != null) {
-        return requiredCaps.every((cap) => model.capabilities.contains(cap));
-      }
-      return true;
-    }).toList();
-  }
-  
-  Future<List<ModelCandidate>> _filterAvailable(List<ModelCandidate> candidates) async {
-    final results = <ModelCandidate>[];
-    
-    for (final candidate in candidates) {
-      final provider = _providers[candidate.providerId];
-      if (provider == null) continue;
-      
-      // 健康检查
-      final isHealthy = await _healthMonitor.isHealthy(candidate.providerId);
-      if (!isHealthy) continue;
-      
-      // 配额检查
-      final hasQuota = _quotaTracker.checkQuota(candidate.providerId, candidate.modelId);
-      if (!hasQuota) continue;
-      
-      results.add(candidate);
-    }
-    
-    return results;
-  }
-  
-  RoutingStrategy _getStrategy(String? strategyName) {
-    final name = strategyName ?? _config.routing.defaultStrategy;
-    return _config.routing.strategies[name] ?? PriorityStrategy();
-  }
-  
-  void _initializeProviders() {
-    for (final providerConfig in _config.providers) {
-      if (!providerConfig.enabled) continue;
-      
-      final adapter = _adapterRegistry.createAdapter(providerConfig.toAdapterConfig());
-      _providers[providerConfig.id] = ProviderInstance(
-        config: providerConfig,
-        adapter: adapter,
-      );
-    }
-  }
-  
-  ModelConfig? _findModel(String providerId, String modelId) {
-    final provider = _config.providers.firstWhereOrNull((p) => p.id == providerId);
-    return provider?.models.firstWhereOrNull((m) => m.id == modelId);
-  }
+
+  Future<RoutingResult> route(RoutingRequest request);
+  Future<RoutingResult> fallback(RoutingRequest request, RoutingResult failedAttempt, MuseProviderException error);
 }
 
 /// 路由请求
 class RoutingRequest {
-  final String modelAlias;  // 如 "smart", "fast", 或 "gpt-4o@openai-primary"
+  final String modelAlias;              // "smart", "fast", 或 "gpt-4o@openai-primary"
   final List<String>? requiredCapabilities;
   final String? strategy;
   final Set<String> excludedProviders;
   final double? maxCostPer1K;
   final Duration? maxLatency;
-  
-  RoutingRequest({
-    required this.modelAlias,
-    this.requiredCapabilities,
-    this.strategy,
-    this.excludedProviders = const {},
-    this.maxCostPer1K,
-    this.maxLatency,
-  });
-  
-  RoutingRequest copyWith({
-    Set<String>? excludedProviders,
-  }) => RoutingRequest(
-    modelAlias: modelAlias,
-    requiredCapabilities: requiredCapabilities,
-    strategy: strategy,
-    excludedProviders: excludedProviders ?? this.excludedProviders,
-    maxCostPer1K: maxCostPer1K,
-    maxLatency: maxLatency,
-  );
+  RoutingRequest copyWith({Set<String>? excludedProviders});
 }
 
 /// 路由结果
@@ -545,24 +396,14 @@ class RoutingResult {
   final String providerId;
   final String modelId;
   final ProviderAdapter provider;
-  
-  RoutingResult({
-    required this.providerId,
-    required this.modelId,
-    required this.provider,
-  });
 }
 
 /// Provider 实例包装
 class ProviderInstance {
   final ProviderConfig config;
   final ProviderAdapter adapter;
-  
-  ProviderInstance({
-    required this.config,
-    required this.adapter,
-  });
 }
+// 具体实现见代码仓库
 ```
 
 ### 3.2 路由策略实现
@@ -570,194 +411,41 @@ class ProviderInstance {
 ```dart
 /// 路由策略接口
 abstract class RoutingStrategy {
-  Future<ModelCandidate> select(
-    List<ModelCandidate> candidates,
-    RoutingRequest request,
-  );
+  Future<ModelCandidate> select(List<ModelCandidate> candidates, RoutingRequest request);
 }
+```
 
-/// 优先级策略
-class PriorityStrategy implements RoutingStrategy {
-  @override
-  Future<ModelCandidate> select(
-    List<ModelCandidate> candidates,
-    RoutingRequest request,
-  ) async {
-    // 按优先级排序，返回第一个
-    final sorted = candidates.toList()
-      ..sort((a, b) => a.priority.compareTo(b.priority));
-    return sorted.first;
-  }
-}
+**策略实现概要**（详细算法见代码仓库）：
 
-/// 轮询策略
-class RoundRobinStrategy implements RoutingStrategy {
-  final Map<String, int> _counters = {};
-  
-  @override
-  Future<ModelCandidate> select(
-    List<ModelCandidate> candidates,
-    RoutingRequest request,
-  ) async {
-    final key = request.modelAlias;
-    final current = _counters[key] ?? 0;
-    final selected = candidates[current % candidates.length];
-    _counters[key] = current + 1;
-    return selected;
-  }
-}
+| 策略 | 行为 | 核心逻辑 |
+|------|------|---------|
+| `PriorityStrategy` | 按优先级排序，选择第一个 | `candidates.sort(by priority).first` |
+| `RoundRobinStrategy` | 轮询负载均衡 | 按 modelAlias 维护计数器，`candidates[count % length]` |
+| `LatencyBasedStrategy` | 选择延迟最低的 Provider | 从 LatencyTracker 获取 P90 延迟，选最小值；无数据时默认 10s |
+| `CostOptimizedStrategy` | 成本效率最优 | 成本效率 = `1 / (cost * latencyFactor)`，latencyFactor 超 `_maxLatencyPenalty` 则排除 |
+| `WeightedRandomStrategy` | 加权随机选择（A/B 测试） | 按 config 中 weights 配置进行加权随机 |
 
-/// 延迟优先策略
-class LatencyBasedStrategy implements RoutingStrategy {
-  final LatencyTracker _latencyTracker;
-  final Duration _measurementWindow;
-  final int _percentile;
-  
-  LatencyBasedStrategy({
-    required LatencyTracker latencyTracker,
-    required Duration measurementWindow,
-    required int percentile,
-  })  : _latencyTracker = latencyTracker,
-        _measurementWindow = measurementWindow,
-        _percentile = percentile;
-  
-  @override
-  Future<ModelCandidate> select(
-    List<ModelCandidate> candidates,
-    RoutingRequest request,
-  ) async {
-    // 获取各 Provider 的延迟统计
-    final latencies = <ModelCandidate, Duration>{};
-    
-    for (final candidate in candidates) {
-      final latency = await _latencyTracker.getLatency(
-        candidate.providerId,
-        candidate.modelId,
-        window: _measurementWindow,
-        percentile: _percentile,
-      );
-      latencies[candidate] = latency ?? Duration(seconds: 10);
-    }
-    
-    // 选择延迟最低的
-    return latencies.entries
-        .reduce((a, b) => a.value < b.value ? a : b)
-        .key;
-  }
-}
-
-/// 成本优化策略
-class CostOptimizedStrategy implements RoutingStrategy {
-  final LatencyTracker _latencyTracker;
-  final double _maxLatencyPenalty;
-  
-  CostOptimizedStrategy({
-    required LatencyTracker latencyTracker,
-    required double maxLatencyPenalty,
-  })  : _latencyTracker = latencyTracker,
-        _maxLatencyPenalty = maxLatencyPenalty;
-  
-  @override
-  Future<ModelCandidate> select(
-    List<ModelCandidate> candidates,
-    RoutingRequest request,
-  ) async {
-    // 计算成本效率分数
-    final scores = <ModelCandidate, double>{};
-    
-    for (final candidate in candidates) {
-      final cost = candidate.pricing.output + candidate.pricing.input;
-      final latency = await _latencyTracker.getLatency(
-        candidate.providerId,
-        candidate.modelId,
-      ) ?? Duration(seconds: 10);
-      
-      // 成本效率 = 1 / (成本 * 延迟因子)
-      final latencyFactor = 1 + (latency.inMilliseconds / 1000);
-      if (latencyFactor > _maxLatencyPenalty) {
-        scores[candidate] = 0;  // 延迟过高，不考虑成本优势
-      } else {
-        scores[candidate] = 1 / (cost * latencyFactor);
-      }
-    }
-    
-    return scores.entries
-        .reduce((a, b) => a.value > b.value ? a : b)
-        .key;
-  }
-}
+```
+// 具体实现见代码仓库
 ```
 
 ### 3.3 健康监控
 
 ```dart
-/// 健康监控器
+/// 健康监控器接口
+///
+/// 职责：
+/// - 定期对 Provider 执行健康检查（通过 adapter.checkHealth()）
+/// - 维护每个 Provider 的健康状态（ProviderHealth），连续失败 >= 3 次标记为不健康
+/// - 关键错误（invalidApiKey, quotaExceeded）直接标记不健康
+/// - 状态变化时通过 onHealthChanged 流广播 HealthEvent
+///
+/// 接口签名：
 class HealthMonitor {
-  final Map<String, ProviderHealth> _healthStatus = {};
-  final Map<String, StreamController<HealthEvent>> _healthStreams = {};
-  
-  /// 执行健康检查
-  Future<void> checkHealth(String providerId, ProviderAdapter adapter) async {
-    try {
-      final status = await adapter.checkHealth();
-      _updateHealth(providerId, status);
-    } catch (e) {
-      _updateHealth(providerId, HealthStatus.unhealthy(e.toString()));
-    }
-  }
-  
-  /// 记录失败
-  void recordFailure(String providerId, MuseProviderException error) {
-    final current = _healthStatus[providerId];
-    if (current == null) return;
-    
-    // 根据错误类型决定是否标记为不健康
-    if (_isCriticalError(error)) {
-      _updateHealth(providerId, HealthStatus.unhealthy(error.message));
-    }
-    
-    // 记录失败计数
-    current.recordFailure();
-  }
-  
-  /// 检查是否健康
-  Future<bool> isHealthy(String providerId) async {
-    final status = _healthStatus[providerId];
-    if (status == null) return false;
-    
-    // 如果超过健康检查间隔，重新检查
-    if (status.lastChecked.difference(DateTime.now()) > Duration(minutes: 1)) {
-      // 触发异步检查
-    }
-    
-    return status.isHealthy;
-  }
-  
-  /// 订阅健康状态变化
-  Stream<HealthEvent> onHealthChanged(String providerId) {
-    return _healthStreams.putIfAbsent(
-      providerId,
-      () => StreamController<HealthEvent>.broadcast(),
-    ).stream;
-  }
-  
-  void _updateHealth(String providerId, HealthStatus status) {
-    _healthStatus[providerId] = ProviderHealth(
-      providerId: providerId,
-      status: status,
-      lastChecked: DateTime.now(),
-    );
-    
-    _healthStreams[providerId]?.add(HealthEvent(
-      providerId: providerId,
-      status: status,
-    ));
-  }
-  
-  bool _isCriticalError(MuseProviderException error) {
-    return error.code == MuseErrorCode.invalidApiKey ||
-           error.code == MuseErrorCode.quotaExceeded;
-  }
+  Future<void> checkHealth(String providerId, ProviderAdapter adapter);
+  void recordFailure(String providerId, MuseProviderException error);
+  Future<bool> isHealthy(String providerId);
+  Stream<HealthEvent> onHealthChanged(String providerId);
 }
 
 /// Provider 健康状态
@@ -765,23 +453,9 @@ class ProviderHealth {
   final String providerId;
   final HealthStatus status;
   final DateTime lastChecked;
-  int _consecutiveFailures = 0;
-  
-  ProviderHealth({
-    required this.providerId,
-    required this.status,
-    required this.lastChecked,
-  });
-  
-  bool get isHealthy => status.isHealthy && _consecutiveFailures < 3;
-  
-  void recordFailure() {
-    _consecutiveFailures++;
-  }
-  
-  void recordSuccess() {
-    _consecutiveFailures = 0;
-  }
+  bool get isHealthy;          // status.isHealthy && _consecutiveFailures < 3
+  void recordFailure();       // _consecutiveFailures++
+  void recordSuccess();       // _consecutiveFailures = 0
 }
 
 /// 健康事件
@@ -789,126 +463,43 @@ class HealthEvent {
   final String providerId;
   final HealthStatus status;
   final DateTime timestamp;
-  
-  HealthEvent({
-    required this.providerId,
-    required this.status,
-  }) : timestamp = DateTime.now();
 }
+// 具体实现见代码仓库
 ```
 
 ### 3.4 配额追踪
 
 ```dart
-/// 配额追踪器
+/// 配额追踪器接口
+///
+/// 职责：
+/// - 检查 Provider 的速率限制（令牌桶算法，按 requests_per_minute 配置）
+/// - 检查 Provider 的月度预算（通过 BillingLedger 查询累计使用量）
+/// - 检查全局速率限制和预算
+///
+/// 令牌桶算法：
+/// - 每个 Provider 维护一个 TokenBucket（capacity = rpm, refillRate = rpm/60 per second）
+/// - hasTokens() 时先 refill（按经过时间补充令牌），再检查 >= 1
+/// - consume(amount) 时先 refill，再扣减（clamp 到 0~capacity）
+///
+/// 接口签名：
 class QuotaTracker {
   final BillingLedger _ledger;
   final RouterConfig _config;
-  
-  // 内存中的配额计数（用于速率限制）
-  final Map<String, TokenBucket> _rateLimitBuckets = {};
-  final Map<String, DateTime> _lastRequestTime = {};
-  
-  QuotaTracker({
-    required BillingLedger ledger,
-    required RouterConfig config,
-  })  : _ledger = ledger,
-        _config = config;
-  
-  /// 检查配额
-  bool checkQuota(String providerId, String modelId) {
-    final provider = _config.providers.firstWhereOrNull((p) => p.id == providerId);
-    if (provider == null) return false;
-    
-    // 检查速率限制
-    if (!_checkRateLimit(provider)) {
-      return false;
-    }
-    
-    // 检查月度预算
-    if (!_checkBudget(provider)) {
-      return false;
-    }
-    
-    return true;
-  }
-  
-  /// 记录请求
-  void recordRequest(String providerId) {
-    final bucket = _getOrCreateBucket(providerId);
-    bucket.consume(1);
-    _lastRequestTime[providerId] = DateTime.now();
-  }
-  
-  /// 记录 Token 使用
-  Future<void> recordTokenUsage(
-    String providerId,
-    TokenUsage usage,
-  ) async {
-    // 更新数据库中的计费记录
-    // 由 BillingManager 处理
-  }
-  
-  bool _checkRateLimit(ProviderConfig provider) {
-    final quotas = provider.quotas;
-    if (quotas == null) return true;
-    
-    final bucket = _getOrCreateBucket(provider.id);
-    return bucket.hasTokens();
-  }
-  
-  bool _checkBudget(ProviderConfig provider) async {
-    final quotas = provider.quotas;
-    if (quotas?.monthlyBudget == null) return true;
-    
-    final monthlyUsage = await _ledger.getMonthlyUsageForProvider(provider.id);
-    return monthlyUsage < quotas!.monthlyBudget!;
-  }
-  
-  TokenBucket _getOrCreateBucket(String providerId) {
-    return _rateLimitBuckets.putIfAbsent(providerId, () {
-      final provider = _config.providers.firstWhere((p) => p.id == providerId);
-      final rpm = provider.quotas?.requestsPerMinute ?? 60;
-      return TokenBucket(
-        capacity: rpm,
-        refillRate: rpm / 60.0,  // 每秒补充的令牌数
-      );
-    });
-  }
+
+  bool checkQuota(String providerId, String modelId);  // 速率限制 + 月度预算
+  void recordRequest(String providerId);               // 消耗令牌桶
+  Future<void> recordTokenUsage(String providerId, TokenUsage usage);
 }
 
 /// 令牌桶（速率限制）
 class TokenBucket {
   final int capacity;
   final double refillRate;
-  double _tokens;
-  DateTime _lastRefill;
-  
-  TokenBucket({
-    required this.capacity,
-    required this.refillRate,
-  })  : _tokens = capacity.toDouble(),
-        _lastRefill = DateTime.now();
-  
-  bool hasTokens() {
-    _refill();
-    return _tokens >= 1;
-  }
-  
-  void consume(int amount) {
-    _refill();
-    _tokens = (_tokens - amount).clamp(0, capacity.toDouble());
-  }
-  
-  void _refill() {
-    final now = DateTime.now();
-    final elapsed = now.difference(_lastRefill).inMilliseconds / 1000.0;
-    final tokensToAdd = elapsed * refillRate;
-    
-    _tokens = (_tokens + tokensToAdd).clamp(0, capacity.toDouble());
-    _lastRefill = now;
-  }
+  bool hasTokens();    // refill + 检查
+  void consume(int);   // refill + 扣减
 }
+// 具体实现见代码仓库
 ```
 
 ---
@@ -916,85 +507,27 @@ class TokenBucket {
 ## 4. 配置热重载
 
 ```dart
-/// 配置管理器
+/// 配置管理器接口
+///
+/// 职责：
+/// - 从 YAML 文件加载 RouterConfig（loadYaml → RouterConfig.fromYaml）
+/// - 文件变更时自动重载（FileWatcher + debounce 1s）
+/// - 重载前验证配置（Provider 类型、别名引用、策略有效性）
+/// - 验证失败时保持当前配置不变，记录错误日志
+/// - 通过 onConfigChanged 流通知订阅者配置变更
+///
+/// 接口签名：
 class RouterConfigManager {
   final String _configPath;
   RouterConfig _currentConfig;
-  FileWatcher? _watcher;
-  final _configController = StreamController<RouterConfig>.broadcast();
-  
-  RouterConfigManager(this._configPath) : _currentConfig = RouterConfig.default_();
-  
-  /// 初始化并加载配置
-  Future<void> initialize() async {
-    await reload();
-    _startWatching();
-  }
-  
-  /// 重新加载配置
-  Future<void> reload() async {
-    try {
-      final file = File(_configPath);
-      if (!await file.exists()) {
-        // 创建默认配置
-        await _createDefaultConfig();
-      }
-      
-      final content = await file.readAsString();
-      final yaml = loadYaml(content);
-      final newConfig = RouterConfig.fromYaml(yaml);
-      
-      // 验证配置
-      await _validateConfig(newConfig);
-      
-      _currentConfig = newConfig;
-      _configController.add(newConfig);
-      
-      logger.info('Router config reloaded successfully');
-    } catch (e, stack) {
-      logger.error('Failed to reload router config', e, stack);
-      // 保持当前配置
-    }
-  }
-  
-  /// 获取当前配置
-  RouterConfig get current => _currentConfig;
-  
-  /// 订阅配置变化
-  Stream<RouterConfig> get onConfigChanged => _configController.stream;
-  
-  void _startWatching() {
-    _watcher = FileWatcher(_configPath);
-    _watcher?.events.debounce(Duration(seconds: 1)).listen((_) {
-      reload();
-    });
-  }
-  
-  Future<void> _createDefaultConfig() async {
-    final defaultConfig = '''
-version: "1.0"
-providers: []
-model_aliases: {}
-routing:
-  default_strategy: priority
-  strategies: {}
-'''
-    final file = File(_configPath);
-    await file.parent.create(recursive: true);
-    await file.writeAsString(defaultConfig);
-  }
-  
-  Future<void> _validateConfig(RouterConfig config) async {
-    // 验证所有 Provider 类型是否支持
-    // 验证模型别名引用的 Provider 是否存在
-    // 验证策略配置是否有效
-  }
-  
-  void dispose() {
-    _watcher?.dispose();
-    _configController.close();
-  }
+
+  Future<void> initialize();              // 加载配置 + 启动文件监听
+  Future<void> reload();                  // 读取 YAML → 解析 → 验证 → 更新 _currentConfig → 广播
+  RouterConfig get current;
+  Stream<RouterConfig> get onConfigChanged;
+  void dispose();
 }
+// 具体实现见代码仓库
 ```
 
 ---
@@ -1004,76 +537,32 @@ routing:
 ### 5.1 基本路由
 
 ```dart
-void main() async {
-  // 初始化配置管理器
-  final configManager = RouterConfigManager('./router_config.yaml');
-  await configManager.initialize();
-  
-  // 初始化路由管理器
-  final router = ModelRouter(
-    config: configManager.current,
-    adapterRegistry: initializeAdapterRegistry(),
-    healthMonitor: HealthMonitor(),
-    quotaTracker: QuotaTracker(
-      ledger: SQLiteBillingLedger(db),
-      config: configManager.current,
-    ),
-    latencyTracker: LatencyTracker(),
-  );
-  
-  // 执行路由
-  final result = await router.route(RoutingRequest(
-    modelAlias: 'smart',  // 使用别名
-    requiredCapabilities: ['function_calling'],
-  ));
-  
-  print('Routed to: ${result.providerId}/${result.modelId}');
-  
-  // 使用路由结果创建迭代器
-  final iterator = result.provider.createIterator(
-    modelConfig: ModelConfig(model: result.modelId),
-    messages: [/* ... */],
-  );
-}
+// 初始化
+final configManager = RouterConfigManager('./router_config.yaml');
+await configManager.initialize();
+final router = ModelRouter(config: configManager.current, /* ... */);
+
+// 路由请求
+final result = await router.route(RoutingRequest(
+  modelAlias: 'smart',
+  requiredCapabilities: ['function_calling'],
+));
+// result.providerId / result.modelId / result.provider
+
+// 使用路由结果创建迭代器
+final iterator = result.provider.createIterator(modelConfig: ModelConfig(model: result.modelId), messages: [...]);
 ```
 
 ### 5.2 故障转移处理
 
 ```dart
-Future<void> executeWithFallback(
-  ModelRouter router,
-  RoutingRequest request,
-  List<RawMessage> messages,
-) async {
-  RoutingResult? result;
-  
-  try {
-    // 首次路由
-    result = await router.route(request);
-    
-    // 尝试执行
-    final iterator = result.provider.createIterator(
-      modelConfig: ModelConfig(model: result.modelId),
-      messages: messages,
-    );
-    
-    while (iterator.hasNext) {
-      final chunk = await iterator.next();
-      // 处理 chunk...
-    }
-    
-  } on MuseProviderException catch (e) {
-    // 触发故障转移
-    result = await router.fallback(request, result!, e);
-    
-    // 使用新的 Provider 重试
-    final iterator = result.provider.createIterator(
-      modelConfig: ModelConfig(model: result.modelId),
-      messages: messages,
-    );
-    
-    // ...
-  }
+// 调用 router.route() → 执行迭代器 → 捕获 MuseProviderException → router.fallback() → 用新 Provider 重试
+try {
+  final result = await router.route(request);
+  // ... 使用 result.provider 执行请求
+} on MuseProviderException catch (e) {
+  final fallbackResult = await router.fallback(request, result, e);
+  // ... 使用 fallbackResult.provider 重试
 }
 ```
 

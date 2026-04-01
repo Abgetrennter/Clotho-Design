@@ -98,77 +98,35 @@ graph TB
 ### 3.3 代码数据结构示例
 
 ```dart
-// lib/models/session.dart
-/// Session - 运行时会话实例
-/// 
-/// 对应隐喻体系中的 "Tapestry (织卷)"
+// lib/models/session.dart          → Session (Tapestry 织卷)
 class Session {
   final String id;
   final String personaId;
   final SessionContext context;
   final DateTime createdAt;
   final DateTime updatedAt;
-  
-  const Session({
-    required this.id,
-    required this.personaId,
-    required this.context,
-    required this.createdAt,
-    required this.updatedAt,
-  });
 }
 
-// lib/models/persona.dart
-/// Persona - 角色设定
-///
-/// 对应隐喻体系中的 "Pattern (织谱)"
-/// 静态只读，作为 Session 的蓝图
+// lib/models/persona.dart          → Persona (Pattern 织谱)
 class Persona {
   final String id;
   final String name;
   final String description;
   final List<WorldbookEntry> worldbooks;
-  
-  const Persona({
-    required this.id,
-    required this.name,
-    required this.description,
-    required this.worldbooks,
-  });
 }
 
-// lib/models/session_context.dart
-/// SessionContext - 会话上下文
-///
-/// 对应隐喻体系中的 "Threads (丝络)"
-/// 动态可读写，记录 Session 的演进
+// lib/models/session_context.dart  → SessionContext (Threads 丝络)
 class SessionContext {
   final List<Turn> history;
   final StateTree state;
   final List<StatePatch> patches;
-  
-  const SessionContext({
-    required this.history,
-    required this.state,
-    required this.patches,
-  });
 }
 
-// lib/models/prompt_bundle.dart
-/// PromptBundle - 提示词包
-///
-/// 对应隐喻体系中的 "Skein (绞纱)"
-/// Prompt 组装阶段的结构化容器
+// lib/models/prompt_bundle.dart    → PromptBundle (Skein 绞纱)
 class PromptBundle {
   final List<PromptBlock> systemBlocks;
   final List<PromptBlock> historyBlocks;
   final List<PromptBlock> floatingBlocks;
-  
-  const PromptBundle({
-    required this.systemBlocks,
-    required this.historyBlocks,
-    required this.floatingBlocks,
-  });
 }
 ```
 
@@ -233,29 +191,14 @@ sequenceDiagram
 
 ```dart
 // lib/models/layered_state.dart
-/// LayeredState - 分层状态聚合
-///
-/// 运行时通过 Hydrate 操作将各层合并为 ProjectedState
 class LayeredState {
   final ConfigLayer l0;      // 配置层
   final WorldLayer l1;       // 世界层
   final PersonaLayer l2;     // 角色层 (静态)
   final StateLayer l3;       // 状态层 (动态)
-  
-  /// 执行 Hydrate，生成运行时投影状态
-  ProjectedState hydrate() {
-    return ProjectedState(
-      config: l0,
-      world: l1,
-      persona: _applyPatches(l2, l3.patches),
-      state: l3,
-    );
-  }
-  
-  PersonaLayer _applyPatches(PersonaLayer base, List<StatePatch> patches) {
-    // Deep Merge 算法
-    // L3 Patches 覆盖 L2 Base
-  }
+
+  ProjectedState hydrate();                        // 将各层合并为运行时投影
+  PersonaLayer _applyPatches(PersonaLayer base, List<StatePatch> patches); // Deep Merge
 }
 ```
 
@@ -345,29 +288,24 @@ POST   /api/v1/sessions/{id}/turns   # 创建新回合
 ### 8.2 方法命名规范
 
 ```dart
-// Mnemosyne 数据引擎
-class MnemosyneDataEngine {
-  // 查询
-  Future<Session?> getSession(String sessionId);
-  Future<List<Session>> listSessions({SessionFilter? filter});
-  Future<SessionSnapshot> getSnapshot(String sessionId);
-  
-  // 修改
-  Future<void> createSession(CreateSessionRequest request);
-  Future<void> updateState(String sessionId, List<StatePatch> patches);
-  Future<void> deleteSession(String sessionId);
-  
-  // 特殊操作
-  Future<Session> forkSession(String sessionId, {int? turnIndex});
-  Future<Snapshot> createSnapshot(String sessionId);
-}
+// Mnemosyne 数据引擎 — 查询
+Future<Session?> getSession(String sessionId);
+Future<List<Session>> listSessions({SessionFilter? filter});
+Future<SessionSnapshot> getSnapshot(String sessionId);
+
+// Mnemosyne 数据引擎 — 修改
+Future<void> createSession(CreateSessionRequest request);
+Future<void> updateState(String sessionId, List<StatePatch> patches);
+Future<void> deleteSession(String sessionId);
+
+// Mnemosyne 数据引擎 — 特殊操作
+Future<Session> forkSession(String sessionId, {int? turnIndex});
+Future<Snapshot> createSnapshot(String sessionId);
 
 // Jacquard 编排引擎
-class JacquardOrchestrator {
-  Future<TurnResult> processTurn(ProcessTurnRequest request);
-  Future<PromptBundle> assemblePrompt(String sessionId, String userInput);
-  Stream<LLMChunk> invokeLLM(PromptBundle bundle);
-}
+Future<TurnResult> processTurn(ProcessTurnRequest request);
+Future<PromptBundle> assemblePrompt(String sessionId, String userInput);
+Stream<LLMChunk> invokeLLM(PromptBundle bundle);
 ```
 
 ---
@@ -441,23 +379,12 @@ final skein = await weaver.weave(tapestryId, userInput);
 ### 10.2 注释规范
 
 ```dart
-/// Session 管理器
-///
-/// 负责会话的生命周期管理，包括创建、加载、保存和删除。
-/// 对应隐喻体系中的 "Tapestry (织卷)" 管理。
+/// Session 管理器 — 对应隐喻体系中的 "Tapestry (织卷)" 管理
 class SessionManager {
-  /// 创建新会话
-  ///
-  /// [personaId] 角色设定 ID，作为会话的蓝图
-  /// [initialContext] 可选的初始上下文
-  /// 
-  /// 返回新创建的 Session 实例
-  Future<Session> createSession({
-    required String personaId,
-    SessionContext? initialContext,
-  }) async {
-    // 实现...
-  }
+  Future<Session> createSession({required String personaId, SessionContext? initialContext});
+  Future<Session> loadSession(String sessionId);
+  Future<void> saveSession(Session session);
+  Future<void> deleteSession(String sessionId);
 }
 ```
 

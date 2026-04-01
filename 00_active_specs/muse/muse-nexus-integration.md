@@ -391,293 +391,56 @@ class MuseInternalErrorEvent extends ClothoEvent {
 ### 3.1 事件发布器
 
 ```dart
-/// Muse 事件发布器
+/// Muse 事件发布器 —— 封装 IClothoNexus，自动注入 sessionId
+///
+/// 职责：
+/// - 提供类型安全的 publish 方法，每个方法对应一种事件类型
+/// - 自动为所有事件填充 sessionId
+/// - 内部通过 _nexus.publish(event) 广播到 ClothoNexus
+///
+/// 接口签名：
 class MuseEventPublisher {
   final IClothoNexus _nexus;
   final String _sessionId;
-  
-  MuseEventPublisher({
-    required IClothoNexus nexus,
-    required String sessionId,
-  })  : _nexus = nexus,
-        _sessionId = sessionId;
-  
-  // ==================== 生命周期事件 ====================
-  
-  void publishGenerationStarted({
-    required String requestId,
-    required String providerId,
-    required String modelId,
-    String? modelAlias,
-    required int estimatedPromptTokens,
-    Map<String, dynamic>? metadata,
-  }) {
-    _publish(GenerationStartedEvent(
-      requestId: requestId,
-      sessionId: _sessionId,
-      providerId: providerId,
-      modelId: modelId,
-      modelAlias: modelAlias,
-      estimatedPromptTokens: estimatedPromptTokens,
-      metadata: metadata,
-    ));
-  }
-  
-  void publishTokenReceived({
-    required String requestId,
-    required int chunkIndex,
-    required String content,
-    int? promptTokens,
-    required DateTime providerTimestamp,
-    required Duration latency,
-  }) {
-    _publish(TokenReceivedEvent(
-      requestId: requestId,
-      sessionId: _sessionId,
-      chunkIndex: chunkIndex,
-      content: content,
-      promptTokens: promptTokens,
-      providerTimestamp: providerTimestamp,
-      latency: latency,
-    ));
-  }
-  
-  void publishGenerationCompleted({
-    required String requestId,
-    required String providerId,
-    required String modelId,
-    required TokenUsage usage,
-    required double cost,
-    required Duration totalDuration,
-    required FinishReason finishReason,
-    required int totalChunks,
-  }) {
-    _publish(GenerationCompletedEvent(
-      requestId: requestId,
-      sessionId: _sessionId,
-      providerId: providerId,
-      modelId: modelId,
-      usage: usage,
-      cost: cost,
-      totalDuration: totalDuration,
-      finishReason: finishReason,
-      totalChunks: totalChunks,
-    ));
-  }
-  
-  void publishGenerationCancelled({
-    required String requestId,
-    String? reason,
-    TokenUsage? partialUsage,
-    double? partialCost,
-  }) {
-    _publish(GenerationCancelledEvent(
-      requestId: requestId,
-      sessionId: _sessionId,
-      reason: reason,
-      partialUsage: partialUsage,
-      partialCost: partialCost,
-    ));
-  }
-  
-  // ==================== Provider 状态事件 ====================
-  
-  void publishProviderHealthChanged({
-    required String providerId,
-    required HealthStatus previousStatus,
-    required HealthStatus currentStatus,
-    String? reason,
-  }) {
-    _publish(ProviderHealthChangedEvent(
-      providerId: providerId,
-      previousStatus: previousStatus,
-      currentStatus: currentStatus,
-      reason: reason,
-      checkedAt: DateTime.now(),
-    ));
-  }
-  
-  void publishRoutingDecision({
-    required String requestId,
-    required String requestedAlias,
-    required String selectedProvider,
-    required String selectedModel,
-    required String strategy,
-    required List<RoutingCandidate> candidates,
-    String? fallbackFrom,
-  }) {
-    _publish(RoutingDecisionEvent(
-      requestId: requestId,
-      requestedAlias: requestedAlias,
-      selectedProvider: selectedProvider,
-      selectedModel: selectedModel,
-      strategy: strategy,
-      candidates: candidates,
-      fallbackFrom: fallbackFrom,
-    ));
-  }
-  
-  // ==================== 计费事件 ====================
-  
-  void publishBillingRecord({
-    required String recordId,
-    required String requestId,
-    required String providerId,
-    required String modelId,
-    required TokenUsage usage,
-    required double cost,
-  }) {
-    _publish(BillingRecordCreatedEvent(
-      recordId: recordId,
-      requestId: requestId,
-      sessionId: _sessionId,
-      providerId: providerId,
-      modelId: modelId,
-      usage: usage,
-      cost: cost,
-      timestamp: DateTime.now(),
-    ));
-  }
-  
-  // ==================== 错误事件 ====================
-  
-  void publishProviderError({
-    required String requestId,
-    required String providerId,
-    required String modelId,
-    required MuseProviderException error,
-    int retryCount = 0,
-  }) {
-    _publish(MuseProviderErrorEvent(
-      requestId: requestId,
-      sessionId: _sessionId,
-      providerId: providerId,
-      modelId: modelId,
-      errorCode: error.code,
-      errorMessage: error.message,
-      providerErrorCode: error.providerErrorCode,
-      isRetryable: error.isRetryable,
-      retryCount: retryCount,
-    ));
-  }
-  
-  // 内部方法
-  void _publish(ClothoEvent event) {
-    _nexus.publish(event);
-  }
+
+  // 生命周期事件
+  void publishGenerationStarted({required String requestId, required String providerId, required String modelId, String? modelAlias, required int estimatedPromptTokens, Map<String, dynamic>? metadata});
+  void publishTokenReceived({required String requestId, required int chunkIndex, required String content, int? promptTokens, required DateTime providerTimestamp, required Duration latency});
+  void publishGenerationCompleted({required String requestId, required String providerId, required String modelId, required TokenUsage usage, required double cost, required Duration totalDuration, required FinishReason finishReason, required int totalChunks});
+  void publishGenerationCancelled({required String requestId, String? reason, TokenUsage? partialUsage, double? partialCost});
+
+  // Provider 状态事件
+  void publishProviderHealthChanged({required String providerId, required HealthStatus previousStatus, required HealthStatus currentStatus, String? reason});
+  void publishRoutingDecision({required String requestId, required String requestedAlias, required String selectedProvider, required String selectedModel, required String strategy, required List<RoutingCandidate> candidates, String? fallbackFrom});
+
+  // 计费事件
+  void publishBillingRecord({required String recordId, required String requestId, required String providerId, required String modelId, required TokenUsage usage, required double cost});
+
+  // 错误事件
+  void publishProviderError({required String requestId, required String providerId, required String modelId, required MuseProviderException error, int retryCount = 0});
 }
+// 具体实现见代码仓库
 ```
 
 ### 3.2 在流式迭代器中集成
 
 ```dart
-/// 集成事件发布的 OpenAI 迭代器
-class EventPublishingOpenAIIterator implements LLMIterator {
-  final OpenAIIterator _innerIterator;
-  final MuseEventPublisher _eventPublisher;
-  final String _requestId;
-  final String _providerId;
-  final String _modelId;
-  final DateTime _startTime;
-  final List<String> _accumulatedContent = [];
-  int _chunkCount = 0;
-  bool _completed = false;
-  bool _cancelled = false;
-  
-  EventPublishingOpenAIIterator({
-    required OpenAIIterator innerIterator,
-    required MuseEventPublisher eventPublisher,
-    required String requestId,
-    required String providerId,
-    required String modelId,
-  })  : _innerIterator = innerIterator,
-        _eventPublisher = eventPublisher,
-        _requestId = requestId,
-        _providerId = providerId,
-        _modelId = modelId,
-        _startTime = DateTime.now();
-  
-  @override
-  Future<LLMChunk?> next() async {
-    if (_completed || _cancelled) return null;
-    
-    try {
-      final chunkStartTime = DateTime.now();
-      final chunk = await _innerIterator.next();
-      
-      if (chunk == null) {
-        return null;
-      }
-      
-      final latency = chunkStartTime.difference(_startTime);
-      
-      // 发布 Token 接收事件
-      _eventPublisher.publishTokenReceived(
-        requestId: _requestId,
-        chunkIndex: chunk.index,
-        content: chunk.content,
-        promptTokens: chunk.index == 0 ? chunk.usage?.promptTokens : null,
-        providerTimestamp: chunk.timestamp,
-        latency: latency,
-      );
-      
-      _accumulatedContent.add(chunk.content);
-      _chunkCount = chunk.index + 1;
-      
-      // 检查是否完成
-      if (chunk.isLast) {
-        _completed = true;
-        
-        // 计算成本
-        final cost = _calculateCost(chunk.usage!);
-        
-        // 发布完成事件
-        _eventPublisher.publishGenerationCompleted(
-          requestId: _requestId,
-          providerId: _providerId,
-          modelId: _modelId,
-          usage: chunk.usage!,
-          cost: cost,
-          totalDuration: DateTime.now().difference(_startTime),
-          finishReason: FinishReason.completed,
-          totalChunks: _chunkCount,
-        );
-      }
-      
-      return chunk;
-      
-    } on MuseProviderException catch (e) {
-      // 发布错误事件
-      _eventPublisher.publishProviderError(
-        requestId: _requestId,
-        providerId: _providerId,
-        modelId: _modelId,
-        error: e,
-      );
-      rethrow;
-    }
-  }
-  
-  @override
-  Future<void> cancel() async {
-    _cancelled = true;
-    await _innerIterator.cancel();
-    
-    // 发布取消事件
-    _eventPublisher.publishGenerationCancelled(
-      requestId: _requestId,
-      reason: 'User cancelled',
-    );
-  }
-  
-  @override
-  bool get hasNext => _innerIterator.hasNext && !_cancelled && !_completed;
-  
-  double _calculateCost(TokenUsage usage) {
-    // 从配置获取定价计算
-    return 0.0;  // 简化处理
-  }
+/// 集成事件发布的 LLM 迭代器装饰器
+///
+/// 职责：
+/// - 包装底层 LLMIterator（如 OpenAIIterator），在每次 next()/cancel() 时发布对应事件
+/// - next(): 发布 TokenReceivedEvent；最后一个 chunk 时发布 GenerationCompletedEvent
+/// - cancel(): 发布 GenerationCancelledEvent
+/// - 异常时发布 MuseProviderErrorEvent 后 rethrow
+///
+/// 接口签名：
+class EventPublishingLLMIterator implements LLMIterator {
+  EventPublishingLLMIterator({required LLMIterator innerIterator, required MuseEventPublisher eventPublisher, required String requestId, required String providerId, required String modelId});
+  Future<LLMChunk?> next();   // 每次返回 chunk 时发布 TokenReceivedEvent，isLast 时发布 GenerationCompletedEvent
+  Future<void> cancel();      // 发布 GenerationCancelledEvent
+  bool get hasNext;
 }
+// 具体实现见代码仓库
 ```
 
 ---
@@ -686,10 +449,10 @@ class EventPublishingOpenAIIterator implements LLMIterator {
 
 ### 4.1 UI 层消费（Riverpod Bridge）
 
-```dart
-/// UI 层通过 Riverpod 监听 Muse 事件
+UI 层通过 Riverpod 的 `StateNotifier` 模式监听 Muse 事件，将事件流转换为响应式 UI 状态。
 
-// 1. 定义状态
+```dart
+/// UI 状态定义
 class GenerationState {
   final bool isGenerating;
   final String? currentRequestId;
@@ -697,202 +460,70 @@ class GenerationState {
   final int tokenCount;
   final double? estimatedCost;
   final String? error;
-  
-  GenerationState({
-    this.isGenerating = false,
-    this.currentRequestId,
-    this.accumulatedContent = '',
-    this.tokenCount = 0,
-    this.estimatedCost,
-    this.error,
-  });
-  
-  GenerationState copyWith({
-    bool? isGenerating,
-    String? currentRequestId,
-    String? accumulatedContent,
-    int? tokenCount,
-    double? estimatedCost,
-    String? error,
-  }) => GenerationState(
-    isGenerating: isGenerating ?? this.isGenerating,
-    currentRequestId: currentRequestId ?? this.currentRequestId,
-    accumulatedContent: accumulatedContent ?? this.accumulatedContent,
-    tokenCount: tokenCount ?? this.tokenCount,
-    estimatedCost: estimatedCost ?? this.estimatedCost,
-    error: error ?? this.error,
-  );
 }
 
-// 2. 定义 StateNotifier
-class GenerationStateNotifier extends StateNotifier<GenerationState> {
-  final IClothoNexus _nexus;
-  StreamSubscription? _subscription;
-  
-  GenerationStateNotifier(this._nexus) : super(GenerationState());
-  
-  void startListening(String sessionId) {
-    _subscription?.cancel();
-    
-    // 监听多个事件类型
-    _subscription = MergeStream([
-      _nexus.on<GenerationStartedEvent>(),
-      _nexus.on<TokenReceivedEvent>(),
-      _nexus.on<GenerationCompletedEvent>(),
-      _nexus.on<GenerationCancelledEvent>(),
-      _nexus.on<MuseProviderErrorEvent>(),
-    ]).where((e) {
-      // 只处理当前会话的事件
-      return (e as dynamic).sessionId == sessionId;
-    }).listen(_handleEvent);
-  }
-  
-  void _handleEvent(ClothoEvent event) {
-    switch (event.runtimeType) {
-      case GenerationStartedEvent:
-        final e = event as GenerationStartedEvent;
-        state = GenerationState(
-          isGenerating: true,
-          currentRequestId: e.requestId,
-        );
-        break;
-        
-      case TokenReceivedEvent:
-        final e = event as TokenReceivedEvent;
-        state = state.copyWith(
-          accumulatedContent: state.accumulatedContent + e.content,
-          tokenCount: state.tokenCount + 1,
-        );
-        break;
-        
-      case GenerationCompletedEvent:
-        final e = event as GenerationCompletedEvent;
-        state = state.copyWith(
-          isGenerating: false,
-          estimatedCost: e.cost,
-        );
-        break;
-        
-      case MuseProviderErrorEvent:
-        final e = event as MuseProviderErrorEvent;
-        state = state.copyWith(
-          isGenerating: false,
-          error: e.errorMessage,
-        );
-        break;
-    }
-  }
-  
-  @override
-  void dispose() {
-    _subscription?.cancel();
-    super.dispose();
-  }
-}
-
-// 3. 创建 Provider
-final generationStateProvider = StateNotifierProvider<GenerationStateNotifier, GenerationState>((ref) {
-  final nexus = ref.watch(nexusProvider);
-  final sessionId = ref.watch(currentSessionIdProvider);
-  
-  final notifier = GenerationStateNotifier(nexus);
-  notifier.startListening(sessionId);
-  
-  return notifier;
-});
+/// 事件 → UI 状态映射（Riverpod StateNotifier）
+///
+/// 职责：
+/// - 订阅 ClothoNexus 的 GenerationStarted/TokenReceived/Completed/Cancelled/Error 事件
+/// - 按 sessionId 过滤，仅处理当前会话事件
+/// - 将事件转换为 GenerationState 状态更新
+///
+/// 事件处理规则：
+/// | 事件类型                   | 状态变更                                        |
+/// |---------------------------|------------------------------------------------|
+/// | GenerationStartedEvent    | isGenerating=true, currentRequestId=新 ID      |
+/// | TokenReceivedEvent        | accumulatedContent 追加内容, tokenCount++       |
+/// | GenerationCompletedEvent  | isGenerating=false, estimatedCost=最终成本       |
+/// | MuseProviderErrorEvent    | isGenerating=false, error=错误信息               |
+///
+/// Provider 定义：
+/// final generationStateProvider = StateNotifierProvider<GenerationStateNotifier, GenerationState>(...);
+// 具体实现见代码仓库
 ```
 
 ### 4.2 Billing 模块消费
 
 ```dart
-/// Billing 模块消费计费事件
+/// Billing 事件处理器
+///
+/// 职责：
+/// - 订阅 BillingRecordCreatedEvent
+/// - 将事件转换为 BillingRecord 写入 BillingLedger
+/// - 调用 BillingManager.checkBudget() 检查预算是否超限
+///
+/// 接口签名：
 class BillingEventHandler {
   final BillingLedger _ledger;
   final BillingManager _manager;
-  StreamSubscription? _subscription;
-  
-  BillingEventHandler({
-    required BillingLedger ledger,
-    required BillingManager manager,
-  })  : _ledger = ledger,
-        _manager = manager;
-  
-  void startListening(IClothoNexus nexus) {
-    _subscription = nexus.on<BillingRecordCreatedEvent>().listen(_handleBillingRecord);
-  }
-  
-  void _handleBillingRecord(BillingRecordCreatedEvent event) async {
-    // 保存计费记录
-    final record = BillingRecord(
-      id: event.recordId,
-      requestId: event.requestId,
-      model: event.modelId,
-      provider: event.providerId,
-      usage: event.usage,
-      cost: event.cost,
-      timestamp: event.timestamp,
-      sessionId: event.sessionId,
-    );
-    
-    await _ledger.addRecord(record);
-    
-    // 检查预算
-    await _manager.checkBudget(event.sessionId, event.cost);
-  }
-  
-  void dispose() {
-    _subscription?.cancel();
-  }
+  void startListening(IClothoNexus nexus);  // 订阅 BillingRecordCreatedEvent
+  void dispose();
 }
+// 具体实现见代码仓库
 ```
 
 ### 4.3 Scheduler 消费（触发自动化）
 
 ```dart
-/// Scheduler 消费事件驱动自动化
+/// Scheduler 事件桥接器
+///
+/// 职责：
+/// - 订阅 GenerationCompleted / ProviderHealthChanged / BudgetExceeded 事件
+/// - 将事件转换为 Scheduler 触发动作
+///
+/// 事件 → 自动化映射规则：
+/// | 事件                                | 触发自动化                | 参数                               |
+/// |------------------------------------|--------------------------|-----------------------------------|
+/// | GenerationCompletedEvent           | post_message_processing  | session_id, request_id, finish_reason |
+/// | ProviderHealthChangedEvent (unhealthy) | provider_health_alert    | provider_id, reason               |
+/// | BudgetExceededEvent                | budget_throttle          | budget_type, exceeded_by          |
+///
+/// 接口签名：
 class MuseEventSchedulerBridge {
   final SchedulerShuttle _scheduler;
-  StreamSubscription? _subscription;
-  
-  MuseEventSchedulerBridge(this._scheduler);
-  
-  void startListening(IClothoNexus nexus) {
-    _subscription = MergeStream([
-      nexus.on<GenerationCompletedEvent>(),
-      nexus.on<ProviderHealthChangedEvent>(),
-      nexus.on<BudgetExceededEvent>(),
-    ]).listen(_handleEvent);
-  }
-  
-  void _handleEvent(ClothoEvent event) {
-    switch (event) {
-      case GenerationCompletedEvent e:
-        // 触发消息后处理自动化
-        _scheduler.trigger('post_message_processing', {
-          'session_id': e.sessionId,
-          'request_id': e.requestId,
-          'finish_reason': e.finishReason.name,
-        });
-        break;
-        
-      case ProviderHealthChangedEvent e when e.becameUnhealthy:
-        // Provider 故障时触发告警自动化
-        _scheduler.trigger('provider_health_alert', {
-          'provider_id': e.providerId,
-          'reason': e.reason,
-        });
-        break;
-        
-      case BudgetExceededEvent e:
-        // 预算超限时触发节流自动化
-        _scheduler.trigger('budget_throttle', {
-          'budget_type': e.budgetType.name,
-          'exceeded_by': e.exceededBy,
-        });
-        break;
-    }
-  }
+  void startListening(IClothoNexus nexus);  // 订阅上述三种事件
 }
+// 具体实现见代码仓库
 ```
 
 ---
@@ -967,83 +598,37 @@ sequenceDiagram
 
 ### 6.1 事件频率控制
 
-TokenReceivedEvent 可能在每秒产生数十次，需要优化：
+TokenReceivedEvent 可能在每秒产生数十次，需要通过节流策略优化：
 
-```dart
-/// 节流的事件发布器
+**策略**: `ThrottledMuseEventPublisher` 继承 `MuseEventPublisher`，在 `publishTokenReceived` 中：
+1. 将每次接收到的 content 缓冲到内部列表
+2. 仅当距上次发布超过 `_minEventInterval` 时才发布聚合后的内容
+3. 聚合发布时将缓冲区所有 content join 为单一字符串，清空缓冲区
+
+```
+// 接口签名
 class ThrottledMuseEventPublisher extends MuseEventPublisher {
   final Duration _minEventInterval;
-  DateTime? _lastTokenEventTime;
-  final List<String> _bufferedContent = [];
-  
-  @override
-  void publishTokenReceived({
-    required String requestId,
-    required int chunkIndex,
-    required String content,
-    int? promptTokens,
-    required DateTime providerTimestamp,
-    required Duration latency,
-  }) {
-    _bufferedContent.add(content);
-    
-    final now = DateTime.now();
-    if (_lastTokenEventTime != null && 
-        now.difference(_lastTokenEventTime!) < _minEventInterval) {
-      return;  // 跳过此次发布，等待下一次
-    }
-    
-    // 发布聚合的内容
-    super.publishTokenReceived(
-      requestId: requestId,
-      chunkIndex: chunkIndex,
-      content: _bufferedContent.join(),
-      promptTokens: promptTokens,
-      providerTimestamp: providerTimestamp,
-      latency: latency,
-    );
-    
-    _bufferedContent.clear();
-    _lastTokenEventTime = now;
-  }
+  // override publishTokenReceived，增加缓冲与节流逻辑
 }
+// 具体实现见代码仓库
 ```
 
 ### 6.2 内存管理
 
-```dart
-/// 自动清理旧事件的订阅管理器
+长时间运行的事件订阅需要生命周期管理，防止内存泄漏：
+
+**策略**: `EventSubscriptionManager` 提供基于 key 的订阅注册与自动清理：
+1. `subscribe(key, stream, handler)` —— 注册新订阅，自动取消同名旧订阅
+2. `cleanupOlderThan(maxAge)` —— 清理超过指定时间的订阅，释放 StreamSubscription 资源
+
+```
+// 接口签名
 class EventSubscriptionManager {
-  final Map<String, StreamSubscription> _subscriptions = {};
-  final Map<String, DateTime> _subscriptionTimes = {};
-  
-  void subscribe(String key, Stream stream, void Function(dynamic) handler) {
-    // 取消旧订阅
-    _subscriptions[key]?.cancel();
-    
-    // 创建新订阅
-    _subscriptions[key] = stream.listen(handler);
-    _subscriptionTimes[key] = DateTime.now();
-  }
-  
-  /// 清理超过指定时间的订阅
-  void cleanupOlderThan(Duration maxAge) {
-    final now = DateTime.now();
-    final toRemove = <String>[];
-    
-    _subscriptionTimes.forEach((key, time) {
-      if (now.difference(time) > maxAge) {
-        _subscriptions[key]?.cancel();
-        toRemove.add(key);
-      }
-    });
-    
-    toRemove.forEach((key) {
-      _subscriptions.remove(key);
-      _subscriptionTimes.remove(key);
-    });
-  }
+  void subscribe(String key, Stream stream, void Function(dynamic) handler);
+  void cleanupOlderThan(Duration maxAge);
 }
+// 具体实现见代码仓库
 ```
 
 ---
