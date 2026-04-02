@@ -1,0 +1,49 @@
+meta:
+  id: json_state_update
+  name: 严格状态更新覆盖
+  version: 1.0.0
+  schema_type: override
+  filament_spec: 3.0.0
+  author: Clotho 协议团队
+  description: 覆盖默认 <state_update> 输出，增加业务字段约束。
+
+tags:
+  - name: state_update
+    body_format: json
+    description: 在标准 ops 之外增加 scope 与 reason 字段。
+
+replaces: state_update
+
+injection:
+  position: system_end
+  priority: 230
+
+instruction: |
+  当输出 <state_update> 时，除 ops 外还必须提供 scope 与 reason。
+  scope 用于标记本轮变更作用域，reason 用于给出简洁业务原因。
+  仍然必须遵循 Filament Canonical Spec 的严格 JSON 约束。
+
+examples:
+  - name: scoped_state_update
+    input: |
+      用户确认接受找猫委托，需要带上作用域与原因。
+    output: |
+      <state_update>
+      {
+        "scope": "quest",
+        "reason": "用户正式接受找猫委托",
+        "ops": [
+          { "op": "replace", "path": "/planner/active_quest_id", "value": "quest_find_cat" },
+          { "op": "add", "path": "/quests/accepted/-", "value": "quest_find_cat" }
+        ]
+      }
+      </state_update>
+
+parser_hints:
+  root_tag: state_update
+  body_format: json
+  behavior: apply_state_update
+  required_fields:
+    - scope
+    - reason
+    - ops

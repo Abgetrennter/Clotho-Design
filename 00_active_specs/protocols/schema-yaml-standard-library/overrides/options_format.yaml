@@ -1,0 +1,55 @@
+meta:
+  id: options_format
+  name: 九选项宫格覆盖
+  version: 1.0.0
+  schema_type: override
+  filament_spec: 3.0.0
+  author: Clotho 协议团队
+  description: 覆盖默认 <choice> 输出，强制使用 9 选项宫格。
+
+tags:
+  - name: choice
+    body_format: json
+    description: 约束 <choice> 必须输出固定 9 个选项。
+
+replaces: choice
+
+injection:
+  position: system_end
+  priority: 220
+
+instruction: |
+  当输出 <choice> 时，options 必须固定为 9 个。
+  每个选项应保持长度接近，适合宫格按钮展示。
+  若当前场景无法自然生成 9 个有效选项，则不要启用本覆盖协议。
+
+examples:
+  - name: nine_grid_menu
+    input: |
+      角色进入据点大厅，需要展示 9 宫格行动菜单。
+    output: |
+      <choice>
+      {
+        "prompt": "请选择一项行动：",
+        "layout": "grid_3x3",
+        "options": [
+          { "id": "talk_keeper", "label": "与店主交谈" },
+          { "id": "visit_board", "label": "查看委托板" },
+          { "id": "rest_room", "label": "回房休息" },
+          { "id": "eat_meal", "label": "补充食物" },
+          { "id": "buy_tools", "label": "购买工具" },
+          { "id": "repair_gear", "label": "修理装备" },
+          { "id": "open_map", "label": "查看地图" },
+          { "id": "review_log", "label": "回顾记录" },
+          { "id": "leave_outpost", "label": "离开据点" }
+        ]
+      }
+      </choice>
+
+parser_hints:
+  root_tag: choice
+  body_format: json
+  behavior: render_choice_grid
+  required_fields:
+    - prompt
+    - options

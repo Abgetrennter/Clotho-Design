@@ -1,0 +1,42 @@
+meta:
+  id: details
+  name: 折叠信息扩展
+  version: 1.0.0
+  schema_type: extension
+  filament_spec: 3.0.0
+  author: Clotho 协议团队
+  description: 为可折叠的补充信息块提供统一输出结构。
+
+tags:
+  - name: details
+    body_format: json
+    description: 提供摘要与可展开的详细内容。
+
+injection:
+  position: system_end
+  priority: 140
+
+instruction: |
+  仅在需要收纳补充说明时输出 <details>。
+  summary 应简洁，content 承载展开后的补充信息。
+  不要把主回复正文塞入 <details>。
+
+examples:
+  - name: lore_appendix
+    input: |
+      用户要求解释旧王朝徽记的来历，但主线回复需要保持简洁。
+    output: |
+      <details>
+      {
+        "summary": "旧王朝徽记背景",
+        "content": "该徽记源自第三纪王朝的守夜军团，常用于标记北境边防据点。"
+      }
+      </details>
+
+parser_hints:
+  root_tag: details
+  body_format: json
+  behavior: render_details
+  required_fields:
+    - summary
+    - content

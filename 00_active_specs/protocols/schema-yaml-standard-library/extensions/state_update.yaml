@@ -1,0 +1,48 @@
+meta:
+  id: state_update
+  name: 状态更新扩展
+  version: 1.0.0
+  schema_type: extension
+  filament_spec: 3.0.0
+  author: Clotho 协议团队
+  description: 定义 <state_update> 的注入说明、Few-shot 示例与解析提示。
+
+tags:
+  - name: state_update
+    body_format: json
+    description: 使用严格 JSON 提交状态变更。
+
+conflicts_with:
+  - json_state_update
+
+injection:
+  position: system_end
+  priority: 100
+
+instruction: |
+  仅在本轮产生确定性状态变更时输出 <state_update>。
+  JSON body 必须包含 ops 数组，操作动词遵循 JSON Patch。
+  path 必须使用 JSON Pointer。
+  如无状态变更，不要输出空的 <state_update>。
+
+examples:
+  - name: quest_switch
+    input: |
+      用户决定先去帮老奶奶找猫。
+    output: |
+      <state_update>
+      {
+        "ops": [
+          { "op": "replace", "path": "/planner/active_quest_id", "value": "quest_find_cat" },
+          { "op": "replace", "path": "/planner/current_goal", "value": "help_find_cat" }
+        ],
+        "analysis": "用户切换到找猫支线。"
+      }
+      </state_update>
+
+parser_hints:
+  root_tag: state_update
+  body_format: json
+  behavior: apply_state_update
+  required_fields:
+    - ops

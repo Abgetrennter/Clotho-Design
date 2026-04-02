@@ -1,0 +1,49 @@
+meta:
+  id: choice
+  name: 交互选项扩展
+  version: 1.0.0
+  schema_type: extension
+  filament_spec: 3.0.0
+  author: Clotho 协议团队
+  description: 定义 <choice> 的输出结构，用于交互叙事与行动分支。
+
+tags:
+  - name: choice
+    body_format: json
+    description: 提交用户可选的下一步行动列表。
+
+conflicts_with:
+  - options_format
+
+injection:
+  position: system_end
+  priority: 110
+
+instruction: |
+  仅在需要用户做出明确分支选择时输出 <choice>。
+  options 必须是有序数组，每个选项至少包含 id 与 label。
+  不要把解释性段落写入 <choice>，解释应留在 <content>。
+
+examples:
+  - name: exploration_menu
+    input: |
+      玩家抵达废墟入口，需要决定下一步行动。
+    output: |
+      <choice>
+      {
+        "prompt": "请选择下一步行动：",
+        "options": [
+          { "id": "investigate_gate", "label": "调查石门" },
+          { "id": "inspect_tracks", "label": "查看脚印" },
+          { "id": "camp_outside", "label": "先在外扎营" }
+        ]
+      }
+      </choice>
+
+parser_hints:
+  root_tag: choice
+  body_format: json
+  behavior: render_choice
+  required_fields:
+    - prompt
+    - options

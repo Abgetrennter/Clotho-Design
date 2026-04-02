@@ -1,0 +1,45 @@
+meta:
+  id: tool_call
+  name: 工具调用扩展
+  version: 1.0.0
+  schema_type: extension
+  filament_spec: 3.0.0
+  author: Clotho 协议团队
+  description: 为外部工具调度提供结构化调用请求。
+
+tags:
+  - name: tool_call
+    body_format: json
+    description: 请求执行外部工具并传递参数。
+
+injection:
+  position: system_end
+  priority: 130
+
+instruction: |
+  仅在确实需要外部工具时输出 <tool_call>。
+  JSON body 必须包含 name 与 args。
+  不要在 <tool_call> 中写入自然语言说明，自然语言解释应放在 <content>。
+
+examples:
+  - name: weather_forecast
+    input: |
+      用户询问三天内遗迹附近是否适合出行。
+    output: |
+      <tool_call>
+      {
+        "name": "weather_forecast",
+        "args": {
+          "location": "Ancient Ruins",
+          "days": 3
+        }
+      }
+      </tool_call>
+
+parser_hints:
+  root_tag: tool_call
+  body_format: json
+  behavior: dispatch_tool_call
+  required_fields:
+    - name
+    - args

@@ -1,14 +1,16 @@
 # Schema Injector 组件规范 (Schema Injector Specification)
 
-**版本**: 1.1.0
-**日期**: 2026-03-11
+**版本**: 1.2.0
+**日期**: 2026-04-03
 **状态**: Active
 **作者**: 资深系统架构师
 **关联文档**:
 - [`README.md`](README.md) - Jacquard 概览
 - [`skein-and-weaving.md`](skein-and-weaving.md) - Skein 编织系统
 - [`preset-system.md`](preset-system.md) - 预设系统
+- [`../protocols/filament-canonical-spec.md`](../protocols/filament-canonical-spec.md) - Filament 协议唯一事实来源
 - [`../protocols/schema-library.md`](../protocols/schema-library.md) - Schema 库规范
+- [`../protocols/schema-yaml-standard-library/README.md`](../protocols/schema-yaml-standard-library/README.md) - Schema YAML 示例标准库
 - [`../workflows/prompt-processing.md`](../workflows/prompt-processing.md) - 提示词处理工作流
 - [`../workflows/post-generation-processing.md`](../workflows/post-generation-processing.md) - 生成后处理工作流
 
@@ -18,11 +20,13 @@
 
 ## 1. 概述 (Overview)
 
-**Schema Injector** 是 Jacquard 编排流水线中的核心插件，负责**动态协议 Schema 的加载与注入**。它将角色卡配置的协议定义和运行时动态触发的协议模式（如 `<use_protocol>` 标签）转换为 PromptBlock，并合并到 Skein 中。
+> **协议事实来源声明**: 本文档只描述 Schema Injector 的注入流程、blackboard 契约与组件协作。Filament 的 canonical 标签、JSON 语法和版本基线统一以 [`../protocols/filament-canonical-spec.md`](../protocols/filament-canonical-spec.md) 为准。
+
+**Schema Injector** 是 Jacquard 编排流水线中的核心插件，负责**动态协议 Schema 的加载与注入**。它将 Persona 配置的协议定义和运行时动态触发的协议模式（如 `<use_protocol>` 标签）转换为 PromptBlock，并合并到 Skein 中。
 
 ### 1.1 设计目标
 
-1. **协议复用**: 将通用协议规则（如变量更新、思维链）从角色卡抽离，标准化存储
+1. **协议复用**: 将通用协议规则（如状态更新、思维链）从 Persona 配置抽离，标准化存储
 2. **动态激活**: 支持运行时通过标签或意图识别动态加载协议
 3. **版本管理**: 支持协议版本控制和兼容性检查
 4. **冲突解决**: 处理多协议同时激活时的冲突和优先级
@@ -48,7 +52,7 @@ Schema Injector 位于 Skein Builder 之后，负责向已构建的 Skein 中注
 
 | 来源 | 方式 | 示例 |
 |------|------|------|
-| **静态配置** | Pattern 配置的 `protocols` 列表 | `configuration.protocols: ["variable_update", "chain_of_thought"]` |
+| **静态配置** | Pattern 配置的 `protocols` 列表 | `configuration.protocols: ["state_update", "chain_of_thought"]` |
 | **动态标签** | 检测 `<use_protocol>` 标签 | `<use_protocol>live_stream</use_protocol>` |
 | **意图触发** | Planner 识别的协议意图 | 用户输入"进入直播模式"触发 `live_stream` |
 
@@ -58,7 +62,7 @@ Schema Injector 位于 Skein Builder 之后，负责向已构建的 Skein 中注
 
 ```dart
 final schema = await _schemaLoader.load(
-  id: "variable_update",
+  id: "state_update",
   versionConstraint: "^1.0.0",  // 支持语义化版本约束
 );
 ```
@@ -81,8 +85,8 @@ final schema = await _schemaLoader.load(
 // 写入 blackboard 供 Parser 读取
 // 详见 ../workflows/post-generation-processing.md 第2.1节
 context.blackboard['parser_hints'] = {
-  "variable_update": {
-    "root_tag": "variable_update",
+  "state_update": {
+    "root_tag": "state_update",
     "required_fields": ["path", "operation", "value"],
   },
   "live_stream": {
@@ -106,7 +110,7 @@ context.blackboard['parser_hints'] = {
 ///
 /// 定义 Filament 扩展协议的规则、示例和解析提示
 class SchemaDefinition {
-  /// 唯一标识，如 "variable_update"
+  /// 唯一标识，如 "state_update"
   final String id;
   
   /// 语义化版本，如 "1.2.0"
@@ -148,7 +152,7 @@ class SchemaDefinition {
 
 /// 协议类型枚举
 enum SchemaType {
-  /// 核心协议：仅包含 <think> 和 <content>，始终启用，不可覆盖
+  /// 核心协议：仅包含 <thought> 和 <content>，始终启用，不可覆盖
   core,
   
   /// 扩展协议：按需启用，完全解耦，不自动加载
@@ -163,7 +167,7 @@ enum SchemaType {
 
 /// 解析提示
 class ParserHints {
-  /// 根标签名，如 "variable_update"
+  /// 根标签名，如 "state_update"
   final String rootTag;
   
   /// 必需字段列表
@@ -355,7 +359,7 @@ class SchemaInjectorPlugin implements JacquardPlugin {
     }
     
     // Step 7: 注册 Parser Hints
-    context.blackboard['schema_parser_hints'] = 
+    context.blackboard['parser_hints'] = 
       _collectParserHints(resolved);
     context.blackboard['active_schemas'] = 
       resolved.map((s) => s.id).toList();
@@ -625,20 +629,20 @@ configuration:
 
 | 标签 | 描述 | Parser 行为 |
 |------|------|-------------|
-| `<think>` | 思维链、推理过程 | 存储思维日志，默认折叠 |
+| `<thought>` | 思维链、推理过程 | 存储思维日志，默认折叠 |
 | `<content>` | 最终回复内容 | 推送正文，支持 HTML 注释 |
 
-> **注意**: Core 仅包含 2 个标签，**不**包含 variable_update、choice 等其他标签。所有其他功能必须通过 Extension 显式启用。
+> **注意**: Core 仅包含 2 个标签，**不**包含 state_update、choice 等其他标签。所有其他功能必须通过 Extension 显式启用。
 
 ### 9.2 Extension Schema（按需启用，无不自动加载）
 
 | ID | 描述 | 提供的标签 | 默认启用 |
 |----|------|-----------|----------|
-| `variable_update` | 变量更新规则 | `<variable_update>` | 否 |
+| `state_update` | 状态更新规则 | `<state_update>` | 否 |
 | `choice` | 选择菜单 | `<choice>` | 否 |
 | `status_bar` | 状态栏 | `<status_bar>` | 否 |
 | `tool_call` | 工具调用 | `<tool_call>` | 否 |
-| `chain_of_thought` | 强制思维链格式 | -（格式化 think） | 否 |
+| `chain_of_thought` | 思维链约束扩展 | 不新增标签（约束 `<thought>`） | 否 |
 | `details` | 折叠摘要 | `<details>` | 否 |
 | `ui_component` | 嵌入式 UI | `<ui_component>` | 否 |
 
@@ -646,16 +650,16 @@ configuration:
 
 | ID | 描述 | 覆盖范围 |
 |----|------|----------|
-| `live_stream` | 直播间格式 | 全局输出风格 |
+| `live_stream` | 直播口播风格 | 全局 `<content>` 风格 |
 | `text_adventure` | 文字冒险游戏格式 | 全局输出风格 |
-| `json_mode` | 强制 JSON 输出 | 全局输出格式 |
+| `json_mode` | Filament 内 JSON-first 输出模式 | 强调 structured tags，保留 XML 封套 |
 
 ### 9.4 Override Schema（替换 Extension 实现）
 
 | ID | 描述 | 覆盖目标 |
 |----|------|----------|
 | `options_format` | 九选项格式 | 替换 `choice` 的标准实现 |
-| `json_variable_update` | JSON 变量更新 | 替换 `variable_update` 的格式 |
+| `json_state_update` | 严格状态更新覆盖 | 替换 `state_update` 的标准实现 |
 
 ---
 
@@ -667,7 +671,7 @@ configuration:
 | **Template Renderer** | 下游组件。Schema 注入的 Block 会被 Renderer 处理为最终 Prompt |
 | **Filament Parser** | 协作组件。Schema Injector 构建 ESR 写入 `blackboard['expected_structure_registry']`，Parser 初始化时读取并注册合法标签 |
 | **Planner** | 可选触发源。Planner 可通过意图识别触发动态协议加载 |
-| **Schema Library** | 数据来源。从文件系统或数据库加载 Schema YAML 定义 |
+| **Schema Library** | 数据来源。从文件系统或数据库加载 Schema YAML 定义；推荐以 [`../protocols/schema-yaml-standard-library/README.md`](../protocols/schema-yaml-standard-library/README.md) 作为样例起点 |
 
 ### 10.1 与 Filament Parser 的集成
 
@@ -677,15 +681,15 @@ Schema Injector 在构建阶段向 blackboard 写入两个关键数据结构：
 // 1. ESR (期望结构注册表)
 context.blackboard['expected_structure_registry'] = {
   'version': '2.5',
-  'expected_tags': ['think', 'content', 'variable_update', 'choice'], // 注册标签
+  'expected_tags': ['thought', 'content', 'state_update', 'choice'], // 注册标签
   'topology': {...},
   'cardinality': {...},
 };
 
 // 2. Parser Hints (标签解析提示)
 context.blackboard['parser_hints'] = {
-  'variable_update': {
-    'root_tag': 'variable_update',
+  'state_update': {
+    'root_tag': 'state_update',
     'required_fields': ['path', 'operation'],
   },
   'choice': {

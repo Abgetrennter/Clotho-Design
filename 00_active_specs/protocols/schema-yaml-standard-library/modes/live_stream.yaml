@@ -1,0 +1,35 @@
+meta:
+  id: live_stream
+  name: 直播模式
+  version: 1.0.0
+  schema_type: mode
+  filament_spec: 3.0.0
+  author: Clotho 协议团队
+  description: 将 <content> 组织为直播口播与实时互动风格。
+
+tags:
+  - name: content
+    body_format: markdown
+    description: 用户可见正文转为直播口播风格。
+
+conflicts_with:
+  - text_adventure
+  - json_mode
+
+injection:
+  position: system_start
+  priority: 200
+
+instruction: |
+  将 <content> 写成直播口播风格，节奏更短、更即时、更具互动感。
+  可以使用主持人语气、弹幕感叹或现场反应，但不要破坏 Filament 封套。
+  如同时启用了 <status_bar>，优先用它展示标题、在线人数和当前环节。
+
+examples:
+  - name: stream_intro
+    input: |
+      用户要求进入直播解说模式。
+    output: |
+      <content>
+      欢迎回到今晚的废墟夜探直播，现在我们已经站在南侧石门前了。先别急着往里冲，镜头拉近一点，我给大家看看门缝上的新刮痕。
+      </content>

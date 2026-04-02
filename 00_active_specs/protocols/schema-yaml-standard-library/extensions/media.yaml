@@ -1,0 +1,44 @@
+meta:
+  id: media
+  name: 媒体资源扩展
+  version: 1.0.0
+  schema_type: extension
+  filament_spec: 3.0.0
+  author: Clotho 协议团队
+  description: 为图片、音频等媒体资源引用提供统一结构。
+
+tags:
+  - name: media
+    body_format: json
+    description: 引用可展示的媒体资源，不承载二进制内容本身。
+
+injection:
+  position: system_end
+  priority: 160
+
+instruction: |
+  仅在需要引用已有媒体资源时输出 <media>。
+  JSON body 至少包含 type 与 src，可选 alt 或 caption。
+  不要在标签中嵌入 base64 或其他大体积二进制数据。
+
+examples:
+  - name: night_forest_image
+    input: |
+      系统需要给当前场景附上一张黑雾森林夜景图。
+    output: |
+      <media>
+      {
+        "type": "image",
+        "src": "assets/scene/black_forest_night.jpg",
+        "alt": "黑雾森林的夜景",
+        "caption": "远处只有断塔顶端还残留着微弱火光。"
+      }
+      </media>
+
+parser_hints:
+  root_tag: media
+  body_format: json
+  behavior: render_media
+  required_fields:
+    - type
+    - src

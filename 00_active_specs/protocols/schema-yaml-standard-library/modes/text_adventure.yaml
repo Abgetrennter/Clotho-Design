@@ -1,0 +1,35 @@
+meta:
+  id: text_adventure
+  name: 文字冒险模式
+  version: 1.0.0
+  schema_type: mode
+  filament_spec: 3.0.0
+  author: Clotho 协议团队
+  description: 将 <content> 组织为文字冒险游戏叙述风格。
+
+tags:
+  - name: content
+    body_format: markdown
+    description: 用户可见正文转为场景叙述与行动反馈风格。
+
+conflicts_with:
+  - live_stream
+  - json_mode
+
+injection:
+  position: system_start
+  priority: 200
+
+instruction: |
+  将 <content> 写成文字冒险叙述，强调场景、动作和即时反馈。
+  优先使用第二人称或贴近玩家视角的描述。
+  如同时启用了 <choice>，让选项承接当前场景中的自然行动分支。
+
+examples:
+  - name: ruin_entry
+    input: |
+      玩家推开石门，进入废墟第一层。
+    output: |
+      <content>
+      你用力推开半掩的石门，潮湿冷气立刻从门缝里涌了出来。脚下的碎石在靴底轻轻作响，远处黑暗中像是有什么东西刚刚挪动了一下。
+      </content>

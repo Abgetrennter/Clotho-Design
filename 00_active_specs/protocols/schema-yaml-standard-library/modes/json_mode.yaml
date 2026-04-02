@@ -1,0 +1,45 @@
+meta:
+  id: json_mode
+  name: JSON-first 输出模式
+  version: 1.0.0
+  schema_type: mode
+  filament_spec: 3.0.0
+  author: Clotho 协议团队
+  description: 强调 structured tags 的优先级，但仍保持 Filament XML 封套与 canonical tags。
+
+tags:
+  - name: content
+    body_format: markdown
+    description: <content> 保留为短摘要，不再承载大段结构化信息。
+
+conflicts_with:
+  - live_stream
+  - text_adventure
+
+injection:
+  position: system_start
+  priority: 210
+
+instruction: |
+  保持 Filament 的 XML 封套与 canonical tags 不变。
+  所有可结构化的信息优先放入已启用的 JSON structured tags。
+  <content> 仅保留 1 到 2 句给人类阅读的摘要。
+  禁止输出裸 JSON、禁止用 JSON 代码块替代整个 Filament 文档。
+
+examples:
+  - name: json_first_choice
+    input: |
+      用户要求以更适合机器处理的方式返回下一步行动建议。
+    output: |
+      <choice>
+      {
+        "prompt": "请选择下一步行动：",
+        "options": [
+          { "id": "open_map", "label": "打开地图" },
+          { "id": "check_supplies", "label": "检查补给" }
+        ]
+      }
+      </choice>
+      <content>
+      已将下一步行动整理为结构化选项，便于直接渲染或后续处理。
+      </content>

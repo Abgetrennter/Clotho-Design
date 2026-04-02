@@ -1,0 +1,47 @@
+meta:
+  id: ui_component
+  name: UI 组件扩展
+  version: 1.0.0
+  schema_type: extension
+  filament_spec: 3.0.0
+  author: Clotho 协议团队
+  description: 为复杂交互场景提供嵌入式组件描述。
+
+tags:
+  - name: ui_component
+    body_format: json
+    description: 描述需要由 Presentation 层渲染的复杂组件。
+
+injection:
+  position: system_end
+  priority: 150
+
+instruction: |
+  仅在已有对应组件渲染器时输出 <ui_component>。
+  JSON body 至少包含 type 与 props。
+  不要在 props 中嵌入业务逻辑，只传递渲染所需数据。
+
+examples:
+  - name: quest_card
+    input: |
+      用户打开任务面板，需要展示当前支线的卡片组件。
+    output: |
+      <ui_component>
+      {
+        "type": "quest_card",
+        "props": {
+          "title": "寻找走失的猫",
+          "status": "active",
+          "reward": "银币 20",
+          "location": "南门集市"
+        }
+      }
+      </ui_component>
+
+parser_hints:
+  root_tag: ui_component
+  body_format: json
+  behavior: render_ui_component
+  required_fields:
+    - type
+    - props

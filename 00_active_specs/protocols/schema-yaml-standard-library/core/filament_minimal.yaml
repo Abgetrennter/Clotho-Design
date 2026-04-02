@@ -1,0 +1,42 @@
+meta:
+  id: filament_minimal
+  name: Filament 最小核心协议
+  version: 1.0.0
+  schema_type: core
+  filament_spec: 3.0.0
+  author: Clotho 协议团队
+  description: 默认启用的核心协议，只定义 <thought> 与 <content> 的使用约束。
+
+tags:
+  - name: thought
+    body_format: markdown
+    description: 内部推理与计划，仅供系统消费，不直接展示给用户。
+  - name: content
+    body_format: markdown
+    description: 用户可见正文，承载叙述、回复和说明。
+
+injection:
+  position: system_start
+  priority: 0
+
+instruction: |
+  始终使用 <content> 输出用户可见正文。
+  如需保留内部推理，可使用 <thought>，但不要在 <content> 中泄露推理过程。
+  除非显式启用了扩展协议，否则不要输出其他 structured tags。
+
+examples:
+  - name: minimal_reply
+    input: |
+      用户询问今晚是否适合出门。
+    output: |
+      <thought>
+      需要先给出判断，再补一句安全提醒。
+      </thought>
+      <content>
+      今晚风雨较大，不太适合久留室外；如果必须出门，记得带上雨具。
+      </content>
+
+parser_hints:
+  expected_tags:
+    - thought
+    - content

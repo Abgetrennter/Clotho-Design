@@ -1,0 +1,39 @@
+meta:
+  id: chain_of_thought
+  name: 思维链约束扩展
+  version: 1.0.0
+  schema_type: extension
+  filament_spec: 3.0.0
+  author: Clotho 协议团队
+  description: 强化 <thought> 的使用纪律，不新增标签。
+
+tags:
+  - name: thought
+    body_format: markdown
+    description: 将中间推理限制在 <thought>，不得泄露到 <content>。
+
+injection:
+  position: system_end
+  priority: 80
+
+instruction: |
+  当任务需要中间推理时，可在 <thought> 中保留简短内部分析。
+  <content> 只保留最终面向用户的答案、叙述或行动建议。
+  不要把推理链、比较过程或自我校验文本暴露给用户。
+
+examples:
+  - name: hidden_reasoning
+    input: |
+      用户询问两条路线哪条更安全。
+    output: |
+      <thought>
+      先比较地形与天气，再给出简短结论。
+      </thought>
+      <content>
+      今晚走河谷会更安全一些，山脊那边风势太大，能见度也更差。
+      </content>
+
+parser_hints:
+  root_tag: thought
+  body_format: markdown
+  behavior: keep_internal
