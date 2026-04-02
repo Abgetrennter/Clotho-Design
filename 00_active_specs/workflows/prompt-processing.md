@@ -347,11 +347,13 @@ graph LR
 
 **Filament 输出格式**:
 
+> 标签名称与 JSON 语法统一引用 [`../protocols/filament-canonical-spec.md`](../protocols/filament-canonical-spec.md)。
+
 | 标签 | 用途 | 示例 |
 |------|------|------|
 | `<thought>` | 思维链 | 推理、规划与自我反思 |
 | `<content>` | 最终回复 | 直接展示给用户的对话内容 |
-| `<variable_update>` | 变量更新 | `[SET, path, value]`, `[ADD, path, number]` |
+| `<state_update>` | 状态更新 | `{ "ops": [...] }` |
 | `<status_bar>` | 自定义状态栏 | `<mood>anxious</mood>` |
 | `<choice>` | 选择菜单 | `<option id="investigate">调查废墟</option>` |
 

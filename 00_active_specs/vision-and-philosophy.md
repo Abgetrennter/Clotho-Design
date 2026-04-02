@@ -83,12 +83,12 @@ Clotho 旨在重新定义 AI 角色扮演（RPG）的交互体验，构建一个
 
 ### 4.3 协议统一化 (Filament Unification)
 
-为了消除“自然语言”与“机器指令”之间的模糊地带，我们将系统的所有交互统一在 **Filament 协议** 之下。
+为了消除“自然语言”与“机器指令”之间的模糊地带，我们将 **Clotho 与 LLM 的边界通信** 统一在 **Filament 协议** 之下。
 
 * **统一格式**: 遵循 **"XML + YAML IN, XML + JSON OUT"** 的非对称设计。
   * **IN (Context)**: 使用 XML 定义结构，YAML 描述数据。YAML 的高可读性与低 Token 消耗使其成为 Prompt 上下文的最佳载体。
   * **OUT (Instruction)**: 使用 XML 定义意图，JSON 描述参数。JSON 的严格语法确保了状态变更与工具调用的确定性。
-* **统一范畴**: Filament 不仅是 LLM 的输出协议，更是系统的通用语言，统一管理：
+* **统一范畴**: Filament 是 LLM 边界协议，统一管理：
     1. **提示词格式 (Prompt Engineering)**: 所有的 Pattern (织谱)、Lore (纹理) 均通过 Filament 结构化注入。
     2. **标签类型 (Tag System)**: 定义一套标准化的 XML 标签集，用于控制流程。
     3. **嵌入式前端 (Embedded UI)**: 允许 LLM 通过协议直接请求渲染原生的嵌入式网页组件（Mini-Apps），实现交互维度的升维。

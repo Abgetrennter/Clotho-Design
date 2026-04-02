@@ -110,7 +110,7 @@ UI 子系统与用户输入之间的**唯一写通道**。
 
 ### 5.1 单向数据流
 
-* **UI 是消费者**: 监听 Jacquard 的 Filament 流，渲染 `<reply>` 和 `<thought>`。
+* **UI 是消费者**: 监听 Jacquard 的 Filament 流，渲染 `<content>` 和 `<thought>`。
 * **UI 是触发者**: 将点击事件转化为 Intent，但不直接操作 `World State`。
 
 ### 5.2 状态同步

@@ -30,7 +30,7 @@ Clotho 的宏系统严格遵循 **凯撒原则 (The Caesar Principle)**，采用
 
 ### Filament 结构与 Jinja2 的分工
 
-- **Filament XML (`<thought>`, `<content>`, `<variable_update>`)**: 作为 LLM 输出的结构骨架，用于解析意图和边界
+- **Filament XML (`<thought>`, `<content>`, `<state_update>`)**: 作为 LLM 输出的结构骨架，用于解析意图和边界。canonical 标签定义统一以 [`filament-canonical-spec.md`](filament-canonical-spec.md) 为准。
 - **Jinja2 逻辑 (`{% if %}`, `{{ var }}`)**: 完全接管输入端的逻辑控制，在发送给 LLM 前被渲染为纯文本
 
 ## 宏分类与规范 (Macro Categories & Specifications)

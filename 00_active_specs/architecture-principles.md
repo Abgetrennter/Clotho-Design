@@ -110,7 +110,7 @@ graph TB
 ### 2.4 协议统一化 (Filament Unification)
 
 - **统一格式**: "XML + YAML IN, XML + JSON OUT"
-- **统一范畴**: 贯穿提示词格式、标签类型、嵌入式前端、状态管理
+- **统一范畴**: 统一 Clotho 与 LLM 之间的提示词格式、标签类型与嵌入式前端指令
 - **统一解析**: 实时流式解析，路由分发
 
 ### 2.5 数据与表现解耦 (Decoupling Data from Presentation)
@@ -184,9 +184,9 @@ graph TB
 ## 6. 关联文档
 
 - **[愿景与哲学](vision-and-philosophy.md)**: 项目根本指导思想
-- **[架构索引](../README.md)**: 核心组件架构索引
-- **[Filament 协议](../protocols/filament-protocol-overview.md)**: 协议设计原则
-- **[分层运行时架构](../runtime/layered-runtime-architecture.md)**: 运行时设计原则
+- **[架构索引](README.md)**: 核心组件架构索引
+- **[Filament Canonical Spec](protocols/filament-canonical-spec.md)**: 协议设计原则
+- **[分层运行时架构](runtime/layered-runtime-architecture.md)**: 运行时设计原则
 
 ---
 

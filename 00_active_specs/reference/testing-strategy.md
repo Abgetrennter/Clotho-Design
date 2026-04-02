@@ -949,6 +949,8 @@ test('ModelRouter 应在主 Provider 失败时切换到备用', () async {
 
 ## 5. Filament 协议测试 (Filament Protocol Testing)
 
+> **协议事实来源声明**: 本节中的所有标签名称、输出语法和版本基线均引用 [`../protocols/filament-canonical-spec.md`](../protocols/filament-canonical-spec.md)。测试夹具应使用 canonical 标签，不再编写 legacy `<reply>` / `<think>` / `<variable_update>` 示例。
+
 ### 5.1 输入格式 (XML+YAML) 解析测试
 
 ```dart
@@ -1010,10 +1012,14 @@ test('FilamentOutputParser 应正确解析 XML+JSON 输出', () async {
   // Given
   final output = '''
 <filament_output>
-  <thought>{"content": "用户打招呼了，我应该友好回应"}</thought>
-  <reply>{"content": "你好！我是爱丽丝，森林里的治愈师。"}</reply>
+  <thought>用户打招呼了，我应该友好回应。</thought>
+  <content>你好！我是爱丽丝，森林里的治愈师。</content>
   <state_update>
-    [{"op": "replace", "path": "/character/mood", "value": "happy"}]
+    {
+      "ops": [
+        { "op": "replace", "path": "/character/mood", "value": "happy" }
+      ]
+    }
   </state_update>
 </filament_output>
 ''';
@@ -1023,9 +1029,9 @@ test('FilamentOutputParser 应正确解析 XML+JSON 输出', () async {
   
   // Then
   expect(parsed.thoughts, isNotEmpty);
-  expect(parsed.reply, isNotEmpty);
+  expect(parsed.content, isNotEmpty);
   expect(parsed.stateUpdates.length, 1);
-  expect(parsed.stateUpdates[0].path, '/character/mood');
+  expect(parsed.stateUpdates[0].ops.first.path, '/character/mood');
 });
 
 // 测试：流式解析
@@ -1033,8 +1039,8 @@ test('FilamentOutputParser 应支持流式解析', () async {
   // Given
   final stream = Stream.fromIterable([
     '<filament_output>',
-    '  <reply>{"content": "你好',
-    '！"}</reply>',
+    '  <content>你好',
+    '！</content>',
     '</filament_output>',
   ]);
   
@@ -1045,7 +1051,7 @@ test('FilamentOutputParser 应支持流式解析', () async {
   }
   
   // Then
-  expect(chunks.any((c) => c.type == ChunkType.reply), true);
+  expect(chunks.any((c) => c.type == ChunkType.content), true);
 });
 ```
 
@@ -1113,13 +1119,13 @@ test('FilamentSchemaValidator 应验证输出格式合规性', () {
   // Given
   const validOutput = '''
 <filament_output>
-  <reply>{"content": "测试"}</reply>
+  <content>测试</content>
 </filament_output>
 ''';
   
   const invalidOutput = '''
 <filament_output>
-  <reply>纯文本，没有 JSON</reply>
+  <state_update>纯文本，没有 JSON</state_update>
 </filament_output>
 ''';
   
@@ -1482,8 +1488,8 @@ class MockResponse {
     return MockResponse(
       content: '''
 <filament_output>
-  <thought>{"content": "默认回复"}</thought>
-  <reply>{"content": "你好！我是测试 AI。"}</reply>
+  <thought>默认回复</thought>
+  <content>你好！我是测试 AI。</content>
 </filament_output>
 ''',
     );

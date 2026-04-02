@@ -1,154 +1,178 @@
 # 输入格式：XML+YAML (Input Format: XML+YAML)
 
-**版本**: 2.4.0
-**日期**: 2026-03-11
+**版本**: 3.0.0
+**日期**: 2026-04-03
 **状态**: Active
-**作者**: 资深系统架构师 (Architect Mode)
+**作者**: Clotho 协议团队
 **关联文档**:
 
-- 概述 [`filament-protocol-overview.md`](filament-protocol-overview.md)
+- Canonical 规范 [`filament-canonical-spec.md`](filament-canonical-spec.md)
+- 协议概述 [`filament-protocol-overview.md`](filament-protocol-overview.md)
 - Jinja2 宏系统 [`jinja2-macro-system.md`](jinja2-macro-system.md)
-- 输出格式 [`filament-output-format.md`](filament-output-format.md)
-- 解析流程 [`filament-parsing-workflow.md`](filament-parsing-workflow.md)
+- Schema 库规范 [`schema-library.md`](schema-library.md)
 
 > 术语体系参见 [naming-convention.md](../naming-convention.md)
 
 ---
 
-## 概述 (Introduction)
+## 1. 文档角色
 
-Filament 协议的输入端采用 **XML + YAML** 格式构建结构化提示词。XML 标签提供骨架和语义边界，YAML 则用于描述数据内容。这种设计既保证了 LLM 对内容层级的清晰理解，又通过 YAML 的低 Token 消耗提高了效率。
+本文档不再重复定义 Filament 的 canonical 标签与版本基线。
 
-## 基础数据块格式 (Basic Block Format)
+**输入端的唯一语法基线，请参阅 [`filament-canonical-spec.md`](filament-canonical-spec.md)。**
 
-Jacquard 使用 Filament 格式组装最终的 Prompt，确保 LLM 清晰感知不同信息的语义边界。
+本文档只补充三类实现信息：
 
-### 示例 (Example)
+1. Jacquard 如何组织输入块
+2. 导入内容如何规范化为 XML + YAML
+3. 输入侧如何与 Jinja2 宏系统协作
+
+---
+
+## 2. 输入块组织方式
+
+在 `strict` 模式下，输入端使用统一封套：
 
 ```xml
-<system_instruction>
+<filament_input version="3.0">
+  ...
+</filament_input>
+```
+
+Jacquard 组装 Prompt 时，推荐使用以下保留块名：
+
+| 标签 | 用途 | Body 格式 |
+|------|------|-----------|
+| `<system_instruction>` | 系统规则、风格、输出要求 | YAML |
+| `<persona>` | Persona / 角色设定投影 | YAML |
+| `<world_state>` | 当前世界状态快照 | YAML |
+| `<lorebook_entry>` | 世界书条目 | YAML 或纯文本 |
+| `<conversation_history>` | 历史对话 | YAML 或纯文本 |
+| `<use_protocol>` | 动态启用扩展协议 | 纯文本 |
+
+> 这些输入块是 **输入端推荐语义块**，不是输出解析阶段的 core tags。
+
+### 示例
+
+```xml
+<filament_input version="3.0">
+  <system_instruction>
 role: Dungeon Master
-tone: Dark Fantasy
+tone: dark_fantasy
 rules:
   - strict_physics
   - permadeath
-</system_instruction>
+  </system_instruction>
 
-<character_card>
+  <persona>
 name: Seraphina
 class: Mage
 attributes:
   int: 18
   str: 4
-</character_card>
+  </persona>
 
-<world_state>
+  <world_state>
 location: Ancient Ruins
 time: Midnight
 weather: Stormy
-</world_state>
+  </world_state>
+</filament_input>
 ```
 
-## 世界书条目格式 (Lorebook Entry Format)
+---
 
-世界书条目在导入时会经过**格式规范化**处理，统一转换为 **"XML 包裹 YAML"** 格式：
+## 3. 规范化策略
+
+导入内容进入 Jacquard 之前，应尽量被规范化为“XML 包裹 YAML”的一致形式。
+
+### 3.1 规范化规则
+
+| 原始格式 | 检测特征 | 规范化目标 |
+|----------|----------|------------|
+| JSON | `{...}`, `[...]` | 转为 2 空格缩进 YAML |
+| YAML | `key: value` | 保持 YAML，统一缩进 |
+| Markdown | 列表、标题、分段文本 | 尽力提升为 YAML；失败则保留文本 |
+| Plain Text | 无结构文本 | 保留纯文本 |
+
+### 3.2 世界书条目示例
 
 ```xml
-<location_forest>
-  name: Dark Forest
-  atmosphere: Eerie, misty
-  creatures:
-    - Shadow Wolves
-    - Forest Spirits
-  loot:
-    - Ancient Bark
-    - Moon Petals
-</location_forest>
+<lorebook_entry>
+name: Dark Forest
+atmosphere: Eerie, misty
+creatures:
+  - Shadow Wolves
+  - Forest Spirits
+loot:
+  - Ancient Bark
+  - Moon Petals
+</lorebook_entry>
 ```
 
-### 格式转换规则 (Format Conversion Rules)
-
-| 原始格式 | 检测特征 | 转换目标 | 备注 |
-|----------|----------|----------|------|
-| **JSON** | `{...}`, `[...]` | **保留 XML 标签，内部 JSON 转为 2 空格缩进的 YAML** | 保留 `<Soyo>` 等语义标签 |
-| **YAML** | `key: value` | **保留 XML 标签，统一内部缩进为 2 空格** | 保证缩进一致性 |
-| **Markdown** | `-`, `*`, `#` 等 | **尽力将列表、标题等结构转换为 YAML 格式** | 转换失败时保留原始文本 |
-
-## 标签语义体系 (Tag Semantics)
-
-### 顶层结构标签 (Top-Level Structure Tags)
-
-| 标签 | 用途 | 示例 |
-|------|------|------|
-| `<system_instruction>` | 系统级指令和规则 | 角色扮演规则、输出格式要求 |
-| `<character_card>` | **织谱 (Pattern) 定义** | 姓名、性格、外貌、背景 (对应 L2 Pattern) |
-| `<world_state>` | 当前世界状态 | **由 Jacquard 自动生成的 YAML** (位置、时间、环境) |
-| `<lorebook_entry>` | 世界书条目 | 设定、规则、背景知识 |
-| `<conversation_history>` | 对话历史 | 历史消息列表 |
-| `<use_protocol>` | **引用协议 Schema** (v2.1) | 动态加载 Schema 库中的定义。详见 [Schema 库规范](schema-library.md) |
-
-### 元数据标签 (Metadata Tags)
-
-| 标签 | 用途 | 示例 |
-|------|------|------|
-| `<block>` | 标记文本块边界 | `<block role="system">...</block>` |
-| `<format>` | 格式化指令 | `<format type="yaml">...</format>` |
-| `<priority>` | 优先级标记 | `<priority level="high">...</priority>` |
-
-## 与 Jinja2 宏系统的集成
-
-Filament 协议与 Clotho 的 **Jinja2 宏系统** 紧密集成，实现了动态提示词构建和安全的模板渲染。关于宏系统的完整规范，请参阅 **[Jinja2 宏系统文档](jinja2-macro-system.md)**。
-
-### 分工原则 (Division of Responsibilities)
-
-- **Filament XML (`<thought>`, `<content>`, `<variable_update>`)**: 作为 LLM 输出的结构骨架，用于解析意图和边界
-- **Jinja2 逻辑 (`{% if %}`, `{{ var }}`)**: 完全接管输入端的逻辑控制，在发送给 LLM 前被渲染为纯文本
-
-### 核心差异：模板渲染 vs 脚本执行
-
-| 特性 | SillyTavern | Clotho (Jinja2) |
-|------|-------------|----------------|
-| 执行方式 | 正则替换 + JS `eval` | TemplateRenderer (模板渲染) |
-| 逻辑控制 | 分散且不安全 | 由 Jinja2 接管 |
-| 结构支撑 | 混合 | XML 作为结构骨架，Jinja2 处理逻辑 |
-| 输出纯净度 | 可能残留标签 | 完全渲染为纯文本 |
-
-## 格式规范化流程 (Normalization Workflow)
+### 3.3 规范化流程
 
 ```mermaid
 graph TD
-    Content[Lorebook Content] --> Analyzer[格式分析器]
+    Content[Source Content] --> Analyzer[格式分析器]
     Analyzer --> Detect{检测内容格式}
-    
+
     Detect -- JSON --> ParseJSON[解析 JSON]
     Detect -- YAML --> ParseYAML[解析 YAML]
     Detect -- Markdown --> ParseMD[解析 Markdown]
     Detect -- Text --> KeepText[保留纯文本]
-    
+
     ParseJSON --> Normalize[转为 2 空格缩进 YAML]
     ParseYAML --> Normalize
     ParseMD --> Normalize
-    
-    Normalize --> Final[规范化后的内容]
-    
+    Normalize --> Final[规范化结果]
     KeepText --> Final
 ```
 
-## 最佳实践 (Best Practices)
+---
 
-1. **保持 YAML 简洁**: YAML 应专注于描述数据，避免复杂的嵌套结构。
-2. **使用 Schema Library**: 避免将复杂的逻辑规则（如 `<UpdateVariable>` 的具体格式）直接写在 System Prompt 中，应使用 [Schema 库规范](schema-library.md) 进行管理，通过 Pattern (织谱) 的 `protocols` 字段引用。
-3. **善用 `<use_protocol>`**: 仅在运行时动态需要某种模式时使用此标签。
-4. **标签语义化**: 使用有意义的标签名称，如 `<location_forest>` 而非 `<entry>`。
-5. **缩进一致**: 统一使用 2 空格缩进，确保 YAML 的可读性。
+## 4. 与 Jinja2 的职责边界
 
-## 相关阅读
+Filament 输入端与 Jinja2 宏系统协作，但职责不同：
 
-- **[Jinja2 宏系统](jinja2-macro-system.md)**: 深入了解模板引擎和宏映射
-- **[输出格式](filament-output-format.md)**: 了解 LLM 输出的标签体系
-- **[工作流与处理](../workflows/README.md)**: 查看实际应用中如何使用这些格式
+| 组件 | 职责 |
+|------|------|
+| Filament XML | 提供结构边界与块级语义 |
+| YAML | 提供低 token 成本的数据描述 |
+| Jinja2 | 提供输入端的动态逻辑控制与模板渲染 |
+
+### 4.1 分工原则
+
+- **Filament 输入块** 负责组织上下文
+- **Jinja2 逻辑** 负责在发送给 LLM 前完成变量替换、条件裁剪和片段拼装
+- **LLM 输出标签** 的 canonical 定义不在本文档中维护，统一由 canonical spec 定义
+
+### 4.2 模板渲染约束
+
+1. Jinja2 运行在受限模板环境中
+2. 模板渲染不得直接修改 Mnemosyne 状态
+3. 渲染结果必须在发送前变为纯文本
 
 ---
 
-**最后更新**: 2025-12-28  
+## 5. 最佳实践
+
+1. YAML 只描述数据，不要在其中堆叠复杂控制逻辑。
+2. 需要启用协议扩展时，优先使用 `<use_protocol>` 或角色配置中的 `protocols` 字段。
+3. 统一使用 2 空格缩进。
+4. 尽量让输入块名表达清晰语义，不要滥用泛化标签。
+5. 如果某项规则属于输出约束或动作协议，不要在输入文档中重新定义，直接链接到 canonical spec。
+
+---
+
+## 6. 相关阅读
+
+- [`filament-canonical-spec.md`](filament-canonical-spec.md)
+- [`jinja2-macro-system.md`](jinja2-macro-system.md)
+- [`schema-library.md`](schema-library.md)
+- [`../workflows/prompt-processing.md`](../workflows/prompt-processing.md)
+
+---
+
+**最后更新**: 2026-04-03
 **维护者**: Clotho 协议团队
