@@ -79,6 +79,14 @@
 - **阅读建议**: 了解系统如何实时解析 LLM 的流式输出并分发到相应处理器
 - **关联文档**: 输出格式 [`filament-output-format.md`](filament-output-format.md)，Jacquard 编排层 [`../jacquard/README.md`](../jacquard/README.md)
 
+### 9. 跨模块接口契约草案
+
+- **文件**: [`cross-module-interface-contracts.md`](cross-module-interface-contracts.md)
+- **简介**: 汇总 Schema Injector、Filament Parser、JacquardUIAdapter 三者之间的边界与 blackboard 契约。
+- **核心内容**: 统一接口契约表、blackboard key 标准、Parser 初始化契约、待裁决项
+- **阅读建议**: 当需要同时调整协议、解析器和 UI 代理边界时优先查阅
+- **关联文档**: 接口定义 [`interface-definitions.md`](interface-definitions.md)，Schema Injector [`../jacquard/schema-injector.md`](../jacquard/schema-injector.md)，解析流程 [`filament-parsing-workflow.md`](filament-parsing-workflow.md)
+
 ## 🔗 协议架构关系
 
 ```mermaid

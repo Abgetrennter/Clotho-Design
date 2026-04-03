@@ -396,7 +396,7 @@ class PlannerContext {
 ```
 
 **Skein Builder 消费方式**:
-- 从 `context.plannerContext.weaving_guide` 读取编织指令
+- 从 `context.plannerContext.weavingGuide` 读取编织指令
 - `WeavingGuide.historyChain` → 映射到 `SkeinInstance.historyChain`
 - `WeavingGuide.floatingAssets` → 映射到 `SkeinInstance.floatingChain`
 - `WeavingGuide.systemExtensions` → 合并入 `SkeinInstance.systemChain` 末尾

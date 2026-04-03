@@ -436,7 +436,7 @@ Skein Builder 通过统一接口消费上游插件产物。这些插件的执行
 
 ```mermaid
 graph TD
-    Input[输入收集] --> Planner[读取 plannerContext.weaving_guide]
+    Input[输入收集] --> Planner[读取 plannerContext.weavingGuide]
     Input --> Blackboard[读取 blackboard.scheduler_injects]
     Input --> RAG[读取 blackboard.rag_assets]
     Input --> Mnemosyne[加载 Punchcards 快照]

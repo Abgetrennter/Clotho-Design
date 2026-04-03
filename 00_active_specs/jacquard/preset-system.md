@@ -293,9 +293,9 @@ orchestration:
       priority:
         base: 250
         modifiers:
-          - condition: "context.planner.weaving_guide.retrieval_hints != null"
+          - condition: "context.plannerContext.weavingGuide.directives.isNotEmpty"
             delta: +30
-            reason: "Planner requested specific retrieval"
+            reason: "Planner emitted explicit weaving directives"
 
     builder:
       phase: "construction"

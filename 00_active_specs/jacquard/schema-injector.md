@@ -43,6 +43,7 @@ Pipeline Flow (优先级排序):
 ```
 
 Schema Injector 位于 Skein Builder 之后，负责向已构建的 Skein 中注入额外的协议定义内容。
+作为 post-build prompt-shaping 组件，Schema Injector 是 Jacquard 中允许**直接操作已构建 Skein** 的标准特例；但其与 Parser 的协作元数据仍统一写入 `JacquardContext.blackboard`。
 
 ---
 
@@ -87,7 +88,7 @@ final schema = await _schemaLoader.load(
 context.blackboard['parser_hints'] = {
   "state_update": {
     "root_tag": "state_update",
-    "required_fields": ["path", "operation", "value"],
+    "required_fields": ["ops"],
   },
   "live_stream": {
     "root_tag": "live",
@@ -97,6 +98,7 @@ context.blackboard['parser_hints'] = {
 ```
 
 **消费端**: Filament Parser 在生成后处理阶段读取这些 hints，动态扩展标签路由表，支持 Schema 自定义标签的流式解析。
+除 `parser_hints` 外，Schema Injector 还会同步写入 `expected_structure_registry` 供 Parser 注册合法标签集。
 
 ---
 
@@ -352,17 +354,19 @@ class SchemaInjectorPlugin implements JacquardPlugin {
     // Step 4: 冲突解决
     final resolved = _conflictResolver.resolve(schemas);
     
-    // Step 5 & 6: 转换并注入
-    for (final schema in resolved) {
-      final blocks = _convertToBlocks(schema);
-      _injectIntoSkein(context.skein, blocks, schema);
-    }
-    
-    // Step 7: 注册 Parser Hints
+    // Step 5: 注册 ESR 与 Parser 元数据
+    context.blackboard['expected_structure_registry'] =
+      _buildExpectedStructureRegistry(resolved);
     context.blackboard['parser_hints'] = 
       _collectParserHints(resolved);
     context.blackboard['active_schemas'] = 
       resolved.map((s) => s.id).toList();
+
+    // Step 6: 转换并直接注入已构建 Skein
+    for (final schema in resolved) {
+      final blocks = _convertToBlocks(schema);
+      _injectIntoSkein(context.skein, blocks, schema);
+    }
   }
 }
 ```
@@ -667,7 +671,7 @@ configuration:
 
 | 组件 | 关系说明 |
 |------|----------|
-| **Skein Builder** | 上游组件。Schema Injector 向 Skein Builder 构建的 Skein 中注入 Block |
+| **Skein Builder** | 上游组件。Schema Injector 以 Builder 产出的 Skein 为输入，在其基础上继续注入协议 Block |
 | **Template Renderer** | 下游组件。Schema 注入的 Block 会被 Renderer 处理为最终 Prompt |
 | **Filament Parser** | 协作组件。Schema Injector 构建 ESR 写入 `blackboard['expected_structure_registry']`，Parser 初始化时读取并注册合法标签 |
 | **Planner** | 可选触发源。Planner 可通过意图识别触发动态协议加载 |
@@ -675,7 +679,7 @@ configuration:
 
 ### 10.1 与 Filament Parser 的集成
 
-Schema Injector 在构建阶段向 blackboard 写入两个关键数据结构：
+Schema Injector 在协议注入阶段向 blackboard 写入三个协作产物，其中 Parser 强依赖前两项：
 
 ```dart
 // 1. ESR (期望结构注册表)
@@ -690,16 +694,23 @@ context.blackboard['expected_structure_registry'] = {
 context.blackboard['parser_hints'] = {
   'state_update': {
     'root_tag': 'state_update',
-    'required_fields': ['path', 'operation'],
+    'required_fields': ['ops'],
   },
   'choice': {
     'root_tag': 'choice',
     'component_type': 'choice_buttons',
   },
 };
+
+// 3. Active Schemas (激活协议列表)
+context.blackboard['active_schemas'] = [
+  'state_update',
+  'choice',
+];
 ```
 
 Parser 初始化时读取 ESR，**只识别 `expected_tags` 列表内的标签**，未注册的标签视为普通文本。
+`state_update` 的嵌套 `ops[].op / path / value` 约束仍以 [`../protocols/filament-canonical-spec.md`](../protocols/filament-canonical-spec.md) 为准，`parser_hints.required_fields` 仅表达顶层必需字段。
 
 ---
 

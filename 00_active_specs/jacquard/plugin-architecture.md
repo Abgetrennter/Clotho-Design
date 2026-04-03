@@ -92,6 +92,11 @@ class JacquardContext {
   /// 用于存储跨插件的非持久化中间产物（如 RAG 搜索结果、临时标记）。
   final Map<String, dynamic> blackboard = {};
 
+  /// 注意: Planner 的正式产出通过 `plannerContext` 传递，不属于 blackboard key。
+  ///
+  /// ### Planner 产出
+  /// - `plannerContext.weavingGuide`: WeavingGuide - 编织指导
+  ///
   /// 标准 Blackboard Key 规范 (按组件分类)
   /// 
   /// ### Scheduler 产出
@@ -99,6 +104,11 @@ class JacquardContext {
   /// 
   /// ### RAG Retriever 产出
   /// - `rag_assets`: List&lt;FloatingAsset&gt; - RAG 检索到的浮动资产
+  ///
+  /// ### Schema Injector / Parser 协作产出
+  /// - `expected_structure_registry`: Map&lt;String, dynamic&gt; - 合法标签集与结构约束
+  /// - `parser_hints`: Map&lt;String, dynamic&gt; - 标签解析提示
+  /// - `active_schemas`: List&lt;String&gt; - 当前激活协议列表
   /// 
   /// ### 其他标准 Key
   /// - `user_intent`: Map - 解析后的用户意图
@@ -255,9 +265,9 @@ jacquard:
         priority:
           base: 250
           modifiers:
-            - condition: "context.planner.weaving_guide.retrieval_hints != null"
+            - condition: "context.plannerContext.weavingGuide.directives.isNotEmpty"
               delta: +30
-              reason: "Planner requested specific retrieval"
+              reason: "Planner emitted explicit weaving directives"
             - condition: "context.lorebook.entry_count > 1000"
               delta: -20
               reason: "Large knowledge base: defer retrieval"
@@ -370,16 +380,28 @@ capability_patches:
 
 ### 4.4 Blackboard 协作契约
 
-所有注入型组件统一通过 `JacquardContext.blackboard` 传递产物：
+`JacquardContext.blackboard` 仅用于**非持久化、临时共享的插件产物**。
+
+Planner 的正式 typed 产出通过 `JacquardContext.plannerContext` 传递，不属于 blackboard key。当前标准 typed channel 为：
+
+| Channel | 写入者 | 读取者 | 产物类型 | 说明 |
+|---------|--------|--------|----------|------|
+| `plannerContext.weavingGuide` | Planner | Builder | `WeavingGuide` | 编织指导 |
+
+标准 blackboard key 如下：
 
 | Blackboard Key | 写入者 | 读取者 | 产物类型 | 说明 |
 |----------------|--------|--------|----------|------|
 | `scheduler_injects` | Scheduler | Builder | `List<PromptBlock>` | 定时任务注入 |
 | `rag_assets` | RAG Retriever | Builder | `List<FloatingAsset>` | 检索到的记忆 |
-| `weaving_guide` | Planner | Builder | `WeavingGuide` | 编织指导 |
+| `expected_structure_registry` | Schema Injector | Filament Parser | `Map<String, dynamic>` | 合法标签集、拓扑与容错策略 |
 | `parser_hints` | Schema Injector | Filament Parser | `Map<String, SchemaHint>` | 解析提示 |
+| `active_schemas` | Schema Injector | Logging / Diagnostics | `List<String>` | 当前激活协议列表 |
 
-> **原则**: 注入型组件 **绝不直接修改 Skein**，仅写入 blackboard。Builder 在构建阶段统一读取并合并。
+> **原则**:
+> 1. `preparation` 阶段的注入型组件（如 Scheduler、RAG Retriever）仅写入 blackboard，由 Builder 在构建阶段统一读取并合并。
+> 2. `construction` 阶段位于 Builder 之后的 prompt-shaping 组件，若在各自规范中显式声明，可直接操作**已构建**的 Skein。
+> 3. 当前唯一标准特例为 `Schema Injector`：其一方面直接向已构建 Skein 注入协议块，另一方面向 blackboard 写入 `expected_structure_registry`、`parser_hints` 与 `active_schemas` 供下游使用。
 
 ## 5. 插件与能力系统集成 (Capability Integration)
 
