@@ -1,21 +1,24 @@
 # 11_v1_app
 
-**状态**: Draft
-**定位**: Clotho V1 正式实现主干
+Clotho V1 的正式 Flutter 主干骨架。
 
----
+## 当前状态
 
-`11_v1_app/` 用于承载 V1 的正式实现。
+- 已完成标准 Flutter 工程初始化
+- 已建立 `bootstrap -> app -> presentation` 最小启动链
+- 已补齐 `jacquard/`、`mnemosyne/`、`muse/`、`persona/`、`diagnostics/` 目录占位
+- 已提供 Session / Stage / Inspector / Settings 四个最小占位页面
 
-它不是 `08_demo/` 的继续扩写，也不是 `09_mvp/` 的直接重命名。
-旧目录保留为参考与资产来源，新的实现边界以 `v1_release` 规划文档为准。
+## 目录原则
 
-开始实现前，应优先阅读：
+- `presentation/` 只承载界面与交互壳，不直接访问持久化层
+- `jacquard/` 保留 UI 代理、编排服务、Filament 处理入口
+- `mnemosyne/` 保留领域对象、仓库、持久化实现入口
+- `muse/` 只保留原始模型访问边界
+- `persona/` 负责 Persona 发现、加载与绑定
 
-1. [`../02_active_plans/v1_release/README.md`](../02_active_plans/v1_release/README.md)
-2. [`../02_active_plans/v1_release/app-structure.md`](../02_active_plans/v1_release/app-structure.md)
-3. [`../02_active_plans/v1_release/migration-sequence.md`](../02_active_plans/v1_release/migration-sequence.md)
-4. [`../02_active_plans/v1_release/frozen-contracts.md`](../02_active_plans/v1_release/frozen-contracts.md)
+## 下一步建议
 
-当前目录仅作为实现入口占位，避免在目录职责尚未冻结前过早铺开脚手架。
-
+1. 在 `mnemosyne/persistence/` 落 V1 最小 SQLite DDL 与 repository 实现
+2. 在 `jacquard/services/` 落 Filament V1 解析与主对话编排链
+3. 用适配器把 `presentation/chat/` 从占位页接到真实用例
