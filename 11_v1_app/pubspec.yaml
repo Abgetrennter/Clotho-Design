@@ -9,6 +9,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  http: ^1.2.2
+  sqlite3: ^2.9.3
+  sqlite3_flutter_libs: ^0.5.39
+  xml: ^6.5.0
 
 dev_dependencies:
   flutter_test:
